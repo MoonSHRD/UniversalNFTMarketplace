@@ -1,4 +1,4 @@
-pragma solidity ^0.6.0;
+pragma solidity ^0.8.0;
 
 import '@openzeppelin/zeppeline/crowdsale/Crowdsale.sol';
 import "@openzeppelin/zeppeline/utils/ReentrancyGuard.sol";

@@ -1,4 +1,4 @@
-pragma solidity ^0.6.0;
+pragma solidity ^0.8.0;
 
 import "../../../node_modules/@openzeppelin/contracts/token/ERC721/extensions/ERC721Enumerable.sol";
 //import '../../../node_modules/@openzeppelin/contracts/token/ERC721/extensions/ERC721Mintable.sol';
