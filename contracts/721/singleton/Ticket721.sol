@@ -1,8 +1,8 @@
 pragma solidity ^0.6.0;
 
-import '@openzeppelin/zeppeline/token/ERC721/ERC721Enumerable.sol';
-import '@openzeppelin/zeppeline/token/ERC721/ERC721Mintable.sol';
-import "@openzeppelin/zeppeline/drafts/Counters.sol";
+import "../../../node_modules/@openzeppelin/contracts/token/ERC721/extensions/ERC721Enumerable.sol";
+import '../../../node_modules/@openzeppelin/contracts/token/ERC721/extensions/ERC721Mintable.sol';
+import "../../../node_modules/@openzeppelin/contracts/utils/Counters.sol";
 
 
 

@@ -1,0 +1,32 @@
+{
+  "name": "universalnftmarketplace",
+  "version": "1.0.0",
+  "description": "universal nft marketplace protocol",
+  "main": "truffle-config.js",
+  "directories": {
+    "test": "test"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/MoonSHRD/UniversalNFTMarketplace.git"
+  },
+  "keywords": [
+    "nft",
+    "ethereum",
+    "marketplace",
+    "solidity"
+  ],
+  "author": "Sergey Ponomarev",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/MoonSHRD/UniversalNFTMarketplace/issues"
+  },
+  "homepage": "https://github.com/MoonSHRD/UniversalNFTMarketplace#readme",
+  "dependencies": {
+    "@openzeppelin/contracts": "^4.1.0",
+    "truffle": "^5.3.10"
+  }
+}
