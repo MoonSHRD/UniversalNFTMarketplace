@@ -1,11 +1,11 @@
 pragma solidity ^0.8.0;
 
-import '@openzeppelin/zeppeline/crowdsale/Crowdsale.sol';
-import "@openzeppelin/zeppeline/utils/ReentrancyGuard.sol";
-import "@openzeppelin/zeppeline/math/SafeMath.sol";
-import "@openzeppelin/zeppeline/GSN/Context.sol";
-import "@openzeppelin/zeppeline/token/ERC721/IERC721Enumerable.sol";
-import "@openzeppelin/zeppeline/drafts/Counters.sol";
+import '../../../node_modules/@openzeppelin/zeppeline/crowdsale/Crowdsale.sol';
+import "../../../node_modules/@openzeppelin/contracts/utils/ReentrancyGuard.sol";
+import "../../../node_modules/@openzeppelin/contracts/math/SafeMath.sol";
+import "../../../node_modules/@openzeppelin/contracts/GSN/Context.sol";
+import "../../../node_modules/@openzeppelin/contracts/token/ERC721/IERC721Enumerable.sol";
+import "../../../node_modules/@openzeppelin/contracts/drafts/Counters.sol";
 
 import './Ticket721.sol';
 
@@ -101,7 +101,7 @@ contract TokenSale721 is Context, ReentrancyGuard {
      * of 2300, which is not enough to call buyTokens. Consider calling
      * buyTokens directly when purchasing tokens from a contract.
      */
-    function() external payable {
+    fallback() external payable {
         buyTokens(_msgSender());
     }
 

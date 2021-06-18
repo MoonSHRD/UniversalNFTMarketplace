@@ -29,7 +29,7 @@ function buyTicket(address buyer) public payable {
 }
 
 // fallback
-function() external payable {
+fallback() external payable {
         buyTicket(_msgSender());
     }
 
