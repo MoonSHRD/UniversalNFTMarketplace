@@ -1,7 +1,7 @@
 pragma solidity ^0.6.0;
 
 import "../../../node_modules/@openzeppelin/contracts/token/ERC721/extensions/ERC721Enumerable.sol";
-import '../../../node_modules/@openzeppelin/contracts/token/ERC721/extensions/ERC721Mintable.sol';
+//import '../../../node_modules/@openzeppelin/contracts/token/ERC721/extensions/ERC721Mintable.sol';
 import "../../../node_modules/@openzeppelin/contracts/utils/Counters.sol";
 
 
@@ -38,7 +38,7 @@ import "../../../node_modules/@openzeppelin/contracts/utils/Counters.sol";
 
  **/
 
-contract Ticket721 is ERC721Enumerable, ERC721Mintable {
+contract Ticket721 is ERC721Enumerable {
    using SafeMath for uint256;
    using Counters for Counters.Counter;
 
