@@ -1,6 +1,6 @@
 pragma solidity ^0.8.0;
 
-import '../../../node_modules/@openzeppelin/zeppeline/crowdsale/Crowdsale.sol';
+import './crowdsale/Crowdsale.sol';
 import "../../../node_modules/@openzeppelin/contracts/security/ReentrancyGuard.sol";
 import "../../../node_modules/@openzeppelin/contracts/utils/math/SafeMath.sol";
 import "../../../node_modules/@openzeppelin/contracts/utils/Context.sol";
