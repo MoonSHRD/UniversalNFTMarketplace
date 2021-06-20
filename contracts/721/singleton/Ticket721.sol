@@ -1,8 +1,7 @@
 pragma solidity ^0.8.0;
 
-//import "../../../node_modules/@openzeppelin/contracts/token/ERC721/extensions/ERC721Enumerable.sol";
-//import '../../../node_modules/@openzeppelin/contracts/token/ERC721/extensions/ERC721Mintable.sol';
-import "../../../node_modules/@openzeppelin/contracts/token/ERC721/presets/ERC721PresetMinterPauserAutoId.sol";
+import "../../../node_modules/@openzeppelin/contracts/token/ERC721/extensions/ERC721Enumerable.sol";
+//import "../../../node_modules/@openzeppelin/contracts/token/ERC721/presets/ERC721PresetMinterPauserAutoId.sol";
 import "../../../node_modules/@openzeppelin/contracts/utils/Counters.sol";
 import "../../../node_modules/@openzeppelin/contracts/utils/math/SafeMath.sol";
 
@@ -40,7 +39,7 @@ import "../../../node_modules/@openzeppelin/contracts/utils/math/SafeMath.sol";
 
  **/
 
-contract Ticket721 is ERC721PresetMinterPauserAutoId {
+contract Ticket721 is ERC721Enumerable {
    using SafeMath for uint256;
    using Counters for Counters.Counter;
 

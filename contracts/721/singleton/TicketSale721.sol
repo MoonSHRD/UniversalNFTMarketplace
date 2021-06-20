@@ -29,9 +29,12 @@ function buyTicket(address buyer) public payable {
 }
 
 // fallback
+/*
 fallback() external payable {
         buyTicket(_msgSender());
     }
+*/
+
 
 // deprecated
 /*
@@ -54,6 +57,8 @@ function getScannedTicketsCount() public view  returns(uint)  {
     return st;
 }
 
+
+/*
 function refundTicket(uint256 token_id) public {
     Ticket721 ticket_token = super.token();
     uint256 event_id = super.event_id();
@@ -72,5 +77,6 @@ function refundTicket(uint256 token_id) public {
         }
 
 }
+*/
 
 }

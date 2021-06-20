@@ -7,7 +7,7 @@ pragma solidity ^0.8.0;
 
 import './Ticket721.sol';
 import './TicketSale721.sol';
-import './TicketSalePluggable.sol';
+//import './TicketSalePluggable.sol';
 
 
 
@@ -42,7 +42,7 @@ function createTicket721() internal returns (address ticket_address) {
 }
 
 
-function createTicketSale721(address payable organizer, uint price, Ticket721 token,uint sale_limit, string memory jid,uint timeToStart) internal returns(address payable ticket_sale) {
+function createTicketSale721(address payable organizer, uint price, Ticket721 token,uint sale_limit, string memory jid,uint timeToStart) internal returns(address ticket_sale) {
     // calculate price
     uint256 cena = calculateRate(price);
 
@@ -50,7 +50,7 @@ function createTicketSale721(address payable organizer, uint price, Ticket721 to
     return ticket_sale;
 }
 
-function createTicketSale(address payable organizer, uint price, string memory event_JID, uint sale_limit, uint timeToStart) public returns (address payable ticket_sale_adr, uint256 event_id) {
+function createTicketSale(address payable organizer, uint price, string memory event_JID, uint sale_limit, uint timeToStart) public returns (address ticket_sale_adr, uint256 event_id) {
 
     address ticket_adr = ticket_template;
     require(events_jids[event_JID] == 0, "sale with this JID is already created!");
@@ -68,7 +68,7 @@ function createTicketSale(address payable organizer, uint price, string memory e
 
 }
 
-
+/*
 function PlugInTicketSale(address payable origin_sale, uint price, uint _sale_limit) public returns(address payable plugin_sale) {
     uint cena = calculateRate(price);
     plugin_sale = address(new TicketSalePluggable(cena,origin_sale, _sale_limit,treasure_fund));
@@ -80,6 +80,7 @@ function PlugInTicketSale(address payable origin_sale, uint price, uint _sale_li
     emit PluggedSaleHuman(msg.sender, origin_sale, event_id, ticket_type);
     return plugin_sale;
 }
+*/
 
 function calculateRate (uint256 price) internal pure returns (uint256 rate_p) {
     // rate = price * 1 eth

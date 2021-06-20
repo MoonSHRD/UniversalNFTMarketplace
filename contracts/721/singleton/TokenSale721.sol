@@ -51,7 +51,7 @@ contract TokenSale721 is Context, ReentrancyGuard {
     uint public percent_fee = 5;
 
     // Creation date
-    uint public crDate = now;
+    uint public crDate = block.timestamp;
 
     // How much time before event start (in seconds)
     uint public _timeToStart;
@@ -280,7 +280,7 @@ contract TokenSale721 is Context, ReentrancyGuard {
     // WithDraw locked funds to organiser
     function withDrawFunds() public {
         require(msg.sender == _wallet, "only organaizer can do it");
-        if (now >= crDate - _timeToStart) {
+        if (block.timestamp >= crDate - _timeToStart) {
             _wallet.transfer(lockedFunds);
             lockedFunds = 0;
         } else {
