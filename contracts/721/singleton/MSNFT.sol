@@ -1,6 +1,7 @@
 pragma solidity ^0.8.0;
 
 import "../../../node_modules/@openzeppelin/contracts/token/ERC721/extensions/ERC721Enumerable.sol";
+import "../../../node_modules/@openzeppelin/contracts/token/ERC721/ERC721.sol";
 //import "../../../node_modules/@openzeppelin/contracts/token/ERC721/presets/ERC721PresetMinterPauserAutoId.sol";
 import "../../../node_modules/@openzeppelin/contracts/utils/Counters.sol";
 import "../../../node_modules/@openzeppelin/contracts/utils/math/SafeMath.sol";
@@ -39,7 +40,7 @@ import "../../../node_modules/@openzeppelin/contracts/utils/math/SafeMath.sol";
 
  **/
 
-contract Ticket721 is ERC721Enumerable {
+contract MSNFT is ERC721Enumerable {
    using SafeMath for uint256;
    using Counters for Counters.Counter;
 
@@ -93,7 +94,7 @@ contract Ticket721 is ERC721Enumerable {
 
 
     //FIXME: invoke constructor from 721(?)
-    constructor() public {
+    constructor(string memory name_, string memory smbl_) ERC721(name_,smbl_) ERC721Enumerable() {
       //  _addMinter(address(this));
     }
 

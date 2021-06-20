@@ -5,7 +5,7 @@ pragma solidity ^0.8.0;
 // TODO: replace contracts to interfaces cause of gas limit
 // FIXME: this contract required for 7m gas limit -- which is more than standart 6m in ethereum networks. We should consider that when deployment
 
-import './Ticket721.sol';
+import './MSNFT.sol';
 import './TicketSale721.sol';
 //import './TicketSalePluggable.sol';
 
@@ -28,21 +28,23 @@ event PluggedSaleHuman(address organizer, address original_sale, uint256 event_i
 mapping (string => uint256) events_jids;
 
 
-constructor(address _ticket, address payable _treasure_fund) public {
-   // ticket_template = createTicket721();
+constructor(address _ticket, address payable _treasure_fund)  {
+   // ticket_template = createMSNFT();
    ticket_template = _ticket;
    treasure_fund = _treasure_fund;
 }
 
 
-function createTicket721() internal returns (address ticket_address) {
+function createMSNFT() internal returns (address ticket_address) {
  //  address factory_address = address(this);
-   ticket_address = address(new Ticket721());
+   string memory name_ = "MoonShardNFT";
+   string memory smbl_ = "MSNFT";
+   ticket_address = address(new MSNFT(name_,smbl_));
    return ticket_address;
 }
 
 
-function createTicketSale721(address payable organizer, uint price, Ticket721 token,uint sale_limit, string memory jid,uint timeToStart) internal returns(address ticket_sale) {
+function createTicketSale721(address payable organizer, uint price, MSNFT token,uint sale_limit, string memory jid,uint timeToStart) internal returns(address ticket_sale) {
     // calculate price
     uint256 cena = calculateRate(price);
 
@@ -54,7 +56,7 @@ function createTicketSale(address payable organizer, uint price, string memory e
 
     address ticket_adr = ticket_template;
     require(events_jids[event_JID] == 0, "sale with this JID is already created!");
-    Ticket721 ticket = Ticket721(ticket_adr);
+    MSNFT ticket = MSNFT(ticket_adr);
     ticket_sale_adr = createTicketSale721(organizer, price, ticket,sale_limit, event_JID, timeToStart);
     TicketSale721 ticket_sale = TicketSale721(ticket_sale_adr);
 
