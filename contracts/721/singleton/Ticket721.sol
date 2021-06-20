@@ -1,8 +1,10 @@
 pragma solidity ^0.8.0;
 
-import "../../../node_modules/@openzeppelin/contracts/token/ERC721/extensions/ERC721Enumerable.sol";
+//import "../../../node_modules/@openzeppelin/contracts/token/ERC721/extensions/ERC721Enumerable.sol";
 //import '../../../node_modules/@openzeppelin/contracts/token/ERC721/extensions/ERC721Mintable.sol';
+import "../../../node_modules/@openzeppelin/contracts/token/ERC721/presets/ERC721PresetMinterPauserAutoId.sol";
 import "../../../node_modules/@openzeppelin/contracts/utils/Counters.sol";
+import "../../../node_modules/@openzeppelin/contracts/utils/math/SafeMath.sol";
 
 
 
@@ -38,7 +40,7 @@ import "../../../node_modules/@openzeppelin/contracts/utils/Counters.sol";
 
  **/
 
-contract Ticket721 is ERC721Enumerable {
+contract Ticket721 is ERC721PresetMinterPauserAutoId {
    using SafeMath for uint256;
    using Counters for Counters.Counter;
 
@@ -96,15 +98,17 @@ contract Ticket721 is ERC721Enumerable {
       //  _addMinter(address(this));
     }
 
+    /*
     // FIXME: approve for ticketsale, not factory
     function setApprovalForEvent(address _owner, address ticketsale) internal{
         bool approved;
-        _operatorApprovals[_owner][ticketsale] = approved;
+        super._operatorApprovals[_owner][ticketsale] = approved;
         emit ApprovalForAll(_owner, ticketsale, approved);
     }
+    */
 
     function _transferFromTicket(address from, address to, uint256 tokenId) public {
-        super._transferFrom(from, to, tokenId);
+        super.safeTransferFrom(from, to, tokenId);
     }
 
     // TODO - check for event_id already existed
@@ -115,7 +119,8 @@ contract Ticket721 is ERC721Enumerable {
         eventsales[event_id].push(msg.sender);
         retailers[msg.sender] = orginizer;
         JIDs[event_id] = jid;
-        _addMinter(msg.sender);
+        // Roles for minting has been removed in zeppeline 0.8.0 erc721
+        //_addMinter(msg.sender);
         emit EventIdReserved(msg.sender,event_id);
         emit EventIdReservedHuman(msg.sender,event_id);
         return event_id;
@@ -147,7 +152,7 @@ contract Ticket721 is ERC721Enumerable {
             ticketIds[event_id].push(ticket_id);
             // approve for ticketsale (msg.sender = ticketsale)
           //  approve(msg.sender, ticket_id);
-            setApprovalForEvent(buyer,msg.sender);
+         //   setApprovalForEvent(buyer,msg.sender);
             emit TicketBought(buyer,event_id,ticket_id);
             emit TicketBoughtHuman(buyer,event_id,ticket_id);
         }
@@ -217,10 +222,22 @@ contract Ticket721 is ERC721Enumerable {
         return ticket_type;
     }
 
+
+//                  FIXME: fix get items of owner
+/*
+  //  Gets the list of token IDs of the requested owner.
+     function _tokensOfOwner(address owner) internal view returns (uint256[] storage) {
+        return super._ownedTokens[owner];
+    }
+
+
+
     function getTicketByOwner(address _owner) public view returns(uint256[] memory) {
         uint256[] storage tickets = _tokensOfOwner(_owner);
         return tickets;
     }
+*/
+
 
     function getTicketSales(uint256 event_id) public view returns(address[] memory) {
         address[] memory sales = eventsales[event_id];
