@@ -97,6 +97,7 @@ contract TokenSale721 is Context, ReentrancyGuard {
      * @param wallet Address where collected funds will be forwarded to
      * @param token Address of the token being sold
      */
+     // TODO: price calculation (?)
     constructor (uint256 rate, address payable wallet, MSNFT token, uint sale_limit, string memory jid, address payable _treasure_fund,uint timeToStart)  {
         require(rate > 0, "Crowdsale: rate is 0");
         require(wallet != address(0), "Crowdsale: wallet is the zero address");
