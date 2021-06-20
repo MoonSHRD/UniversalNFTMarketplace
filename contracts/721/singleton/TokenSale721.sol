@@ -1,11 +1,11 @@
 pragma solidity ^0.8.0;
 
 import '../../../node_modules/@openzeppelin/zeppeline/crowdsale/Crowdsale.sol';
-import "../../../node_modules/@openzeppelin/contracts/utils/ReentrancyGuard.sol";
-import "../../../node_modules/@openzeppelin/contracts/math/SafeMath.sol";
-import "../../../node_modules/@openzeppelin/contracts/GSN/Context.sol";
-import "../../../node_modules/@openzeppelin/contracts/token/ERC721/IERC721Enumerable.sol";
-import "../../../node_modules/@openzeppelin/contracts/drafts/Counters.sol";
+import "../../../node_modules/@openzeppelin/contracts/security/ReentrancyGuard.sol";
+import "../../../node_modules/@openzeppelin/contracts/utils/math/SafeMath.sol";
+import "../../../node_modules/@openzeppelin/contracts/utils/Context.sol";
+import "../../../node_modules/@openzeppelin/contracts/token/ERC721/extensions/IERC721Enumerable.sol";
+import "../../../node_modules/@openzeppelin/contracts/utils/Counters.sol";
 
 import './Ticket721.sol';
 
