@@ -1,6 +1,6 @@
-pragma solidity ^0.5.0;
+pragma solidity ^0.8.0;
 
-import "../../math/SafeMath.sol";
+import "../../../../../node_modules/@openzeppelin/contracts/utils/math/SafeMath.sol";
 import "../validation/TimedCrowdsale.sol";
 
 /**

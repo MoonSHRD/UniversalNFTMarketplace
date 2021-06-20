@@ -1,9 +1,9 @@
-pragma solidity ^0.5.0;
+pragma solidity ^0.8.0;
 
-import "../../GSN/Context.sol";
-import "../../math/SafeMath.sol";
+import "../../../../../node_modules/@openzeppelin/contracts/utils/Context.sol";
+import "../../../../../node_modules/@openzeppelin/contracts/utils/math/SafeMath.sol";
 import "./FinalizableCrowdsale.sol";
-import "../../payment/escrow/RefundEscrow.sol";
+import "../../../../../node_modules/@openzeppelin/contracts/utils/escrow/RefundEscrow.sol";
 
 /**
  * @title RefundableCrowdsale

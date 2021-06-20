@@ -1,12 +1,13 @@
-pragma solidity ^0.5.11;
+pragma solidity ^0.8.0;
 
-import "../GSN/Context.sol";
-import "../token/ERC20/IERC20.sol";
-import "../math/SafeMath.sol";
-import "../token/ERC20/SafeERC20.sol";
-import "../utils/ReentrancyGuard.sol";
+import "../../../../node_modules/@openzeppelin/contracts/utils/Context.sol";
+import "../../../../node_modules/@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import "../../../../node_modules/@openzeppelin/contracts/utils/math/SafeMath.sol";
+import "../../../../node_modules/@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
+import "../../../../node_modules/@openzeppelin/contracts/security/ReentrancyGuard.sol";
 
 /**
+ *                      FORKED FROM ZEPPEILINE v2
  * @title Crowdsale
  * @dev Crowdsale is a base contract for managing a token crowdsale,
  * allowing investors to purchase tokens with ether. This contract implements
