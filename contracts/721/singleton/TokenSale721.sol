@@ -29,6 +29,9 @@ contract TokenSale721 is Context, ReentrancyGuard {
     // ticket type
     uint public _ticket_type = 1;
 
+    // rarity type
+    MSNFT.RarityType _rarity_type;
+
     // maximum amount of tickets to sale
    // Counters.Counter public _current_limit;
     uint _sale_limit;
@@ -118,6 +121,7 @@ contract TokenSale721 is Context, ReentrancyGuard {
         treasure_fund = _treasure_fund;
         _token = token;
         _sale_limit = sale_limit;
+        _rarity_type = set_rarity(sale_limit);
 
         _event_id = _token.reserveEventId(_wallet,jid);
 
@@ -188,6 +192,41 @@ contract TokenSale721 is Context, ReentrancyGuard {
         return _currencys[currency];
     }
 
+
+
+    function set_rarity(uint sl) private {
+        // only one token exist
+        if (sl == 1) {
+            _rarity_type = MSNFT.RarityType.Unique;
+        }
+        // Unlimited sale
+        if (sl == 0) {
+            _rarity_type = MSNFT.RarityType.Common;
+        } else {
+            // Limited sale
+            _rarity_type = MSNFT.RarityType.Rare;
+        }
+
+    }
+
+    function get_rarity() public view returns (MSNFT.RarityType) {
+        return _rarity_type;
+    }
+
+    function check_sale_limit(uint256 amountToBuy) public view returns (bool) {
+        uint sl = sale_limit();
+        if (sl == 0){
+            return true;
+        }
+        if (sl == 1) {
+            require(amountToBuy == 1);
+            return true;
+        } else {
+            require(amountToBuy <= sl);
+            return true;
+        }
+    }
+
     // BUY TOKENS FOR ETHER/COIN (DEPRECATED)
     /**
      * @dev low level token purchase ***DO NOT OVERRIDE***
@@ -228,7 +267,14 @@ contract TokenSale721 is Context, ReentrancyGuard {
 
         // update state
         currency_balances[currency] = currency_balances[currency].add(weiAmount);
+       
+       // If it is unlimited sale then _sale_limit and _sold_count should be always 0
+       if (_sale_limit == 0) {
+           _sold_count = 0;
+       } else {
         _sold_count = _sold_count.add(tokens);
+       }
+        
 
         _processPurchase(beneficiary, tokens,currency, weiAmount);
         emit TokensPurchased(_msgSender(), beneficiary, weiAmount, tokens);
@@ -256,10 +302,13 @@ contract TokenSale721 is Context, ReentrancyGuard {
         require(weiAmount != 0, "Crowdsale: weiAmount is 0");
         uint sc = _sold_count;
 
+
       
 
-        uint limit = sc + tokens;
-        require(limit <= _sale_limit, "tokens amount should not exceed sale_limit");
+      //  uint limit = sc + tokens;
+     //   require(limit <= _sale_limit, "tokens amount should not exceed sale_limit");
+        require(check_sale_limit(tokens) == true, "tokens amount should not exceed sale_limit");
+
 
      // Check allowance of currency balance
         IERC20 currency_token = get_currency(currency);

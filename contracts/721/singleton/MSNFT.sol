@@ -60,6 +60,12 @@ contract MSNFT is ERC721Enumerable {
     // Ticket lifecycle
     enum TicketState {Non_Existed, Paid, Fulfilled, Cancelled}
 
+    // Rarity type
+    // Unique -- the one
+    // Rare -- limited
+    // Common -- unlimited
+    enum RarityType {Unique, Rare, Common}
+
     // map from event id to ticketsale address
     // TIP: ticket type = array.length
     mapping(uint256 => address[]) public eventsales;
@@ -83,6 +89,7 @@ contract MSNFT is ERC721Enumerable {
     //string description;
     //uint price;
     TicketState state;
+    RarityType rarity;
    // Counters.Counter ticket_type;
     uint ticket_type;
     string event_JID;
@@ -147,7 +154,7 @@ contract MSNFT is ERC721Enumerable {
 
             _mint(buyer,ticket_id);
             string memory jid = getJidbyEventID(event_id);
-            ticketInfoStorage[ticket_id] = TicketInfo(TicketState.Paid,_ticket_type, jid,_sale);
+            ticketInfoStorage[ticket_id] = TicketInfo(TicketState.Paid,RarityType.State,_ticket_type, jid,_sale);
             ticketIndex[ticket_id] = ticketIds[event_id].length;
             ticketIds[event_id].push(ticket_id);
             // approve for ticketsale (msg.sender = ticketsale)
@@ -190,6 +197,9 @@ contract MSNFT is ERC721Enumerable {
     */
 
 
+/*          Deprecated as there are no Tickets anymore.
+            Can be revived if there are a need for 'expiration' mode
+
      function redeemTicket(address visitor, uint256 tokenId, uint256 event_id) public{
         address[] memory _sales = eventsales[event_id];
         TicketInfo memory info = ticketInfoStorage[tokenId];
@@ -215,6 +225,7 @@ contract MSNFT is ERC721Enumerable {
         ticketInfoStorage[tokenId] = info;
         return true;
     }
+    */
 
     function getTicketTypeCount(uint256 event_id) public view returns(uint) {
         address[] memory _sales = eventsales[event_id];
