@@ -9,7 +9,7 @@ using Counters for Counters.Counter;
 
 Counters.Counter scanned_tickets;
 
-constructor(uint256 rate, address payable wallet, MSNFT token, uint sale_limit, string memory jid, address payable _treasure_fund, uint timeToStart) TokenSale721(rate,wallet,token, sale_limit, jid, _treasure_fund, timeToStart)  {}
+constructor(address payable wallet, MSNFT token, uint sale_limit, string memory jid, address payable _treasure_fund, uint timeToStart, uint256 sprice, CurrencyERC20 _currency) TokenSale721(wallet,token, sale_limit, jid, _treasure_fund, timeToStart, sprice, _currency)  {}
 
 
 /**

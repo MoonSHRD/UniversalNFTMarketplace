@@ -51,7 +51,7 @@ contract TokenSale721 is Context, ReentrancyGuard {
    // uint256 private _price;
 
     // Supported erc20 currencies: .. to be extended
-    enum CurrencyERC20 {USDT, USDC, SNM }
+    enum CurrencyERC20 {USDT, USDC, SNM } 
 
     // Map from currency to price
     mapping (CurrencyERC20 => uint256) public _price;
@@ -90,7 +90,7 @@ contract TokenSale721 is Context, ReentrancyGuard {
 
 
     /**
-     * @param rate Number of token units a buyer gets per wei
+     *  rate Number of token units a buyer gets per wei
      * @dev The rate is the conversion between wei and the smallest and indivisible
      * token unit. So, if you are using a rate of 1 with a ERC20Detailed token
      * with 3 decimals called TOK, 1 wei will give you 1 unit, or 0.001 TOK.
@@ -98,12 +98,22 @@ contract TokenSale721 is Context, ReentrancyGuard {
      * @param token Address of the token being sold
      */
      // TODO: price calculation (?)
-    constructor (uint256 rate, address payable wallet, MSNFT token, uint sale_limit, string memory jid, address payable _treasure_fund,uint timeToStart)  {
-        require(rate > 0, "Crowdsale: rate is 0");
+    constructor (address payable wallet, MSNFT token, uint sale_limit, string memory jid, address payable _treasure_fund,uint timeToStart, uint256 sprice, CurrencyERC20 _currency)  {
+     //   require(rate > 0, "Crowdsale: rate is 0");
         require(wallet != address(0), "Crowdsale: wallet is the zero address");
         require(address(token) != address(0), "Crowdsale: token is the zero address");
 
-        _rate = rate;
+     //   _rate = rate;
+
+        // Check if stable
+        if (_currency == CurrencyERC20.USDT || _currency == CurrencyERC20.USDC) {
+           // _price[_currency] = sprice;
+            _price[CurrencyERC20.USDT] = sprice;
+            _price[CurrencyERC20.USDT] = sprice;
+        } else {
+            _price[_currency] = sprice;
+        }
+
         _wallet = wallet;
         treasure_fund = _treasure_fund;
         _token = token;
@@ -308,9 +318,10 @@ contract TokenSale721 is Context, ReentrancyGuard {
      * @dev Override to extend the way in which ether is converted to tokens.
      * @param weiAmount Value in wei to be converted into tokens
      * @return Number of tokens that can be purchased with the specified _weiAmount
+     *                  DEPRECATED
      */
     function _getTokenAmount(uint256 weiAmount) internal view returns (uint256) {
-      //  require(condition, message);
+      
         require(weiAmount >= _rate, "wei amount should be bigger or equal of rate");
        // uint256 ta = SafeMath.mul(weiAmount, _rate);
         uint256 ta = (weiAmount / (1 ether)) / (_rate / (1 ether));
@@ -430,8 +441,15 @@ contract TokenSale721 is Context, ReentrancyGuard {
         return a4;
     }
 
+/*
+    function calculatePrice(uint256 price, CurrencyERC20 currency) public view returns(uint256) {
+        // Check if stable
+        if (currency == CurrencyERC20.USDT || currency == CurrencyERC20.USDC) {
 
+        }
 
+    }
+*/
 
 
 }
