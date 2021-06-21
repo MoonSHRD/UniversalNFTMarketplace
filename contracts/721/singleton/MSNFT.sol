@@ -128,6 +128,11 @@ contract MSNFT is ERC721Enumerable {
         JIDs[event_id] = jid;
         // Roles for minting has been removed in zeppeline 0.8.0 erc721
         //_addMinter(msg.sender);
+
+        // Rarity set
+        
+
+
         emit EventIdReserved(msg.sender,event_id);
         emit EventIdReservedHuman(msg.sender,event_id);
         return event_id;
