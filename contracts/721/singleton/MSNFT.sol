@@ -45,17 +45,23 @@ contract MSNFT is ERC721Enumerable {
    using Counters for Counters.Counter;
 
 
+
+    // Master -- Mastercopy, abstraction
+    // Item -- originate from mastercopy (nft-token)
+
+
+
     //events
-    event TicketBought(address indexed visitor_wallet,uint256 indexed event_id, uint256 indexed ticket_id);
-    event TicketBoughtHuman(address visitor_wallet,uint256 event_id, uint256 ticket_id);
-    event TicketFulfilled(address indexed visitor_wallet,uint256 indexed event_id, uint256 indexed ticket_id);   // FIXME: add date to event?
-    event TicketFulfilledHuman(address visitor_wallet,uint256 event_id, uint256 ticket_id);
-    event EventIdReserved(address indexed ticket_sale, uint256 indexed event_id);
-    event EventIdReservedHuman(address ticket_sale, uint256 event_id);
+    event ItemBought(address indexed visitor_wallet,uint256 indexed event_id, uint256 indexed ticket_id);
+    event ItemBoughtHuman(address visitor_wallet,uint256 event_id, uint256 ticket_id);
+ //   event TicketFulfilled(address indexed visitor_wallet,uint256 indexed event_id, uint256 indexed ticket_id);   // FIXME: add date to event?
+   // event TicketFulfilledHuman(address visitor_wallet,uint256 event_id, uint256 ticket_id);
+    event MasterIdReserved(address indexed ticket_sale, uint256 indexed event_id);
+    event MasterIdReservedHuman(address ticket_sale, uint256 event_id);
 
     // Global counters for ticket_id and event_id
-    Counters.Counter _ticket_id_count;
-    Counters.Counter _event_id_count;
+    Counters.Counter _item_id_count;
+    Counters.Counter _master_id_count;
 
     // Ticket lifecycle
     enum TicketState {Non_Existed, Paid, Fulfilled, Cancelled}
@@ -68,13 +74,13 @@ contract MSNFT is ERC721Enumerable {
 
     // map from event id to ticketsale address
     // TIP: ticket type = array.length
-    mapping(uint256 => address[]) public eventsales;
+    mapping(uint256 => address[]) public mastersales;
     // map from event id to ticket ids
-    mapping (uint256 => uint256[]) public ticketIds;
+    mapping (uint256 => uint256[]) public itemIds;
     // map fron token ID to its index in ticketIds
-    mapping (uint256 => uint256) ticketIndex;
+    mapping (uint256 => uint256) itemIndex;
     // map from ticket id to ticket info
-    mapping (uint256 => TicketInfo) public ticketInfoStorage;
+    mapping (uint256 => ItemInfo) public itemInfoStorage;
     // map from sale address to organizer
     mapping(address => address) retailers;
     // map from event id to event JID
@@ -85,7 +91,7 @@ contract MSNFT is ERC721Enumerable {
    * Ticket information
    */
 
-    struct TicketInfo {
+    struct ItemInfo {
     //string description;
     //uint price;
     TicketState state;
@@ -100,7 +106,7 @@ contract MSNFT is ERC721Enumerable {
 
 
 
-    //FIXME: invoke constructor from 721(?)
+    
     constructor(string memory name_, string memory smbl_) ERC721(name_,smbl_) ERC721Enumerable() {
       //  _addMinter(address(this));
     }
@@ -119,25 +125,26 @@ contract MSNFT is ERC721Enumerable {
     }
 
     // TODO - check for event_id already existed
-    function reserveEventId(address orginizer, string memory jid) public returns(uint256 event_id){
-        _event_id_count.increment();
-        event_id = _event_id_count.current();
+    function reserveMasterId(address orginizer, string memory jid) public returns(uint256 master_id){
+        _master_id_count.increment();
+         master_id = _master_id_count.current();
       //  eventsales[event_id] = msg.sender;
-        eventsales[event_id].push(msg.sender);
+        mastersales[master_id].push(msg.sender);
         retailers[msg.sender] = orginizer;
-        JIDs[event_id] = jid;
+        JIDs[master_id] = jid;
         // Roles for minting has been removed in zeppeline 0.8.0 erc721
         //_addMinter(msg.sender);
 
         // Rarity set
-        
 
 
-        emit EventIdReserved(msg.sender,event_id);
-        emit EventIdReservedHuman(msg.sender,event_id);
-        return event_id;
+
+        emit MasterIdReserved(msg.sender,master_id);
+        emit MasterIdReservedHuman(msg.sender,master_id);
+        return master_id;
     }
 
+/*
     // plug additional sale for selling different types of ticket by one event
     function plugSale(uint256 event_id, address orginizer) public returns(uint) {
         address[] memory _sales = eventsales[event_id];
@@ -147,26 +154,27 @@ contract MSNFT is ERC721Enumerable {
         uint type_count = getTicketTypeCount(event_id);
         return type_count;
     }
+    */
 
     //TODO - return ticketIDs(?)
-    function buyTicket(address buyer, uint256 ticketAmount, uint256 event_id, uint _ticket_type) public{
-        address[] memory _sales = eventsales[event_id];
+    function buyTicket(address buyer, uint256 itemAmount, uint256 master_id, uint _ticket_type) public{
+        address[] memory _sales = mastersales[master_id];
         address _sale = _sales[_ticket_type - 1]; // array start from 0
         require(_sale == msg.sender, "you should call buyTicket from ticketsale contract");
-        for (uint256 i = 0; i < ticketAmount; i++ ){
-            _ticket_id_count.increment();
-            uint256 ticket_id = _ticket_id_count.current();
+        for (uint256 i = 0; i < itemAmount; i++ ){
+            _item_id_count.increment();
+            uint256 item_id = _item_id_count.current();
 
-            _mint(buyer,ticket_id);
-            string memory jid = getJidbyEventID(event_id);
-            ticketInfoStorage[ticket_id] = TicketInfo(TicketState.Paid,RarityType.State,_ticket_type, jid,_sale);
-            ticketIndex[ticket_id] = ticketIds[event_id].length;
-            ticketIds[event_id].push(ticket_id);
+            _mint(buyer,item_id);
+            string memory jid = getJidbyEventID(master_id);
+            itemInfoStorage[item_id] = ItemInfo(TicketState.Paid,RarityType.State,_ticket_type, jid,_sale);
+            itemIndex[item_id] = itemIds[master_id].length;
+            itemIds[master_id].push(item_id);
             // approve for ticketsale (msg.sender = ticketsale)
           //  approve(msg.sender, ticket_id);
          //   setApprovalForEvent(buyer,msg.sender);
-            emit TicketBought(buyer,event_id,ticket_id);
-            emit TicketBoughtHuman(buyer,event_id,ticket_id);
+            emit ItemBought(buyer,master_id,item_id);
+            emit ItemBoughtHuman(buyer,master_id,item_id);
         }
 
     }
@@ -232,12 +240,13 @@ contract MSNFT is ERC721Enumerable {
     }
     */
 
+/*
     function getTicketTypeCount(uint256 event_id) public view returns(uint) {
         address[] memory _sales = eventsales[event_id];
         uint ticket_type = _sales.length;
         return ticket_type;
     }
-
+*/
 
 //                  FIXME: fix get items of owner
 /*
@@ -255,24 +264,24 @@ contract MSNFT is ERC721Enumerable {
 */
 
 
-    function getTicketSales(uint256 event_id) public view returns(address[] memory) {
-        address[] memory sales = eventsales[event_id];
+    function getTicketSales(uint256 master_id) public view returns(address[] memory) {
+        address[] memory sales = mastersales[master_id];
         return sales;
     }
 
-    function getJidbyEventID(uint256 event_id) public view returns (string memory jid) {
-        jid = JIDs[event_id];
+    function getJidbyEventID(uint256 master_id) public view returns (string memory jid) {
+        jid = JIDs[master_id];
         return jid;
     }
 
-    function getJidByTicketId(uint ticket_id) public view returns (string memory jid) {
-        TicketInfo memory info = ticketInfoStorage[ticket_id];
+    function getJidByTicketId(uint item_id) public view returns (string memory jid) {
+        ItemInfo memory info = itemInfoStorage[item_id];
         jid = info.event_JID;
         return jid;
     }
 
-    function getTicketStatus(uint ticket_id) public view returns (TicketState status) {
-        TicketInfo memory info = ticketInfoStorage[ticket_id];
+    function getTicketStatus(uint item_id) public view returns (TicketState status) {
+        ItemInfo memory info = itemInfoStorage[item_id];
         status = info.state;
         return status;
     }
