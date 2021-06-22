@@ -87,6 +87,10 @@ contract MSNFT is ERC721Enumerable {
     mapping(uint256 => string) public JIDs;
 
 
+    // map from MasterCopyId to Meta info
+    mapping(uint256 => ItemInfo) public MetaInfo;
+
+
     /**
    * Ticket information
    */
@@ -125,9 +129,10 @@ contract MSNFT is ERC721Enumerable {
     }
 
     // TODO - check for event_id already existed
-    function reserveMasterId(address orginizer, string memory jid) public returns(uint256 master_id){
-        _master_id_count.increment();
-         master_id = _master_id_count.current();
+    function reserveMasterIdForSale(address orginizer, string memory jid) public returns(uint256 master_id){
+       
+        master_id = _reserveMasterId();
+
       //  eventsales[event_id] = msg.sender;
         mastersales[master_id].push(msg.sender);
         retailers[msg.sender] = orginizer;
@@ -139,9 +144,18 @@ contract MSNFT is ERC721Enumerable {
 
 
 
-        emit MasterIdReserved(msg.sender,master_id);
-        emit MasterIdReservedHuman(msg.sender,master_id);
+        
         return master_id;
+    }
+
+    function _reserveMasterId() internal returns(uint256 _master_id) {
+        _master_id_count.increment();
+        _master_id = _master_id_count.current();
+
+        emit MasterIdReserved(msg.sender,_master_id);
+        emit MasterIdReservedHuman(msg.sender,_master_id);
+
+        return _master_id;
     }
 
 /*
