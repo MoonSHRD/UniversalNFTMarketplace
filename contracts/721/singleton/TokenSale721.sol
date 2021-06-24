@@ -23,11 +23,11 @@ contract TokenSale721 is Context, ReentrancyGuard {
     // Interface to currency token
     IERC20 public _currency_token;
 
-    //event_id
-    uint256 public _event_id;
+    //master_id
+    uint256 public _master_id;
 
     // ticket type
-    uint public _ticket_type = 1;
+    //uint public _ticket_type = 1;
 
     // rarity type
     MSNFT.RarityType _rarity_type;
@@ -39,7 +39,7 @@ contract TokenSale721 is Context, ReentrancyGuard {
     uint public _sold_count = 0;
 
     // Address where funds are collected
-    address payable public _wallet;
+    address public _wallet;
 
     // Address where we collect comission
     address payable public treasure_fund;
@@ -101,7 +101,7 @@ contract TokenSale721 is Context, ReentrancyGuard {
      * @param token Address of the token being sold
      */
      // TODO: price calculation (?)
-    constructor (address payable wallet, MSNFT token, uint sale_limit, string memory jid, address payable _treasure_fund,uint timeToStart, uint256 sprice, CurrencyERC20 _currency)  {
+    constructor (address wallet, MSNFT token, uint sale_limit, address payable _treasure_fund,uint timeToStart, uint256 sprice, CurrencyERC20 _currency, uint256 c_master_id)  {
      //   require(rate > 0, "Crowdsale: rate is 0");
         require(wallet != address(0), "Crowdsale: wallet is the zero address");
         require(address(token) != address(0), "Crowdsale: token is the zero address");
@@ -120,10 +120,12 @@ contract TokenSale721 is Context, ReentrancyGuard {
         _wallet = wallet;
         treasure_fund = _treasure_fund;
         _token = token;
+        // TODO : check consistenty of salelimit, rarity and totalSupply between crowdsale and token
         _sale_limit = sale_limit;
-        _rarity_type = set_rarity(sale_limit);
 
-        _event_id = _token.reserveEventId(_wallet,jid);
+        _rarity_type = _token.get_rarity(c_master_id);
+
+        _master_id = c_master_id;
 
         _timeToStart = timeToStart;
     }
@@ -149,7 +151,7 @@ contract TokenSale721 is Context, ReentrancyGuard {
     /**
      * @return the address where funds are collected.
      */
-    function wallet() public view returns (address payable) {
+    function wallet() public view returns (address) {
         return _wallet;
     }
 
@@ -168,17 +170,20 @@ contract TokenSale721 is Context, ReentrancyGuard {
         return _weiRaised;
     }
 
-    function event_id() public view returns (uint256) {
-        return _event_id;
+    function master_id() public view returns (uint256) {
+        return _master_id;
     }
 
     function sale_limit() public view returns (uint) {
         return _sale_limit;
     }
 
+/*
     function ticket_type() public view returns (uint) {
         return _ticket_type;
     }
+*/
+
 
     function sold_count() public view returns (uint) {
         return _sold_count;
@@ -194,6 +199,7 @@ contract TokenSale721 is Context, ReentrancyGuard {
 
 
 
+/*
     function set_rarity(uint sl) private {
         // only one token exist
         if (sl == 1) {
@@ -212,6 +218,7 @@ contract TokenSale721 is Context, ReentrancyGuard {
     function get_rarity() public view returns (MSNFT.RarityType) {
         return _rarity_type;
     }
+    */
 
     function check_sale_limit(uint256 amountToBuy) public view returns (bool) {
         uint sl = sale_limit();
@@ -274,7 +281,7 @@ contract TokenSale721 is Context, ReentrancyGuard {
        } else {
         _sold_count = _sold_count.add(tokens);
        }
-        
+
 
         _processPurchase(beneficiary, tokens,currency, weiAmount);
         emit TokensPurchased(_msgSender(), beneficiary, weiAmount, tokens);
@@ -338,7 +345,7 @@ contract TokenSale721 is Context, ReentrancyGuard {
      * @param tokenAmount Number of tokens to be emitted
      */
     function _deliverTokens(address beneficiary, uint256 tokenAmount) internal {
-        _token.buyTicket(beneficiary,tokenAmount, _event_id, _ticket_type);
+        _token.buyTicket(beneficiary,tokenAmount, _master_id);
     }
 
     /**
