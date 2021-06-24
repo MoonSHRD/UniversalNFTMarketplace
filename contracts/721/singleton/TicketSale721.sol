@@ -9,7 +9,7 @@ contract TicketSale721 is TokenSale721 {
 
 //Counters.Counter scanned_tickets;
 
-constructor(address payable wallet, MSNFT token, uint sale_limit, string memory jid, address payable _treasure_fund, uint timeToStart, uint256 sprice, CurrencyERC20 _currency) TokenSale721(wallet,token, sale_limit, jid, _treasure_fund, timeToStart, sprice, _currency)  {}
+constructor(address wallet, MSNFT token, uint sale_limit, address payable _treasure_fund, uint timeToStart, uint256 sprice, CurrencyERC20 _currency, uint256 _master_id) TokenSale721(wallet,token, sale_limit, _treasure_fund, timeToStart, sprice, _currency, _master_id)  {}
 
 
 /**

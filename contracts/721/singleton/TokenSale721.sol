@@ -39,7 +39,7 @@ contract TokenSale721 is Context, ReentrancyGuard {
     uint public _sold_count = 0;
 
     // Address where funds are collected
-    address payable public _wallet;
+    address public _wallet;
 
     // Address where we collect comission
     address payable public treasure_fund;
@@ -101,7 +101,7 @@ contract TokenSale721 is Context, ReentrancyGuard {
      * @param token Address of the token being sold
      */
      // TODO: price calculation (?)
-    constructor (address payable wallet, MSNFT token, uint sale_limit, string memory jid, address payable _treasure_fund,uint timeToStart, uint256 sprice, CurrencyERC20 _currency, uint256 c_master_id)  {
+    constructor (address wallet, MSNFT token, uint sale_limit, address payable _treasure_fund,uint timeToStart, uint256 sprice, CurrencyERC20 _currency, uint256 c_master_id)  {
      //   require(rate > 0, "Crowdsale: rate is 0");
         require(wallet != address(0), "Crowdsale: wallet is the zero address");
         require(address(token) != address(0), "Crowdsale: token is the zero address");
@@ -151,7 +151,7 @@ contract TokenSale721 is Context, ReentrancyGuard {
     /**
      * @return the address where funds are collected.
      */
-    function wallet() public view returns (address payable) {
+    function wallet() public view returns (address) {
         return _wallet;
     }
 

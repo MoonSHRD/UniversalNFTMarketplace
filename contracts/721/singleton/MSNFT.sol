@@ -86,9 +86,15 @@ contract MSNFT is ERC721Enumerable {
     // map fron token ID to its index in itemIds
     mapping (uint256 => uint256) itemIndex;
     // map from item id to item info
-    mapping (uint256 => ItemInfo) public itemInfoStorage;  // TODO: -- we can remove it as item is a simulacr and all info we need we already have in MetaInfo
+    //mapping (uint256 => ItemInfo) public itemInfoStorage;  // TODO: -- we can remove it as item is a simulacr and all info we need we already have in MetaInfo
+    
     // map from sale address to organizer -- TODO: this can be double info from factory
     mapping(address => address) retailers;
+    
+    // map from masterId to author address
+    mapping(uint256 => address) public authors;
+
+
     // map from event id to event JID  TODO: Depracated, remove this
     mapping(uint256 => string) public JIDs;
 
@@ -190,6 +196,7 @@ contract MSNFT is ERC721Enumerable {
         uint256 mid = _reserveMasterId();
         RarityType _rarity = set_rarity(_supplyType);
         MetaInfo[mid] = ItemInfo(_description,_author,_rarity,0);
+        authors[mid] = _author;
         
         // TODO -- emit event about master copy creation?
 
@@ -225,6 +232,10 @@ contract MSNFT is ERC721Enumerable {
         return _rarity_type;
     }
 
+    function get_author(uint256 _masterId) public view returns (address _author) {
+        _author = authors[_masterId];
+        return _author;
+    }
 
 
 /*
