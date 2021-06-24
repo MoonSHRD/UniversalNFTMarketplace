@@ -180,7 +180,7 @@ contract MSNFT is ERC721Enumerable {
         return _master_id;
     }
 
-    function createMasterCopy(address _author ,string memory _description, uint256 _supplyType) public returns(uint256 master_copy_id){
+    function createMasterCopy(address _author ,string memory _description, uint256 _supplyType) public returns(uint256 c_master_id){
 
 
         // TODO
@@ -236,7 +236,7 @@ contract MSNFT is ERC721Enumerable {
     */
 
     //TODO - return ticketIDs(?)
-    function buyTicket(address buyer, uint256 itemAmount, uint256 master_id, uint _ticket_type) public{
+    function buyTicket(address buyer, uint256 itemAmount, uint256 master_id) public{
        // address[] memory _sales = mastersales[master_id];
        // address _sale = _sales[_ticket_type - 1]; // array start from 0
        address _sale = mastersales[master_id];
