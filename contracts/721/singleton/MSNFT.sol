@@ -69,7 +69,7 @@ contract MSNFT is ERC721Enumerable {
 
 
 
-    // Ticket lifecycle
+    // Ticket lifecycle TODO: Deprecated, delete this
     enum TicketState {Non_Existed, Paid, Fulfilled, Cancelled}
 
     // Rarity type
@@ -78,18 +78,18 @@ contract MSNFT is ERC721Enumerable {
     // Common -- unlimited
     enum RarityType {Unique, Rare, Common}
 
-    // map from event id to ticketsale address
+    // map from mastercopy_id  to itemsale address
     // TIP: ticket type = array.length
-    mapping(uint256 => address[]) public mastersales;
-    // map from event id to ticket ids
+    mapping(uint256 => address) public mastersales;
+    // map from master_id to item ids
     mapping (uint256 => uint256[]) public itemIds;
-    // map fron token ID to its index in ticketIds
+    // map fron token ID to its index in itemIds
     mapping (uint256 => uint256) itemIndex;
-    // map from ticket id to ticket info
-    mapping (uint256 => ItemInfo) public itemInfoStorage;
-    // map from sale address to organizer
+    // map from item id to item info
+    mapping (uint256 => ItemInfo) public itemInfoStorage;  // TODO: -- we can remove it as item is a simulacr and all info we need we already have in MetaInfo
+    // map from sale address to organizer -- TODO: this can be double info from factory
     mapping(address => address) retailers;
-    // map from event id to event JID
+    // map from event id to event JID  TODO: Depracated, remove this
     mapping(uint256 => string) public JIDs;
 
 
@@ -109,7 +109,8 @@ contract MSNFT is ERC721Enumerable {
   //  TicketState state;
     RarityType rarity;
    // Counters.Counter ticket_type;
-    uint ticket_type;
+  //  uint ticket_type;
+    uint circulated_supply;
   //  string event_JID;
   //  address sale_address;
   }
@@ -135,6 +136,7 @@ contract MSNFT is ERC721Enumerable {
         super.safeTransferFrom(from, to, tokenId);
     }
 
+    /* TODO: Deprecated, delete this
     // TODO - check for event_id already existed
     function reserveMasterIdForSale(address orginizer, string memory jid) public returns(uint256 master_id){
        
@@ -154,6 +156,7 @@ contract MSNFT is ERC721Enumerable {
         
         return master_id;
     }
+ */
 
     function PlugCrowdSale(address organizer, uint256 _masterId, address _sale) public {
         // only factory knows about crowdsale contracts and only she should have access to this
@@ -163,7 +166,7 @@ contract MSNFT is ERC721Enumerable {
         meta = MetaInfo[_masterId];
         address author = meta.author;
         require(author == organizer, "you don't own to this master id");
-        mastersales[_masterId].push(_sale);
+        mastersales[_masterId] = _sale;
 
     }
 
@@ -182,10 +185,11 @@ contract MSNFT is ERC721Enumerable {
 
         // TODO
         // Add security check, should be only factory(?)
+        require(msg.sender == factory_address, "only factory can create mastercopy");
 
         uint256 mid = _reserveMasterId();
         RarityType _rarity = set_rarity(_supplyType);
-        MetaInfo[mid] = ItemInfo(_description,_author,_rarity,1);
+        MetaInfo[mid] = ItemInfo(_description,_author,_rarity,0);
         
         // TODO -- emit event about master copy creation?
 
@@ -194,7 +198,7 @@ contract MSNFT is ERC721Enumerable {
         return mid;
     }
 
-     function set_rarity(uint256 _supplyType) private returns(RarityType _rarity) {
+     function set_rarity(uint256 _supplyType) private pure returns(RarityType _rarity) {
        
         // only one token exist
         if (_supplyType == 1) {
@@ -233,16 +237,17 @@ contract MSNFT is ERC721Enumerable {
 
     //TODO - return ticketIDs(?)
     function buyTicket(address buyer, uint256 itemAmount, uint256 master_id, uint _ticket_type) public{
-        address[] memory _sales = mastersales[master_id];
-        address _sale = _sales[_ticket_type - 1]; // array start from 0
-        require(_sale == msg.sender, "you should call buyTicket from ticketsale contract");
+       // address[] memory _sales = mastersales[master_id];
+       // address _sale = _sales[_ticket_type - 1]; // array start from 0
+       address _sale = mastersales[master_id];
+        require(_sale == msg.sender, "you should call buyTicket from itemsale contract");
         for (uint256 i = 0; i < itemAmount; i++ ){
             _item_id_count.increment();
             uint256 item_id = _item_id_count.current();
 
+            // TODO: WARNING -- ADD CHECK FOR RARITY, ADD HIGHLEVEL MINT FUNCTION WIH IMPACT AT CIRCULATING SUPPLY
             _mint(buyer,item_id);
-            string memory jid = getJidbyEventID(master_id);
-            itemInfoStorage[item_id] = ItemInfo(TicketState.Paid,RarityType.State,_ticket_type, jid,_sale);
+         //   itemInfoStorage[item_id] = ItemInfo(TicketState.Paid,RarityType.State,_ticket_type, jid,_sale);
             itemIndex[item_id] = itemIds[master_id].length;
             itemIds[master_id].push(item_id);
             // approve for ticketsale (msg.sender = ticketsale)
@@ -339,25 +344,30 @@ contract MSNFT is ERC721Enumerable {
 */
 
 
-    function getTicketSales(uint256 master_id) public view returns(address[] memory) {
-        address[] memory sales = mastersales[master_id];
-        return sales;
+    function getItemSale(uint256 master_id) public view returns(address) {
+        address sale = mastersales[master_id];
+        return sale;
     }
 
+/*
     function getJidbyEventID(uint256 master_id) public view returns (string memory jid) {
         jid = JIDs[master_id];
         return jid;
     }
+*/
 
+
+/*      TODO : Deprecated, remove it.
     function getJidByTicketId(uint item_id) public view returns (string memory jid) {
         ItemInfo memory info = itemInfoStorage[item_id];
         jid = info.event_JID;
         return jid;
     }
-
+    
     function getTicketStatus(uint item_id) public view returns (TicketState status) {
         ItemInfo memory info = itemInfoStorage[item_id];
         status = info.state;
         return status;
     }
+    */
 }
