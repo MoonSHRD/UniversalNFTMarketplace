@@ -216,12 +216,16 @@ contract MSNFT is ERC721Enumerable {
 
     }
 
-/*
-    function get_rarity() public view returns (MSNFT.RarityType) {
+
+    function get_rarity(uint256 _masterId) public view returns (RarityType) {
+        
+        ItemInfo memory meta;
+        meta = MetaInfo[_masterId];
+        RarityType _rarity_type = meta.rarity;
         return _rarity_type;
     }
 
-*/
+
 
 /*
     // plug additional sale for selling different types of ticket by one event

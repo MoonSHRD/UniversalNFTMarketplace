@@ -120,8 +120,10 @@ contract TokenSale721 is Context, ReentrancyGuard {
         _wallet = wallet;
         treasure_fund = _treasure_fund;
         _token = token;
+        // TODO : check consistenty of salelimit, rarity and totalSupply between crowdsale and token
         _sale_limit = sale_limit;
-        _rarity_type = set_rarity(sale_limit);
+
+        _rarity_type = _token.get_rarity(c_master_id);
 
         _master_id = c_master_id;
 
@@ -197,6 +199,7 @@ contract TokenSale721 is Context, ReentrancyGuard {
 
 
 
+/*
     function set_rarity(uint sl) private {
         // only one token exist
         if (sl == 1) {
@@ -215,6 +218,7 @@ contract TokenSale721 is Context, ReentrancyGuard {
     function get_rarity() public view returns (MSNFT.RarityType) {
         return _rarity_type;
     }
+    */
 
     function check_sale_limit(uint256 amountToBuy) public view returns (bool) {
         uint sl = sale_limit();
