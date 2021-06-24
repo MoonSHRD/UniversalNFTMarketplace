@@ -18,13 +18,14 @@ address master_template;
 address payable treasure_fund;
 
 // event
+// TODO : rework events completely
 event SaleCreated(address indexed organizer, uint price, uint256 indexed event_id, string indexed event_JID);
 event SaleCreatedHuman(address organizer, uint price, uint256 event_id, string event_JID, uint ticket_type);
 event PluggedSale(address indexed organizer, address indexed orginal_sale, uint256 indexed event_id);
 event PluggedSaleHuman(address organizer, address original_sale, uint256 event_id, uint ticket_type);
 
 // mapping from JID to event_id
-mapping (string => uint256) events_jids;
+//mapping (string => uint256) events_jids;
 
 // mapping from author to master
 
@@ -92,7 +93,9 @@ function createItemSale(uint price, uint sale_limit, uint timeToStart, TokenSale
     uint256 master_id = f_master_id;
     require(organizer == item.get_author(master_id), "you are not own this master to start selling items");
     item_sale_adr = createTicketSale721(organizer, price, item,sale_limit, timeToStart, currency, master_id);
-    TicketSale721 item_sale = TicketSale721(item_sale_adr);
+   // TicketSale721 item_sale = TicketSale721(item_sale_adr);
+
+    return item_sale_adr;
 
 }
 
@@ -118,9 +121,7 @@ function calculateRate (uint256 price) internal pure returns (uint256 rate_p) {
 }
 */
 
-function getEventIdByJid(string memory JID) public view returns(uint256) {
-    return events_jids[JID];
-}
+
 
 function getMasterTemplateAddress() public view returns(address) {
     return master_template;
