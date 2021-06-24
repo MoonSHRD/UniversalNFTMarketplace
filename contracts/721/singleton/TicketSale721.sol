@@ -5,11 +5,11 @@ import './MSNFT.sol';
 
 contract TicketSale721 is TokenSale721 {
 
-using Counters for Counters.Counter;
+//using Counters for Counters.Counter;
 
-Counters.Counter scanned_tickets;
+//Counters.Counter scanned_tickets;
 
-constructor(address payable wallet, MSNFT token, uint sale_limit, string memory jid, address payable _treasure_fund, uint timeToStart, uint256 sprice, CurrencyERC20 _currency) TokenSale721(wallet,token, sale_limit, jid, _treasure_fund, timeToStart, sprice, _currency)  {}
+constructor(address wallet, MSNFT token, uint sale_limit, address payable _treasure_fund, uint timeToStart, uint256 sprice, CurrencyERC20 _currency, uint256 _master_id) TokenSale721(wallet,token, sale_limit, _treasure_fund, timeToStart, sprice, _currency, _master_id)  {}
 
 
 /**
@@ -43,7 +43,7 @@ function redeemTicket(address visitor, uint256 token_id) public {
     uint256 event_id = super.event_id();
     ticket_token.redeemTicket(visitor, token_id, event_id);
 }
-*/
+
 
 function redeemTicket(address visitor, uint256 token_id) public {
     MSNFT ticket_token = super.token();
@@ -58,7 +58,7 @@ function getScannedTicketsCount() public view  returns(uint)  {
 }
 
 
-/*
+
 function refundTicket(uint256 token_id) public {
     MSNFT ticket_token = super.token();
     uint256 event_id = super.event_id();
