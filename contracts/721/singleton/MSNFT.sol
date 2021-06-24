@@ -63,6 +63,12 @@ contract MSNFT is ERC721Enumerable {
     Counters.Counter _item_id_count;
     Counters.Counter _master_id_count;
 
+
+    // Motherland
+    address factory_address;
+
+
+
     // Ticket lifecycle
     enum TicketState {Non_Existed, Paid, Fulfilled, Cancelled}
 
@@ -96,23 +102,24 @@ contract MSNFT is ERC721Enumerable {
    */
 
     struct ItemInfo {
-    //string description;
+    
+    string description;
+    address author;
     //uint price;
-    TicketState state;
+  //  TicketState state;
     RarityType rarity;
    // Counters.Counter ticket_type;
     uint ticket_type;
-    string event_JID;
-    address sale_address;
+  //  string event_JID;
+  //  address sale_address;
   }
-
-   // TicketInfo[] internal ticketStorage;
 
 
 
     
     constructor(string memory name_, string memory smbl_) ERC721(name_,smbl_) ERC721Enumerable() {
       //  _addMinter(address(this));
+        factory_address = msg.sender;
     }
 
     /*
@@ -148,6 +155,18 @@ contract MSNFT is ERC721Enumerable {
         return master_id;
     }
 
+    function PlugCrowdSale(address organizer, uint256 _masterId, address _sale) public {
+        // only factory knows about crowdsale contracts and only she should have access to this
+        require(msg.sender == factory_address, "only factory can plug crowdsale");
+        // only author of asset can plug crowdsale
+        ItemInfo memory meta;
+        meta = MetaInfo[_masterId];
+        address author = meta.author;
+        require(author == organizer, "you don't own to this master id");
+        mastersales[_masterId].push(_sale);
+
+    }
+
     function _reserveMasterId() internal returns(uint256 _master_id) {
         _master_id_count.increment();
         _master_id = _master_id_count.current();
@@ -157,6 +176,48 @@ contract MSNFT is ERC721Enumerable {
 
         return _master_id;
     }
+
+    function createMasterCopy(address _author ,string memory _description, uint256 _supplyType) public returns(uint256 master_copy_id){
+
+
+        // TODO
+        // Add security check, should be only factory(?)
+
+        uint256 mid = _reserveMasterId();
+        RarityType _rarity = set_rarity(_supplyType);
+        MetaInfo[mid] = ItemInfo(_description,_author,_rarity,1);
+        
+        // TODO -- emit event about master copy creation?
+
+
+        // return mastercopy id
+        return mid;
+    }
+
+     function set_rarity(uint256 _supplyType) private returns(RarityType _rarity) {
+       
+        // only one token exist
+        if (_supplyType == 1) {
+            _rarity = RarityType.Unique;
+        }
+        // Unlimited sale
+        if (_supplyType == 0) {
+            _rarity = RarityType.Common;
+        } else {
+            // Limited sale
+            _rarity = RarityType.Rare;
+        }
+        return _rarity;
+
+
+    }
+
+/*
+    function get_rarity() public view returns (MSNFT.RarityType) {
+        return _rarity_type;
+    }
+
+*/
 
 /*
     // plug additional sale for selling different types of ticket by one event
