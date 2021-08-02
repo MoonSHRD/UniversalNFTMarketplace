@@ -52,8 +52,7 @@ contract TokenSale721 is Context, ReentrancyGuard {
     // 1 wei will give you 1 unit, or 0.001 TOK.
     uint256 private _rate;
 
-   // uint256 private _price;
-
+    //TODO: Rework this as separate contract 
     // Supported erc20 currencies: .. to be extended
     enum CurrencyERC20 {USDT, USDC, SNM } 
 
@@ -209,28 +208,6 @@ contract TokenSale721 is Context, ReentrancyGuard {
     }
 
 
-
-/*
-    function set_rarity(uint sl) private {
-        // only one token exist
-        if (sl == 1) {
-            _rarity_type = MSNFT.RarityType.Unique;
-        }
-        // Unlimited sale
-        if (sl == 0) {
-            _rarity_type = MSNFT.RarityType.Common;
-        } else {
-            // Limited sale
-            _rarity_type = MSNFT.RarityType.Rare;
-        }
-
-    }
-
-    function get_rarity() public view returns (MSNFT.RarityType) {
-        return _rarity_type;
-    }
-    */
-
     function check_sale_limit(uint256 amountToBuy) public view returns (bool) {
         uint sl = sale_limit();
         if (sl == 0){
@@ -286,12 +263,9 @@ contract TokenSale721 is Context, ReentrancyGuard {
         // update state
         currency_balances[currency] = currency_balances[currency].add(weiAmount);
        
-       // If it is unlimited sale then _sale_limit and _sold_count should be always 0
-       if (_sale_limit == 0) {
-           _sold_count = 0;
-       } else {
+       // If it is unlimited sale then _sale_limit should be always 0   
         _sold_count = _sold_count.add(tokens);
-       }
+    
 
 
         _processPurchase(beneficiary, tokens,currency, weiAmount);
@@ -328,9 +302,7 @@ contract TokenSale721 is Context, ReentrancyGuard {
      // Check allowance of currency balance
         IERC20 currency_token = get_currency(currency);
         uint256 approved_balance = currency_token.allowance(beneficiary, address(this));
-        require(approved_balance >= weiAmount, "approved not enoght");
-
-
+        require(approved_balance >= weiAmount, "Tokensale: ERC20:approved spending limit is not enoght");
 
 
         this; // silence state mutability warning without generating bytecode - see https://github.com/ethereum/solidity/issues/2691
