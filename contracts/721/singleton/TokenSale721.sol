@@ -262,12 +262,9 @@ contract TokenSale721 is Context, ReentrancyGuard {
 
         // update state
         currency_balances[currency] = currency_balances[currency].add(weiAmount);
-       
        // If it is unlimited sale then _sale_limit should be always 0   
         _sold_count = _sold_count.add(tokens);
     
-
-
         _processPurchase(beneficiary, tokens,currency, weiAmount);
         emit TokensPurchased(_msgSender(), beneficiary, weiAmount, tokens);
 
@@ -336,7 +333,7 @@ contract TokenSale721 is Context, ReentrancyGuard {
      */
     function _processPurchase(address beneficiary, uint256 tokenAmount, CurrencyERC20 currency, uint256 weiAmount) internal {
         IERC20 currency_token = get_currency(currency);
-        require(currency_token.transferFrom(beneficiary, address(this), weiAmount), "transfer from buyer to this contract failed ");
+        require(currency_token.transferFrom(beneficiary, address(this), weiAmount), "TokenSale: ERC20: transferFrom buyer to itemsale contract failed ");
         _deliverTokens(beneficiary, tokenAmount);
     }
 

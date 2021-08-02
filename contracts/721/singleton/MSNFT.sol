@@ -121,7 +121,8 @@ contract MSNFT is ERC721Enumerable {
     address author;
   //  TicketState state;
     RarityType rarity;
-    uint circulated_supply;
+  //  uint circulated_supply;
+    uint i_totalSupply;
   //  string event_JID;
   //  address sale_address;
   }
@@ -204,7 +205,15 @@ contract MSNFT is ERC721Enumerable {
 
         uint256 mid = _reserveMasterId();
         RarityType _rarity = set_rarity(_supplyType);
-        MetaInfo[mid] = ItemInfo(link, _description,_author,_rarity,0);
+        uint m_totalSupply;
+        if (_rarity == RarityType.Rare){
+            m_totalSupply = _supplyType;
+        } if (_rarity == RarityType.Unique) {
+            m_totalSupply = 1;
+        } if (_rarity == RarityType.Common) {
+            m_totalSupply = 0;
+        }
+        MetaInfo[mid] = ItemInfo(link, _description,_author,_rarity, m_totalSupply);
         authors[mid] = _author;
         
         // TODO -- emit event about master copy creation?
@@ -265,6 +274,19 @@ contract MSNFT is ERC721Enumerable {
        // address _sale = _sales[_ticket_type - 1]; // array start from 0
        address _sale = mastersales[master_id];
         require(_sale == msg.sender, "you should call buyTicket from itemsale contract");
+
+    // Check rarity vs itemAmount
+        ItemInfo memory meta;
+        meta = MetaInfo[master_id];
+        if (meta.rarity == RarityType.Unique) {
+            require(itemAmount == 1, "MSNFT: try to buy more than one of Unique Items");
+        }
+        if (meta.rarity == RarityType.Rare) {
+
+        }
+
+
+
         for (uint256 i = 0; i < itemAmount; i++ ){
             _item_id_count.increment();
             uint256 item_id = _item_id_count.current();
