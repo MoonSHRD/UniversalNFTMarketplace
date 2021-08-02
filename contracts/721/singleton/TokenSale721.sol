@@ -102,7 +102,7 @@ contract TokenSale721 is Context, ReentrancyGuard {
      * @param token Address of the token being sold
      */
      // TODO: price calculation (?)
-    constructor (address wallet, MSNFT token, uint sale_limit, address payable _treasure_fund,uint timeToStart, uint256 sprice, CurrencyERC20 _currency, uint256 c_master_id)  {
+    constructor (address wallet, MSNFT token, uint sale_limit, address payable _treasure_fund, uint256 sprice, CurrencyERC20 _currency, uint256 c_master_id)  {
      //   require(rate > 0, "Crowdsale: rate is 0");
         require(wallet != address(0), "Crowdsale: wallet is the zero address");
         require(address(token) != address(0), "Crowdsale: token is the zero address");
@@ -128,7 +128,7 @@ contract TokenSale721 is Context, ReentrancyGuard {
 
         _master_id = c_master_id;
 
-        _timeToStart = timeToStart;
+        _timeToStart = 0;
     }
 
     /**
@@ -227,10 +227,10 @@ contract TokenSale721 is Context, ReentrancyGuard {
             return true;
         }
         if (sl == 1) {
-            require(amountToBuy == 1);
+            require(amountToBuy == 1,"TokenSale: esceed sale limit!");
             return true;
         } else {
-            require(amountToBuy <= sl);
+            require(amountToBuy <= sl,"TokenSale: esceed sale limit!");
             return true;
         }
     }
