@@ -351,6 +351,7 @@ contract TokenSale721 is Context, ReentrancyGuard {
      * @dev Override to extend the way in which ether is converted to tokens.
      * @param weiAmount Value in wei to be converted into tokens
      * @return Number of tokens that can be purchased with the specified _weiAmount
+     * 
      *                  DEPRECATED
      */
     function _getTokenAmount(uint256 weiAmount) internal view returns (uint256) {

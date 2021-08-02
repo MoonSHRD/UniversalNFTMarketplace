@@ -83,9 +83,10 @@ contract MSNFT is ERC721Enumerable {
     // TIP: ticket type = array.length
     mapping(uint256 => address) public mastersales;
     // map from master_id to item ids
-    mapping (uint256 => uint256[]) public itemIds;
-    // map fron token ID to its index in itemIds
-    mapping (uint256 => uint256) itemIndex;
+    mapping (uint256 => uint256[]) public itemIds; // -- length of this array can be used as totalSupply!
+
+    // map from token ID to its index in itemIds
+    mapping (uint256 => uint256) itemIndex;         // -- this is actually what we can use as totalSupply of each master!
     // map from item id to item info
     //mapping (uint256 => ItemInfo) public itemInfoStorage;  // TODO: -- we can remove it as item is a simulacr and all info we need we already have in MetaInfo
     
@@ -256,6 +257,22 @@ contract MSNFT is ERC721Enumerable {
     }
 
 
+
+    function Mint(address to, uint m_master_id, uint item_id) internal {
+
+        // Check rarity vs itemAmount
+        ItemInfo memory meta;
+        meta = MetaInfo[m_master_id];
+        if (meta.rarity == RarityType.Unique) {
+            require(itemIndex[item_id] == 0 , "MSNFT: MINT: try to mint more than one of Unique Items");
+        }
+        if (meta.rarity == RarityType.Rare) {
+            require(itemIndex[item_id] <= meta.i_totalSupply," MSNFT: MINT: try to mint more than totalSupply of Rare token");
+        }
+        
+    }
+
+
 /*
     // plug additional sale for selling different types of ticket by one event
     function plugSale(uint256 event_id, address orginizer) public returns(uint) {
@@ -276,23 +293,16 @@ contract MSNFT is ERC721Enumerable {
         require(_sale == msg.sender, "you should call buyTicket from itemsale contract");
 
 /*      TODO : Add check for high-level mint function
-    // Check rarity vs itemAmount
-        ItemInfo memory meta;
-        meta = MetaInfo[master_id];
-        if (meta.rarity == RarityType.Unique) {
-            require(itemAmount == 1, "MSNFT: try to buy more than one of Unique Items");
-        }
-        if (meta.rarity == RarityType.Rare) {
-
-        }
+    
 */
-
+        
 
         for (uint256 i = 0; i < itemAmount; i++ ){
             _item_id_count.increment();
             uint256 item_id = _item_id_count.current();
 
             // TODO: WARNING -- ADD CHECK FOR RARITY, ADD HIGHLEVEL MINT FUNCTION WIH IMPACT AT CIRCULATING SUPPLY
+       //     Mint(buyer, master_id, item_id);
             _mint(buyer,item_id);
          //   itemInfoStorage[item_id] = ItemInfo(TicketState.Paid,RarityType.State,_ticket_type, jid,_sale);
             itemIndex[item_id] = itemIds[master_id].length;
