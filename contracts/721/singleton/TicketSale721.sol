@@ -1,5 +1,5 @@
 pragma solidity ^0.8.0;
-
+//"SPDX-License-Identifier: UNLICENSED"
 import './TokenSale721.sol';
 import './MSNFT.sol';
 

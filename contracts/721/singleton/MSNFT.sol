@@ -1,4 +1,5 @@
 pragma solidity ^0.8.0;
+//"SPDX-License-Identifier: UNLICENSED"
 
 import "../../../node_modules/@openzeppelin/contracts/token/ERC721/extensions/ERC721Enumerable.sol";
 import "../../../node_modules/@openzeppelin/contracts/token/ERC721/ERC721.sol";
@@ -109,13 +110,17 @@ contract MSNFT is ERC721Enumerable {
 
     struct ItemInfo {
     
+
+    // TODO: is this really nececcary to write it as string?
+    // this is link to torrent 
+    string magnet_link;
+
+    // TODO: remove it as non-necessary
     string description;
+
     address author;
-    //uint price;
   //  TicketState state;
     RarityType rarity;
-   // Counters.Counter ticket_type;
-  //  uint ticket_type;
     uint circulated_supply;
   //  string event_JID;
   //  address sale_address;
@@ -126,6 +131,7 @@ contract MSNFT is ERC721Enumerable {
     
     constructor(string memory name_, string memory smbl_) ERC721(name_,smbl_) ERC721Enumerable() {
       //  _addMinter(address(this));
+      // TODO: only factory can deploy this contract?
         factory_address = msg.sender;
     }
 
@@ -138,6 +144,7 @@ contract MSNFT is ERC721Enumerable {
     }
     */
 
+    // TODO - WTF is this? Hack?
     function _transferFromTicket(address from, address to, uint256 tokenId) public {
         super.safeTransferFrom(from, to, tokenId);
     }
@@ -164,6 +171,7 @@ contract MSNFT is ERC721Enumerable {
     }
  */
 
+    // TODO: checkout -- this function should attach other nft's contract's tokens to crowdsale
     function PlugCrowdSale(address organizer, uint256 _masterId, address _sale) public {
         // only factory knows about crowdsale contracts and only she should have access to this
         require(msg.sender == factory_address, "only factory can plug crowdsale");
@@ -189,8 +197,7 @@ contract MSNFT is ERC721Enumerable {
     function createMasterCopy(address _author ,string memory _description, uint256 _supplyType) public returns(uint256 c_master_id){
 
 
-        // TODO
-        // Add security check, should be only factory(?)
+        // TODO: Add security check, should be only factory(?)
         require(msg.sender == factory_address, "only factory can create mastercopy");
 
         uint256 mid = _reserveMasterId();
