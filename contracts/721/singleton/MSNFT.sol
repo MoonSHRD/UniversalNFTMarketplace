@@ -194,7 +194,7 @@ contract MSNFT is ERC721Enumerable {
         return _master_id;
     }
 
-    function createMasterCopy(address _author ,string memory _description, uint256 _supplyType) public returns(uint256 c_master_id){
+    function createMasterCopy(string memory link, address _author ,string memory _description, uint256 _supplyType) public returns(uint256 c_master_id){
 
 
         // TODO: Add security check, should be only factory(?)
@@ -202,7 +202,7 @@ contract MSNFT is ERC721Enumerable {
 
         uint256 mid = _reserveMasterId();
         RarityType _rarity = set_rarity(_supplyType);
-        MetaInfo[mid] = ItemInfo(_description,_author,_rarity,0);
+        MetaInfo[mid] = ItemInfo(link, _description,_author,_rarity,0);
         authors[mid] = _author;
         
         // TODO -- emit event about master copy creation?

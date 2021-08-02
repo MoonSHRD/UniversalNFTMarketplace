@@ -78,11 +78,11 @@ function createTicketSale(address payable organizer, uint price, string memory e
 // supply type -- how much copies can have
 // supplyType --> 1= unique, 0 = common, everything else is rare
 //
-function createMasterItem(string memory _description, uint256 _supplyType) public returns (uint256 master_id) {
+function createMasterItem(string memory link, string memory _description, uint256 _supplyType) public returns (uint256 master_id) {
     address master_adr = master_template;
     address _author = msg.sender;
     MSNFT master = MSNFT(master_adr);
-    master_id = master.createMasterCopy(_author, _description, _supplyType);
+    master_id = master.createMasterCopy(link, _author, _description, _supplyType);
     return master_id;
 }
 
