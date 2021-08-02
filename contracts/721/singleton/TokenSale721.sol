@@ -52,8 +52,7 @@ contract TokenSale721 is Context, ReentrancyGuard {
     // 1 wei will give you 1 unit, or 0.001 TOK.
     uint256 private _rate;
 
-   // uint256 private _price;
-
+    //TODO: Rework this as separate contract 
     // Supported erc20 currencies: .. to be extended
     enum CurrencyERC20 {USDT, USDC, SNM } 
 
@@ -76,6 +75,7 @@ contract TokenSale721 is Context, ReentrancyGuard {
     uint public crDate = block.timestamp;
 
     // How much time before event start (in seconds)
+    // TODO -- delete this
     uint public _timeToStart;
 
     // Funds, that have been locked
@@ -121,10 +121,19 @@ contract TokenSale721 is Context, ReentrancyGuard {
         _wallet = i_wallet;
         treasure_fund = _treasure_fund;
         _token = i_token;
-        // TODO : check consistenty of salelimit, rarity and totalSupply between crowdsale and token
-        _sale_limit = i_sale_limit;
-
+        
+        // Get rarity type and check sale_limit
         _rarity_type = _token.get_rarity(c_master_id);
+        if (_rarity_type == MSNFT.RarityType.Unique) {
+            require(i_sale_limit == 1, "Tokensale: Attempt to create new Tokensale for unique NFT with wrong sale_limit");
+        }
+        if (_rarity_type == MSNFT.RarityType.Common) {
+            _sale_limit = 0;
+        }
+        if (_rarity_type == MSNFT.RarityType.Rare) {
+            _sale_limit = i_sale_limit;
+        }
+
 
         _master_id = c_master_id;
 
@@ -199,38 +208,16 @@ contract TokenSale721 is Context, ReentrancyGuard {
     }
 
 
-
-/*
-    function set_rarity(uint sl) private {
-        // only one token exist
-        if (sl == 1) {
-            _rarity_type = MSNFT.RarityType.Unique;
-        }
-        // Unlimited sale
-        if (sl == 0) {
-            _rarity_type = MSNFT.RarityType.Common;
-        } else {
-            // Limited sale
-            _rarity_type = MSNFT.RarityType.Rare;
-        }
-
-    }
-
-    function get_rarity() public view returns (MSNFT.RarityType) {
-        return _rarity_type;
-    }
-    */
-
     function check_sale_limit(uint256 amountToBuy) public view returns (bool) {
         uint sl = sale_limit();
         if (sl == 0){
             return true;
         }
         if (sl == 1) {
-            require(amountToBuy == 1,"TokenSale: esceed sale limit!");
+            require(amountToBuy == 1,"TokenSale: exceed sale limit!");
             return true;
         } else {
-            require(amountToBuy <= sl,"TokenSale: esceed sale limit!");
+            require(amountToBuy <= sl,"TokenSale: exceed sale limit!");
             return true;
         }
     }
@@ -268,22 +255,16 @@ contract TokenSale721 is Context, ReentrancyGuard {
      function buyTokens(address beneficiary,uint256 tokenAmountToBuy, CurrencyERC20 currency) public nonReentrant payable {
         uint256 tokens = tokenAmountToBuy;
 
-
+        // How much is needed to pay
         uint256 weiAmount = getWeiAmount(tokens,currency);
 
         _preValidatePurchase(beneficiary, weiAmount, tokens, currency);
 
         // update state
         currency_balances[currency] = currency_balances[currency].add(weiAmount);
-       
-       // If it is unlimited sale then _sale_limit and _sold_count should be always 0
-       if (_sale_limit == 0) {
-           _sold_count = 0;
-       } else {
+       // If it is unlimited sale then _sale_limit should be always 0   
         _sold_count = _sold_count.add(tokens);
-       }
-
-
+    
         _processPurchase(beneficiary, tokens,currency, weiAmount);
         emit TokensPurchased(_msgSender(), beneficiary, weiAmount, tokens);
 
@@ -309,21 +290,16 @@ contract TokenSale721 is Context, ReentrancyGuard {
         require(beneficiary != address(0), "Crowdsale: beneficiary is the zero address");
         require(weiAmount != 0, "Crowdsale: weiAmount is 0");
         uint sc = _sold_count;
+        uint limit = sc + tokens;
 
-
-      
-
-      //  uint limit = sc + tokens;
-     //   require(limit <= _sale_limit, "tokens amount should not exceed sale_limit");
-        require(check_sale_limit(tokens) == true, "tokens amount should not exceed sale_limit");
+     // Check sale_limit (including rarity check)
+        require(check_sale_limit(limit) == true, "tokens amount should not exceed sale_limit");
 
 
      // Check allowance of currency balance
         IERC20 currency_token = get_currency(currency);
         uint256 approved_balance = currency_token.allowance(beneficiary, address(this));
-        require(approved_balance >= weiAmount, "approved not enoght");
-
-
+        require(approved_balance >= weiAmount, "Tokensale: ERC20:approved spending limit is not enoght");
 
 
         this; // silence state mutability warning without generating bytecode - see https://github.com/ethereum/solidity/issues/2691
@@ -357,7 +333,7 @@ contract TokenSale721 is Context, ReentrancyGuard {
      */
     function _processPurchase(address beneficiary, uint256 tokenAmount, CurrencyERC20 currency, uint256 weiAmount) internal {
         IERC20 currency_token = get_currency(currency);
-        require(currency_token.transferFrom(beneficiary, address(this), weiAmount), "transfer from buyer to this contract failed ");
+        require(currency_token.transferFrom(beneficiary, address(this), weiAmount), "TokenSale: ERC20: transferFrom buyer to itemsale contract failed ");
         _deliverTokens(beneficiary, tokenAmount);
     }
 
