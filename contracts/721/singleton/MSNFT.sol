@@ -275,6 +275,7 @@ contract MSNFT is ERC721Enumerable {
        address _sale = mastersales[master_id];
         require(_sale == msg.sender, "you should call buyTicket from itemsale contract");
 
+/*      TODO : Add check for high-level mint function
     // Check rarity vs itemAmount
         ItemInfo memory meta;
         meta = MetaInfo[master_id];
@@ -284,7 +285,7 @@ contract MSNFT is ERC721Enumerable {
         if (meta.rarity == RarityType.Rare) {
 
         }
-
+*/
 
 
         for (uint256 i = 0; i < itemAmount; i++ ){
