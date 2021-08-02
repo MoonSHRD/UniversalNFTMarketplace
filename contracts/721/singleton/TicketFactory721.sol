@@ -93,8 +93,9 @@ function createItemSale(uint price, uint sale_limit, TokenSale721.CurrencyERC20 
     uint256 master_id = f_master_id;
     require(organizer == item.get_author(master_id), "you are not own this master to start selling items");
     item_sale_adr = createTicketSale721(organizer, price, item,sale_limit, currency, master_id);
-   // TicketSale721 item_sale = TicketSale721(item_sale_adr);
-
+   
+   // Plug itemsale address to mastersale map
+    item.PlugCrowdSale(organizer, master_id, item_sale_adr);
     return item_sale_adr;
 
 }

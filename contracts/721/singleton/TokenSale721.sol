@@ -76,6 +76,7 @@ contract TokenSale721 is Context, ReentrancyGuard {
     uint public crDate = block.timestamp;
 
     // How much time before event start (in seconds)
+    // TODO -- delete this
     uint public _timeToStart;
 
     // Funds, that have been locked

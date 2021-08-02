@@ -171,7 +171,8 @@ contract MSNFT is ERC721Enumerable {
     }
  */
 
-    // TODO: checkout -- this function should attach other nft's contract's tokens to crowdsale
+    // TODO: *WARNING* -- this function should attach other nft's contract's tokens to crowdsale
+    // Also this function 'plug' itemsale contract from factory to mastersales map
     function PlugCrowdSale(address organizer, uint256 _masterId, address _sale) public {
         // only factory knows about crowdsale contracts and only she should have access to this
         require(msg.sender == factory_address, "only factory can plug crowdsale");
@@ -180,6 +181,7 @@ contract MSNFT is ERC721Enumerable {
         meta = MetaInfo[_masterId];
         address author = meta.author;
         require(author == organizer, "you don't own to this master id");
+        require(mastersales[_masterId] == address(0), "MSNFT: you already have plugged sale ");
         mastersales[_masterId] = _sale;
 
     }
