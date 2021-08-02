@@ -122,10 +122,19 @@ contract TokenSale721 is Context, ReentrancyGuard {
         _wallet = i_wallet;
         treasure_fund = _treasure_fund;
         _token = i_token;
-        // TODO : check consistenty of salelimit, rarity and totalSupply between crowdsale and token
-        _sale_limit = i_sale_limit;
-
+        
+        // Get rarity type and check sale_limit
         _rarity_type = _token.get_rarity(c_master_id);
+        if (_rarity_type == MSNFT.RarityType.Unique) {
+            require(i_sale_limit == 1, "Tokensale: Attempt to create new Tokensale for unique NFT with wrong sale_limit");
+        }
+        if (_rarity_type == MSNFT.RarityType.Common) {
+            _sale_limit = 0;
+        }
+        if (_rarity_type == MSNFT.RarityType.Rare) {
+            _sale_limit = i_sale_limit;
+        }
+
 
         _master_id = c_master_id;
 
@@ -228,10 +237,10 @@ contract TokenSale721 is Context, ReentrancyGuard {
             return true;
         }
         if (sl == 1) {
-            require(amountToBuy == 1,"TokenSale: esceed sale limit!");
+            require(amountToBuy == 1,"TokenSale: exceed sale limit!");
             return true;
         } else {
-            require(amountToBuy <= sl,"TokenSale: esceed sale limit!");
+            require(amountToBuy <= sl,"TokenSale: exceed sale limit!");
             return true;
         }
     }
@@ -269,7 +278,7 @@ contract TokenSale721 is Context, ReentrancyGuard {
      function buyTokens(address beneficiary,uint256 tokenAmountToBuy, CurrencyERC20 currency) public nonReentrant payable {
         uint256 tokens = tokenAmountToBuy;
 
-
+        // How much is needed to pay
         uint256 weiAmount = getWeiAmount(tokens,currency);
 
         _preValidatePurchase(beneficiary, weiAmount, tokens, currency);
@@ -310,13 +319,10 @@ contract TokenSale721 is Context, ReentrancyGuard {
         require(beneficiary != address(0), "Crowdsale: beneficiary is the zero address");
         require(weiAmount != 0, "Crowdsale: weiAmount is 0");
         uint sc = _sold_count;
+        uint limit = sc + tokens;
 
-
-      
-
-      //  uint limit = sc + tokens;
-     //   require(limit <= _sale_limit, "tokens amount should not exceed sale_limit");
-        require(check_sale_limit(tokens) == true, "tokens amount should not exceed sale_limit");
+     // Check sale_limit (including rarity check)
+        require(check_sale_limit(limit) == true, "tokens amount should not exceed sale_limit");
 
 
      // Check allowance of currency balance
