@@ -55,8 +55,6 @@ contract MSNFT is ERC721Enumerable {
     //events
     event ItemBought(address indexed visitor_wallet,uint256 indexed event_id, uint256 indexed ticket_id);
     event ItemBoughtHuman(address visitor_wallet,uint256 event_id, uint256 ticket_id);
- //   event TicketFulfilled(address indexed visitor_wallet,uint256 indexed event_id, uint256 indexed ticket_id);   // FIXME: add date to event?
-   // event TicketFulfilledHuman(address visitor_wallet,uint256 event_id, uint256 ticket_id);
     event MasterIdReserved(address indexed ticket_sale, uint256 indexed event_id);
     event MasterIdReservedHuman(address ticket_sale, uint256 event_id);
 
@@ -70,7 +68,7 @@ contract MSNFT is ERC721Enumerable {
 
 
 
-    // Ticket lifecycle TODO: Deprecated, delete this
+    // Ticket lifecycle TODO: Remove it or use it as state of item? Do we need that?
     //enum TicketState {Non_Existed, Paid, Fulfilled, Cancelled}
 
     // Rarity type
@@ -80,7 +78,6 @@ contract MSNFT is ERC721Enumerable {
     enum RarityType {Unique, Rare, Common}
 
     // map from mastercopy_id  to itemsale address
-    // TIP: ticket type = array.length
     mapping(uint256 => address) public mastersales;
 
 
@@ -120,16 +117,15 @@ contract MSNFT is ERC721Enumerable {
 
 
     /**
-   * Item information
+   *                                                            Item information
    */
-
     struct ItemInfo 
     {
     // TODO: is this really nececcary to write it as string?
     // this is link to torrent 
     string magnet_link;
 
-    // TODO: remove it as non-necessary
+    // TODO: rework this for searching functionality (case when user seacrh nft item at marketplace by name (or ticker?))
     string description;
     address author;
     RarityType rarity;
@@ -149,21 +145,6 @@ contract MSNFT is ERC721Enumerable {
         factory_address = msg.sender;
     }
 
-    /*
-    // FIXME: approve for ticketsale, not factory
-    function setApprovalForEvent(address _owner, address ticketsale) internal{
-        bool approved;
-        super._operatorApprovals[_owner][ticketsale] = approved;
-        emit ApprovalForAll(_owner, ticketsale, approved);
-    }
-    */
-
-    // TODO - WTF is this? 
-    function _transferFromTicket(address from, address to, uint256 tokenId) public {
-        super.safeTransferFrom(from, to, tokenId);
-    }
-
-  
 
     // @TODO: *WARNING* -- this function should attach other nft's contract's tokens to crowdsale
     // Also this function 'plug' itemsale contract from factory to mastersales map
@@ -282,7 +263,7 @@ contract MSNFT is ERC721Enumerable {
     }
 
 
-    // @todo add function for minting outside sell (case owner want to mint and distribute some amount to friends)
+    
     // this function emit item outside of buying mechanism
     // only owner of master can call it
     function EmitItem(address to, uint m_master_id) public {
@@ -307,31 +288,20 @@ contract MSNFT is ERC721Enumerable {
     }
     */
 
-    // @TODO - return ticketIDs(?)
-    function buyTicket(address buyer, uint256 itemAmount, uint256 master_id) public{
+    // @TODO - return itemIDs(?)
+    function buyItem(address buyer, uint256 itemAmount, uint256 master_id) public{
        // address[] memory _sales = mastersales[master_id];
        // address _sale = _sales[_ticket_type - 1]; // array start from 0
        address _sale = mastersales[master_id];
         require(_sale == msg.sender, "you should call buyTicket from itemsale contract");
 
-/*      @TODO : Add check for high-level mint function
-    
-*/
-        
-
         for (uint256 i = 0; i < itemAmount; i++ ){
             _item_id_count.increment();
             uint256 item_id = _item_id_count.current();
 
-            // @TODO: WARNING -- ADD CHECK FOR RARITY, ADD HIGHLEVEL MINT FUNCTION WIH IMPACT AT CIRCULATING SUPPLY
+           
             Mint(buyer, master_id, item_id);
-
-          //  itemIndex[item_id] = itemIds[master_id].length;
-          //  itemIds[master_id].push(item_id);
             
-            // approve for ticketsale (msg.sender = ticketsale)
-          //  approve(msg.sender, ticket_id);
-         //   setApprovalForEvent(buyer,msg.sender);
             emit ItemBought(buyer,master_id,item_id);
             emit ItemBoughtHuman(buyer,master_id,item_id);
         }
@@ -369,43 +339,6 @@ contract MSNFT is ERC721Enumerable {
     */
 
 
-/*          Deprecated as there are no Tickets anymore.
-            Can be revived if there are a need for 'expiration' mode
-
-     function redeemTicket(address visitor, uint256 tokenId, uint256 event_id) public{
-        address[] memory _sales = eventsales[event_id];
-        TicketInfo memory info = ticketInfoStorage[tokenId];
-        address _sale = _sales[info.ticket_type - 1];
-        require(_sale == msg.sender, "you should call scan from ticketsale contract");
-        require(ticketInfoStorage[tokenId].state == TicketState.Paid, "Ticket state must be Paid");
-        info.state = TicketState.Fulfilled;
-        ticketInfoStorage[tokenId] = info;
-        emit TicketFulfilled(visitor,event_id,tokenId);
-        emit TicketFulfilledHuman(visitor, event_id,tokenId);
-    }
-
-    function refundTicket(address visitor,uint256 tokenId, uint256 event_id) public returns(bool) {
-        address[] memory _sales = eventsales[event_id];
-        TicketInfo memory info = ticketInfoStorage[tokenId];
-        address _sale = _sales[info.ticket_type - 1];
-        require(_sale == msg.sender, "you should call refund from ticketsale contract");
-        // check status
-        TicketState status = getTicketStatus(tokenId);
-        require(status == TicketState.Paid, "ticket status is not valid");
-        _transferFromTicket(visitor, msg.sender, tokenId);
-        info.state = TicketState.Cancelled;
-        ticketInfoStorage[tokenId] = info;
-        return true;
-    }
-    */
-
-/*
-    function getTicketTypeCount(uint256 event_id) public view returns(uint) {
-        address[] memory _sales = eventsales[event_id];
-        uint ticket_type = _sales.length;
-        return ticket_type;
-    }
-*/
 
 //                  FIXME: fix get items of owner
 /*
@@ -430,7 +363,7 @@ contract MSNFT is ERC721Enumerable {
 
 
 
-/*      @todo : Deprecated, remove it.
+/*      
     function getTicketStatus(uint item_id) public view returns (TicketState status) {
         ItemInfo memory info = itemInfoStorage[item_id];
         status = info.state;
