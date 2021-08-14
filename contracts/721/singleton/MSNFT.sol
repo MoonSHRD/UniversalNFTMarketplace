@@ -75,7 +75,7 @@ contract MSNFT is ERC721Enumerable {
 
 
 
-    // Ticket lifecycle TODO: Remove it or use it as state of item? Do we need that?
+    // Ticket lifecycle @TODO: Maybe useful for migration in future
     //enum TicketState {Non_Existed, Paid, Fulfilled, Cancelled}
 
     // Rarity type
@@ -192,8 +192,8 @@ contract MSNFT is ERC721Enumerable {
         MetaInfo[mid] = ItemInfo(link, _description,_author,_rarity, m_totalSupply);
         authors[mid] = _author;
         
-        MaterCopyCreated(_author, mid, _description, link);
-        MasterCopyCreatedHuman(_author,mid,_description,link);
+        emit MaterCopyCreated(_author, mid, _description, link);
+        emit MasterCopyCreatedHuman(_author,mid,_description,link);
 
         // return mastercopy id
         return mid;
@@ -235,7 +235,6 @@ contract MSNFT is ERC721Enumerable {
 
     function Mint(address to, uint m_master_id, uint item_id) internal {
 
-        
         ItemInfo memory meta;
         meta = MetaInfo[m_master_id];
      
@@ -278,19 +277,7 @@ contract MSNFT is ERC721Enumerable {
         Mint(to, m_master_id, item_id);
 
     }
-/*
-    // plug additional sale for selling different types of ticket by one event
-    function plugSale(uint256 event_id, address orginizer) public returns(uint) {
-        address[] memory _sales = eventsales[event_id];
-        address _sale = _sales[0];
-        require(retailers[_sale] == orginizer, "only orginizer can plug item");
-        eventsales[event_id].push(msg.sender);
-        uint type_count = getTicketTypeCount(event_id);
-        return type_count;
-    }
-    */
 
-    // @TODO - return itemIDs(?)
     function buyItem(address buyer, uint256 itemAmount, uint256 master_id) public{
        address _sale = mastersales[master_id];
         require(_sale == msg.sender, "MSNFT: you should call buyItem from itemsale contract");
@@ -299,7 +286,6 @@ contract MSNFT is ERC721Enumerable {
             _item_id_count.increment();
             uint256 item_id = _item_id_count.current();
 
-           
             Mint(buyer, master_id, item_id);
             
             emit ItemBought(buyer,master_id,item_id);
