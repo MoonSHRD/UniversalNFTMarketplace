@@ -60,7 +60,7 @@ contract MSNFT is ERC721Enumerable {
     event MasterIdReserved(address indexed ticket_sale, uint256 indexed event_id);
     event MasterIdReservedHuman(address ticket_sale, uint256 event_id);
 
-    // Global counters for ticket_id and event_id
+    // Global counters for item_id and master_id
     Counters.Counter _item_id_count;
     Counters.Counter _master_id_count;
 
@@ -83,10 +83,10 @@ contract MSNFT is ERC721Enumerable {
     // TIP: ticket type = array.length
     mapping(uint256 => address) public mastersales;
     // map from master_id to item ids
-    mapping (uint256 => uint256[]) public itemIds; // -- length of this array can be used as totalSupply!
+    mapping (uint256 => uint256[]) public itemIds; // -- length of this array can be used as totalSupply!  (total number of specific token (items) can be getted as itemIds[master].length + 1)
 
     // map from token ID to its index in itemIds
-    mapping (uint256 => uint256) itemIndex;         // -- this is actually what we can use as totalSupply of each master!
+    mapping (uint256 => uint256) itemIndex;         // -- each token have a position in itemIds array. itemIndex is help to track where exactly stored 
     // map from item id to item info
     //mapping (uint256 => ItemInfo) public itemInfoStorage;  // TODO: -- we can remove it as item is a simulacr and all info we need we already have in MetaInfo
     
@@ -270,9 +270,19 @@ contract MSNFT is ERC721Enumerable {
             require(itemIndex[item_id] <= meta.i_totalSupply," MSNFT: MINT: try to mint more than totalSupply of Rare token");
         }
         
+        _mint(to,item_id);
     }
 
 
+    // @todo add function for minting outside sell (case owner want to mint and distribute some amount to friends)
+    // this function emit item outside of buying mechanism
+    // only owner of master can call it
+    function EmitItem(address to, uint m_master_id) public {
+        ItemInfo memory meta;
+        meta = MetaInfo[m_master_id];
+        require(msg.sender == meta.author, "MSNFT: only author can emit items outside of sale");
+
+    }
 /*
     // plug additional sale for selling different types of ticket by one event
     function plugSale(uint256 event_id, address orginizer) public returns(uint) {
@@ -302,11 +312,12 @@ contract MSNFT is ERC721Enumerable {
             uint256 item_id = _item_id_count.current();
 
             // @TODO: WARNING -- ADD CHECK FOR RARITY, ADD HIGHLEVEL MINT FUNCTION WIH IMPACT AT CIRCULATING SUPPLY
-       //     Mint(buyer, master_id, item_id);
-            _mint(buyer,item_id);
+            Mint(buyer, master_id, item_id);
+       //     _mint(buyer,item_id);
          //   itemInfoStorage[item_id] = ItemInfo(TicketState.Paid,RarityType.State,_ticket_type, jid,_sale);
-            itemIndex[item_id] = itemIds[master_id].length;
+            
             itemIds[master_id].push(item_id);
+            itemIndex[item_id] = itemIds[master_id].length;
             // approve for ticketsale (msg.sender = ticketsale)
           //  approve(msg.sender, ticket_id);
          //   setApprovalForEvent(buyer,msg.sender);
