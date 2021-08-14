@@ -55,7 +55,10 @@ contract MSNFT is ERC721Enumerable {
     //events
     event ItemBought(address indexed visitor_wallet,uint256 indexed event_id, uint256 indexed ticket_id);
     event ItemBoughtHuman(address visitor_wallet,uint256 event_id, uint256 ticket_id);
-    event MasterIdReserved(address indexed ticket_sale, uint256 indexed event_id);
+
+
+    // @todo rework events about MasterIdReserve
+    event MasterIdReserved(address indexed item_sale, uint256 indexed event_id);
     event MasterIdReservedHuman(address ticket_sale, uint256 event_id);
 
     // Global counters for item_id and master_id
@@ -79,11 +82,6 @@ contract MSNFT is ERC721Enumerable {
 
     // map from mastercopy_id  to itemsale address
     mapping(uint256 => address) public mastersales;
-
-
-
-
-
 
 
      /*
@@ -146,11 +144,10 @@ contract MSNFT is ERC721Enumerable {
     }
 
 
-    // @TODO: *WARNING* -- this function should attach other nft's contract's tokens to crowdsale
-    // Also this function 'plug' itemsale contract from factory to mastersales map
+    // This function 'plug' itemsale contract from factory to mastersales map (works only for MoonShard NFT, should be called after MasterCopy creation)
     function PlugCrowdSale(address organizer, uint256 _masterId, address _sale) public {
         // only factory knows about crowdsale contracts and only she should have access to this
-        require(msg.sender == factory_address, "only factory can plug crowdsale");
+        require(msg.sender == factory_address, "MSNFT: only factory contract can plug crowdsale");
         // only author of asset can plug crowdsale
         ItemInfo memory meta;
         meta = MetaInfo[_masterId];
@@ -171,11 +168,11 @@ contract MSNFT is ERC721Enumerable {
         return _master_id;
     }
 
+
+    // create Master Copy of item (without starting sale). It wraps file info into nft and create record in blockchain. Other items(tokens) are just links to master record
     function createMasterCopy(string memory link, address _author ,string memory _description, uint256 _supplyType) public returns(uint256 c_master_id){
 
-
-        // @TODO: Add security check, should be only factory(?)
-        require(msg.sender == factory_address, "only factory can create mastercopy");
+        require(msg.sender == factory_address, "MSNFT: only factory contract can create mastercopy");
 
         uint256 mid = _reserveMasterId();
         RarityType _rarity = set_rarity(_supplyType);
@@ -290,8 +287,6 @@ contract MSNFT is ERC721Enumerable {
 
     // @TODO - return itemIDs(?)
     function buyItem(address buyer, uint256 itemAmount, uint256 master_id) public{
-       // address[] memory _sales = mastersales[master_id];
-       // address _sale = _sales[_ticket_type - 1]; // array start from 0
        address _sale = mastersales[master_id];
         require(_sale == msg.sender, "you should call buyTicket from itemsale contract");
 
