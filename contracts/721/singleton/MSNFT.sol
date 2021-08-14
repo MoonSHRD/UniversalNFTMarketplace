@@ -192,8 +192,8 @@ contract MSNFT is ERC721Enumerable {
         MetaInfo[mid] = ItemInfo(link, _description,_author,_rarity, m_totalSupply);
         authors[mid] = _author;
         
-        MaterCopyCreated(_author, mid, _description, link);
-        MasterCopyCreatedHuman(_author,mid,_description,link);
+        emit MaterCopyCreated(_author, mid, _description, link);
+        emit MasterCopyCreatedHuman(_author,mid,_description,link);
 
         // return mastercopy id
         return mid;
@@ -235,7 +235,6 @@ contract MSNFT is ERC721Enumerable {
 
     function Mint(address to, uint m_master_id, uint item_id) internal {
 
-        
         ItemInfo memory meta;
         meta = MetaInfo[m_master_id];
      
@@ -287,7 +286,6 @@ contract MSNFT is ERC721Enumerable {
             _item_id_count.increment();
             uint256 item_id = _item_id_count.current();
 
-           
             Mint(buyer, master_id, item_id);
             
             emit ItemBought(buyer,master_id,item_id);
