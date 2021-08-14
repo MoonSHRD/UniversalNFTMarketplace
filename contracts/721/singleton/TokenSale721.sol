@@ -45,6 +45,7 @@ contract TokenSale721 is Context, ReentrancyGuard {
     // Address where we collect comission
     address payable public treasure_fund;
 
+    // @todo : probably deprecated, cause it is NON-FUNGIBLE token , need to remove it
     // How many token units a buyer gets per wei.
     // NOTE : AS NFT SHOULD BE EQUAL 1
     // The rate is the conversion between wei and the smallest and indivisible token unit.
@@ -52,7 +53,7 @@ contract TokenSale721 is Context, ReentrancyGuard {
     // 1 wei will give you 1 unit, or 0.001 TOK.
     uint256 private _rate;
 
-    //TODO: Rework this as separate contract 
+    // @todo: Rework this as separate contract 
     // Supported erc20 currencies: .. to be extended
     enum CurrencyERC20 {USDT, USDC, SNM } 
 
@@ -140,6 +141,7 @@ contract TokenSale721 is Context, ReentrancyGuard {
         _timeToStart = 0;
     }
 
+    // @todo used to buy tokens for ether (deprecated)
     /**
      * @dev fallback function ***DO NOT OVERRIDE***
      * Note that other contracts will transfer funds with a base gas stipend
@@ -165,6 +167,7 @@ contract TokenSale721 is Context, ReentrancyGuard {
         return _wallet;
     }
 
+    // @todo remove as deprecated?
     /**
      * @return the number of token units a buyer gets per wei.
         // NOTE: As NFT should be always equal 1 (?)
@@ -187,12 +190,6 @@ contract TokenSale721 is Context, ReentrancyGuard {
     function sale_limit() public view returns (uint) {
         return _sale_limit;
     }
-
-/*
-    function ticket_type() public view returns (uint) {
-        return _ticket_type;
-    }
-*/
 
 
     function sold_count() public view returns (uint) {
@@ -322,7 +319,7 @@ contract TokenSale721 is Context, ReentrancyGuard {
      * @param tokenAmount Number of tokens to be emitted
      */
     function _deliverTokens(address beneficiary, uint256 tokenAmount) internal {
-        _token.buyTicket(beneficiary,tokenAmount, _master_id);
+        _token.buyItem(beneficiary,tokenAmount, _master_id);
     }
 
     /**
@@ -347,12 +344,14 @@ contract TokenSale721 is Context, ReentrancyGuard {
         // solhint-disable-previous-line no-empty-blocks
     }
 
+    // @todo remove as deprecated
     /**
      * @dev Override to extend the way in which ether is converted to tokens.
      * @param weiAmount Value in wei to be converted into tokens
      * @return Number of tokens that can be purchased with the specified _weiAmount
      * 
      *                  DEPRECATED
+     *  
      */
     function _getTokenAmount(uint256 weiAmount) internal view returns (uint256) {
       
@@ -385,20 +384,6 @@ contract TokenSale721 is Context, ReentrancyGuard {
         emit CalculatedFees(r,fees,amount);
     }
 
-/*
-    // Locking funds form sales to contract balance
-    function _lockFunds() internal payable {
-        uint256 amount = msg.value;
-        uint256 scale = 100;
-        uint256 fees = calculateFee(amount,scale);
-        amount = amount - fees;
-        treasure_fund.transfer(fees);
-        uint256 r = amount + fees;
-        emit CalculatedFees(r,fees,amount);
-        lockedFunds = lockedFunds + amount;
-
-    }
-    */
 
     // WithDraw locked funds to organiser
     function withDrawFunds(CurrencyERC20 currency) public {
@@ -414,12 +399,6 @@ contract TokenSale721 is Context, ReentrancyGuard {
         _forwardFunds(currency);
     }
 
-/*
-    function refundToken(address payable visitor, uint256 amount) internal {
-        visitor.transfer(amount);
-        lockedFunds = lockedFunds.sub(amount);
-    }
-*/
     /*
     *   EXAMPLE OF TAKING FEE (BASIC OPERATORS)
     *
