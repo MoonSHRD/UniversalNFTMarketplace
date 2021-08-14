@@ -12,7 +12,7 @@ import "../../../node_modules/@openzeppelin/contracts/utils/math/SafeMath.sol";
 
 
 
-
+// @todo: remove it
 // Ticket is ERC721 (NFT) token with  availability to reedem tickets
 
 /**
@@ -53,13 +53,17 @@ contract MSNFT is ERC721Enumerable {
 
 
     //events
-    event ItemBought(address indexed visitor_wallet,uint256 indexed event_id, uint256 indexed ticket_id);
-    event ItemBoughtHuman(address visitor_wallet,uint256 event_id, uint256 ticket_id);
+    event ItemBought(address indexed buyer,uint256 indexed master_id, uint256 indexed item_id);
+    event ItemBoughtHuman(address buyer,uint256 master_id, uint256 item_id);
 
 
-    // @todo rework events about MasterIdReserve
-    event MasterIdReserved(address indexed item_sale, uint256 indexed event_id);
-    event MasterIdReservedHuman(address ticket_sale, uint256 event_id);
+    // Service event for debug
+    event MasterIdReserved(address indexed author, uint256 indexed master_id);
+    event MasterIdReservedHuman(address author, uint256 master_id);
+
+    // MasterCopyCreation
+    event MaterCopyCreated(address indexed author, uint256 master_id, string indexed description, string indexed link);
+    event MasterCopyCreatedHuman(address author, uint256 master_id, string indexed description, string indexed link);
 
     // Global counters for item_id and master_id
     Counters.Counter _item_id_count;
@@ -121,6 +125,7 @@ contract MSNFT is ERC721Enumerable {
     {
     // TODO: is this really nececcary to write it as string?
     // this is link to torrent 
+    // @todo: *WARNING -- should be unique!!*
     string magnet_link;
 
     // TODO: rework this for searching functionality (case when user seacrh nft item at marketplace by name (or ticker?))
@@ -158,12 +163,12 @@ contract MSNFT is ERC721Enumerable {
 
     }
 
-    function _reserveMasterId() internal returns(uint256 _master_id) {
+    function _reserveMasterId(address _author) internal returns(uint256 _master_id) {
         _master_id_count.increment();
         _master_id = _master_id_count.current();
 
-        emit MasterIdReserved(msg.sender,_master_id);
-        emit MasterIdReservedHuman(msg.sender,_master_id);
+        emit MasterIdReserved(_author,_master_id);
+        emit MasterIdReservedHuman(_author,_master_id);
 
         return _master_id;
     }
@@ -174,7 +179,7 @@ contract MSNFT is ERC721Enumerable {
 
         require(msg.sender == factory_address, "MSNFT: only factory contract can create mastercopy");
 
-        uint256 mid = _reserveMasterId();
+        uint256 mid = _reserveMasterId(_author);
         RarityType _rarity = set_rarity(_supplyType);
         uint m_totalSupply;
         if (_rarity == RarityType.Rare){
@@ -187,8 +192,8 @@ contract MSNFT is ERC721Enumerable {
         MetaInfo[mid] = ItemInfo(link, _description,_author,_rarity, m_totalSupply);
         authors[mid] = _author;
         
-        // @todo -- emit event about master copy creation?
-
+        MaterCopyCreated(_author, mid, _description, link);
+        MasterCopyCreatedHuman(_author,mid,_description,link);
 
         // return mastercopy id
         return mid;
@@ -288,7 +293,7 @@ contract MSNFT is ERC721Enumerable {
     // @TODO - return itemIDs(?)
     function buyItem(address buyer, uint256 itemAmount, uint256 master_id) public{
        address _sale = mastersales[master_id];
-        require(_sale == msg.sender, "you should call buyTicket from itemsale contract");
+        require(_sale == msg.sender, "MSNFT: you should call buyItem from itemsale contract");
 
         for (uint256 i = 0; i < itemAmount; i++ ){
             _item_id_count.increment();
