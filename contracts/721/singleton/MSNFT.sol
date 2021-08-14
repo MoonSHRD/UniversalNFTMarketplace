@@ -75,7 +75,7 @@ contract MSNFT is ERC721Enumerable {
 
 
 
-    // Ticket lifecycle TODO: Remove it or use it as state of item? Do we need that?
+    // Ticket lifecycle @TODO: Maybe useful for migration in future
     //enum TicketState {Non_Existed, Paid, Fulfilled, Cancelled}
 
     // Rarity type
@@ -278,19 +278,7 @@ contract MSNFT is ERC721Enumerable {
         Mint(to, m_master_id, item_id);
 
     }
-/*
-    // plug additional sale for selling different types of ticket by one event
-    function plugSale(uint256 event_id, address orginizer) public returns(uint) {
-        address[] memory _sales = eventsales[event_id];
-        address _sale = _sales[0];
-        require(retailers[_sale] == orginizer, "only orginizer can plug item");
-        eventsales[event_id].push(msg.sender);
-        uint type_count = getTicketTypeCount(event_id);
-        return type_count;
-    }
-    */
 
-    // @TODO - return itemIDs(?)
     function buyItem(address buyer, uint256 itemAmount, uint256 master_id) public{
        address _sale = mastersales[master_id];
         require(_sale == msg.sender, "MSNFT: you should call buyItem from itemsale contract");
