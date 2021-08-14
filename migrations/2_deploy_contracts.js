@@ -8,11 +8,18 @@ var limitGas = web3.eth.getBlock("latest").gasLimit;
 
 //var deposit_value = '50000';  // deposit INITIAL exchange market cup (turn capital)
 //var deposit_value_wei = web3.utils.toWei(deposit_value,'ether');
+//var custom_gas_price = 
 
+
+var custom_gas_price = '2';
+var wei_gas_price = web3.utils.toWei(custom_gas_price, 'gwei');
+//var string_gas_price = wei_gas_price.toString;
 
 module.exports = function(deployer, network, accounts) {
   console.log(accounts);
-  deployer.deploy(MasterFactory,accounts[1],{gasPrice:'20', from:accounts[0]}).then(function() {
+  console.log(wei_gas_price);
+ // console.log(string_gas_price);
+  deployer.deploy(MasterFactory,accounts[1],{gasPrice: wei_gas_price, from:accounts[0]}).then(function() {
   console.log(network);
   console.log(network.port);
   console.log(network.gasPrice);
@@ -21,13 +28,13 @@ module.exports = function(deployer, network, accounts) {
   console.log(accounts[0]);
   console.log("treasure");
   console.log(accounts[1]);
-
+  console.log("gas limit");
+  console.log(limitGas);
   return;
  // return deployer.deploy(SuperFactory, KNS.address,accounts[1],accounts[2],{gasPrice:'1'});
 });
 
-console.log("gas limit");
-console.log(limitGas);
+
 
 
 /*
