@@ -114,15 +114,6 @@ function PlugInTicketSale(address payable origin_sale, uint price, uint _sale_li
 }
 */
 
-/*                      DEPRECATED
-function calculateRate (uint256 price) internal pure returns (uint256 rate_p) {
-    // rate = price * 1 eth
-    rate_p = price * (1 ether); // override for price determinition
-    return rate_p;
-}
-*/
-
-
 
 function getMasterTemplateAddress() public view returns(address) {
     return master_template;
