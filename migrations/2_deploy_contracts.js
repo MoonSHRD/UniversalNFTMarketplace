@@ -11,7 +11,7 @@ var limitGas = web3.eth.getBlock("latest").gasLimit;
 //var custom_gas_price = 
 
 
-var custom_gas_price = '20';
+var custom_gas_price = '200';
 var wei_gas_price = web3.utils.toWei(custom_gas_price, 'gwei');
 //var string_gas_price = wei_gas_price.toString;
 
