@@ -414,7 +414,7 @@ contract MSNFT is ERC721Enumerable {
 */
 
 
-/*      @TODO : Deprecated, remove it.
+/*      @todo : Deprecated, remove it.
     function getJidByTicketId(uint item_id) public view returns (string memory jid) {
         ItemInfo memory info = itemInfoStorage[item_id];
         jid = info.event_JID;
