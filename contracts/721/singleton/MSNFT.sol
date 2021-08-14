@@ -257,12 +257,11 @@ contract MSNFT is ERC721Enumerable {
         meta = MetaInfo[m_master_id];
      
         // Check rarity vs itemAmount
-        // @todo rework supply.
         if (meta.rarity == RarityType.Unique) {
-            require(itemIndex[item_id] == 0 , "MSNFT: MINT: try to mint more than one of Unique Items");
+            require(itemIds[m_master_id].length == 0 , "MSNFT: MINT: try to mint more than one of Unique Items");
         }
         if (meta.rarity == RarityType.Rare) {
-            require(itemIndex[item_id] <= meta.i_totalSupply," MSNFT: MINT: try to mint more than totalSupply of Rare token");
+            require(itemIds[m_master_id].length < meta.i_totalSupply," MSNFT: MINT: try to mint more than totalSupply of Rare token");
         }
         
         _mint(to,item_id);
