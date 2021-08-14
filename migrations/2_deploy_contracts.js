@@ -20,9 +20,9 @@ module.exports = function(deployer, network, accounts) {
   console.log("deployer");
   console.log(accounts[0]);
   console.log("treasure");
-  console.log(accounts[1])
+  console.log(accounts[1]);
 
-  return
+  return;
  // return deployer.deploy(SuperFactory, KNS.address,accounts[1],accounts[2],{gasPrice:'1'});
 });
 
@@ -35,5 +35,7 @@ deployer.deploy(Ticket, {gasPrice:'1'}).then(function() {
   return deployer.deploy(TicketFactory,Ticket.address,accounts[0],{gasPrice:'1'}); // parameters -- ticket address, treasure_fund address
 });
 deployer.deploy(Deposit,{gasPrice:'1', value:deposit_value_wei, from:accounts[2]}); //FIXME: add value sent to deposit contract
-};
 */
+
+
+};
