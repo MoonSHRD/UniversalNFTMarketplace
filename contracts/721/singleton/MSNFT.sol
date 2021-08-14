@@ -82,11 +82,38 @@ contract MSNFT is ERC721Enumerable {
     // map from mastercopy_id  to itemsale address
     // TIP: ticket type = array.length
     mapping(uint256 => address) public mastersales;
+
+
+
+
+
+
+
+     /*
+                    @NOTE
+            if we mint 3rd item for some master (and already have two minted items) then
+            item_id is global counter and can't be determine (think of it as random). let's assume that we have our third token item_id = 245, and we minting for master_id = 18
+            itemIndex[245] = itemIds[18].lenght // = 2
+            itemIds[18] = itemIds[18].push(245) // = [x , y, 245] (3 elements array)
+            
+            itemIds is a map which return you array of items tethered to specific master
+            arrays starts with 0, so item 245 will be stored as third element of array from itemIds[18] and can be getted from there 
+
+        */
+
     // map from master_id to item ids
-    mapping (uint256 => uint256[]) public itemIds; // -- length of this array can be used as totalSupply!  (total number of specific token (items) can be getted as itemIds[master].length + 1)
+    mapping (uint256 => uint256[]) public itemIds; // -- length of this array can be used as totalSupply!  (total number of specific token (items) can be getted as itemIds[master].length)
 
     // map from token ID to its index in itemIds
     mapping (uint256 => uint256) itemIndex;         // -- each token have a position in itemIds array. itemIndex is help to track where exactly stored itemId in itemIds array. 
+
+
+    
+
+
+
+
+
     // map from item id to item info
     //mapping (uint256 => ItemInfo) public itemInfoStorage;  // TODO: -- we can remove it as item is a simulacr and all info we need we already have in MetaInfo
     
@@ -260,10 +287,11 @@ contract MSNFT is ERC721Enumerable {
 
     function Mint(address to, uint m_master_id, uint item_id) internal {
 
-        // Check rarity vs itemAmount
+        
         ItemInfo memory meta;
         meta = MetaInfo[m_master_id];
-        uint256 current_supply = itemIds[m_master_id].length + 1;
+        // @todo check existense of master
+        // Check rarity vs itemAmount
         if (meta.rarity == RarityType.Unique) {
             require(itemIndex[item_id] == 0 , "MSNFT: MINT: try to mint more than one of Unique Items");
         }
@@ -272,6 +300,20 @@ contract MSNFT is ERC721Enumerable {
         }
         
         _mint(to,item_id);
+
+        /*
+            
+            if we mint 3rd item for some master (and already have two minted items) then
+            item_id is global counter and can't be determine (think of it as random). let's assume that we have our third token item_id = 245, and we minting for master_id = 18
+            itemIndex[245] = itemIds[18].lenght // = 2
+            itemIds[18] = itemIds[18].push(245) // = [x , y, 245] (3 elements array)
+            
+            itemIds is a map which return you array of items tethered to specific master
+            arrays starts with 0, so item 245 will be stored as third element of array from itemIds[18] and can be getted from there 
+
+        */
+        itemIndex[item_id] = itemIds[m_master_id].length;   // this item_id will be stored at itemIds[m_master_id] at this *position order*.  
+        itemIds[m_master_id].push(item_id);                 // this item is stored at itemIds and tethered to master_id
     }
 
 
@@ -282,6 +324,10 @@ contract MSNFT is ERC721Enumerable {
         ItemInfo memory meta;
         meta = MetaInfo[m_master_id];
         require(msg.sender == meta.author, "MSNFT: only author can emit items outside of sale");
+        
+        _item_id_count.increment();
+        uint256 item_id = _item_id_count.current();
+        Mint(to, m_master_id, item_id);
 
     }
 /*
@@ -316,8 +362,9 @@ contract MSNFT is ERC721Enumerable {
             Mint(buyer, master_id, item_id);
        //     _mint(buyer,item_id);
          //   itemInfoStorage[item_id] = ItemInfo(TicketState.Paid,RarityType.State,_ticket_type, jid,_sale);
-            itemIndex[item_id] = itemIds[master_id].length;
-            itemIds[master_id].push(item_id);
+
+          //  itemIndex[item_id] = itemIds[master_id].length;
+          //  itemIds[master_id].push(item_id);
             
             // approve for ticketsale (msg.sender = ticketsale)
           //  approve(msg.sender, ticket_id);
