@@ -133,7 +133,7 @@ contract MSNFT is ERC721Enumerable {
     
     constructor(string memory name_, string memory smbl_) ERC721(name_,smbl_) ERC721Enumerable() {
       //  _addMinter(address(this));
-      // TODO: only factory can deploy this contract?
+      // @todo: only factory can deploy this contract?
         factory_address = msg.sender;
     }
 
@@ -151,8 +151,8 @@ contract MSNFT is ERC721Enumerable {
         super.safeTransferFrom(from, to, tokenId);
     }
 
-    /* TODO: Deprecated, delete this
-    // TODO - check for event_id already existed
+    /* @TODO: Deprecated, delete this
+    // @TODO - check for event_id already existed
     function reserveMasterIdForSale(address orginizer, string memory jid) public returns(uint256 master_id){
        
         master_id = _reserveMasterId();
@@ -173,7 +173,7 @@ contract MSNFT is ERC721Enumerable {
     }
  */
 
-    // TODO: *WARNING* -- this function should attach other nft's contract's tokens to crowdsale
+    // @TODO: *WARNING* -- this function should attach other nft's contract's tokens to crowdsale
     // Also this function 'plug' itemsale contract from factory to mastersales map
     function PlugCrowdSale(address organizer, uint256 _masterId, address _sale) public {
         // only factory knows about crowdsale contracts and only she should have access to this
@@ -201,7 +201,7 @@ contract MSNFT is ERC721Enumerable {
     function createMasterCopy(string memory link, address _author ,string memory _description, uint256 _supplyType) public returns(uint256 c_master_id){
 
 
-        // TODO: Add security check, should be only factory(?)
+        // @TODO: Add security check, should be only factory(?)
         require(msg.sender == factory_address, "only factory can create mastercopy");
 
         uint256 mid = _reserveMasterId();
@@ -217,7 +217,7 @@ contract MSNFT is ERC721Enumerable {
         MetaInfo[mid] = ItemInfo(link, _description,_author,_rarity, m_totalSupply);
         authors[mid] = _author;
         
-        // TODO -- emit event about master copy creation?
+        // @todo -- emit event about master copy creation?
 
 
         // return mastercopy id
@@ -285,14 +285,14 @@ contract MSNFT is ERC721Enumerable {
     }
     */
 
-    //TODO - return ticketIDs(?)
+    // @TODO - return ticketIDs(?)
     function buyTicket(address buyer, uint256 itemAmount, uint256 master_id) public{
        // address[] memory _sales = mastersales[master_id];
        // address _sale = _sales[_ticket_type - 1]; // array start from 0
        address _sale = mastersales[master_id];
         require(_sale == msg.sender, "you should call buyTicket from itemsale contract");
 
-/*      TODO : Add check for high-level mint function
+/*      @TODO : Add check for high-level mint function
     
 */
         
@@ -301,7 +301,7 @@ contract MSNFT is ERC721Enumerable {
             _item_id_count.increment();
             uint256 item_id = _item_id_count.current();
 
-            // TODO: WARNING -- ADD CHECK FOR RARITY, ADD HIGHLEVEL MINT FUNCTION WIH IMPACT AT CIRCULATING SUPPLY
+            // @TODO: WARNING -- ADD CHECK FOR RARITY, ADD HIGHLEVEL MINT FUNCTION WIH IMPACT AT CIRCULATING SUPPLY
        //     Mint(buyer, master_id, item_id);
             _mint(buyer,item_id);
          //   itemInfoStorage[item_id] = ItemInfo(TicketState.Paid,RarityType.State,_ticket_type, jid,_sale);
@@ -414,7 +414,7 @@ contract MSNFT is ERC721Enumerable {
 */
 
 
-/*      TODO : Deprecated, remove it.
+/*      @todo : Deprecated, remove it.
     function getJidByTicketId(uint item_id) public view returns (string memory jid) {
         ItemInfo memory info = itemInfoStorage[item_id];
         jid = info.event_JID;
