@@ -12,7 +12,7 @@ var limitGas = web3.eth.getBlock("latest").gasLimit;
 
 module.exports = function(deployer, network, accounts) {
   console.log(accounts);
-  deployer.deploy(MasterFactory,accounts[1],{gasPrice:'1', from:accounts[0]}).then(function() {
+  deployer.deploy(MasterFactory,accounts[1],{gasPrice:'20', from:accounts[0]}).then(function() {
   console.log(network);
   console.log(network.port);
   console.log(network.gasPrice);
