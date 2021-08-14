@@ -1,4 +1,5 @@
 pragma solidity ^0.8.0;
+//"SPDX-License-Identifier: MIT"
 
 import "../../../../node_modules/@openzeppelin/contracts/utils/Context.sol";
 import "../../../../node_modules/@openzeppelin/contracts/token/ERC20/IERC20.sol";
@@ -55,7 +56,7 @@ contract Crowdsale is Context, ReentrancyGuard {
      * @param wallet Address where collected funds will be forwarded to
      * @param token Address of the token being sold
      */
-    constructor (uint256 rate, address payable wallet, IERC20 token) public {
+    constructor (uint256 rate, address payable wallet, IERC20 token)  {
         require(rate > 0, "Crowdsale: rate is 0");
         require(wallet != address(0), "Crowdsale: wallet is the zero address");
         require(address(token) != address(0), "Crowdsale: token is the zero address");
