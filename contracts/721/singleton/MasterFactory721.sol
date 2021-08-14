@@ -19,10 +19,18 @@ event SaleCreated(address indexed author, uint price, TokenSale721.CurrencyERC20
 event SaleCreatedHuman(address author, uint price, TokenSale721.CurrencyERC20 currency,uint256 master_id);
 
 
+/*
 // TODO : invoke createMSNFT when constructor
 constructor(address _master, address payable _treasure_fund)  {
    // ticket_template = createMSNFT();
    master_template = _master;
+   treasure_fund = _treasure_fund;
+}
+*/
+
+constructor(address payable _treasure_fund)  {
+   // ticket_template = createMSNFT();
+   master_template = createMSNFT();
    treasure_fund = _treasure_fund;
 }
 

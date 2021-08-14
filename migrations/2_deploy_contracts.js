@@ -1,8 +1,8 @@
-var SuperFactory = artifacts.require("./SuperFactory.sol");
-var KNS = artifacts.require("./KNS.sol");
-var TicketFactory = artifacts.require("./721/singleton/TicketFactory721.sol")
-var Deposit = artifacts.require("./Deposit.sol")
-var Ticket = artifacts.require("./721/singleton/Ticket721.sol")
+//var SuperFactory = artifacts.require("./SuperFactory.sol");
+//var KNS = artifacts.require("./KNS.sol");
+var MasterFactory = artifacts.require("./721/singleton/MasterFactory721.sol")
+//var Deposit = artifacts.require("./Deposit.sol")
+var Master = artifacts.require("./721/singleton/MSNFT.sol")
 var accounts = web3.eth.getAccounts();
 var limitGas = web3.eth.getBlock("latest").gasLimit;
 
