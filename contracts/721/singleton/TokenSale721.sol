@@ -454,15 +454,7 @@ contract TokenSale721 is Context, ReentrancyGuard {
         return a4;
     }
 
-/*
-    function calculatePrice(uint256 price, CurrencyERC20 currency) public view returns(uint256) {
-        // Check if stable
-        if (currency == CurrencyERC20.USDT || currency == CurrencyERC20.USDC) {
 
-        }
-
-    }
-*/
 
 
 }
