@@ -27,9 +27,6 @@ contract TokenSale721 is Context, ReentrancyGuard {
     //master_id
     uint256 public _master_id;
 
-    // ticket type
-    //uint public _ticket_type = 1;
-
     // rarity type
     MSNFT.RarityType _rarity_type;
 
@@ -45,17 +42,9 @@ contract TokenSale721 is Context, ReentrancyGuard {
     // Address where we collect comission
     address payable public treasure_fund;
 
-    // @todo : probably deprecated, cause it is NON-FUNGIBLE token , need to remove it
-    // How many token units a buyer gets per wei.
-    // NOTE : AS NFT SHOULD BE EQUAL 1
-    // The rate is the conversion between wei and the smallest and indivisible token unit.
-    // So, if you are using a rate of 1 with a ERC20Detailed token with 3 decimals called TOK
-    // 1 wei will give you 1 unit, or 0.001 TOK.
-    uint256 private _rate;
-
     // @todo: Rework this as separate contract 
     // Supported erc20 currencies: .. to be extended
-    enum CurrencyERC20 {USDT, USDC, SNM } 
+    enum CurrencyERC20 {USDT, USDC, DAI, SNM} 
 
     // Map from currency to price
     mapping (CurrencyERC20 => uint256) public _price;
@@ -65,9 +54,6 @@ contract TokenSale721 is Context, ReentrancyGuard {
     mapping (CurrencyERC20 => IERC20) internal _currencys;
 
     mapping (CurrencyERC20 => uint256) internal currency_balances;
-
-    // Amount of wei raised
-    uint256 private _weiRaised;
 
     // service comission fee
     uint public percent_fee = 5;
@@ -108,14 +94,18 @@ contract TokenSale721 is Context, ReentrancyGuard {
         require(i_wallet != address(0), "Crowdsale: wallet is the zero address");
         require(address(i_token) != address(0), "Crowdsale: token is the zero address");
 
-     //   _rate = rate;
-
         // Check if stable
-        if (_currency == CurrencyERC20.USDT || _currency == CurrencyERC20.USDC) {
+        if (_currency == CurrencyERC20.DAI || _currency == CurrencyERC20.USDC) {
            // _price[_currency] = sprice;
+            _price[CurrencyERC20.DAI] = sprice;
+            _price[CurrencyERC20.USDC] = sprice;
+            _price[CurrencyERC20.USDT] = sprice / 1 ether * 1e6;    // USDT have 6 decimals, not 18
+        } else if(_currency == CurrencyERC20.USDT) {
             _price[CurrencyERC20.USDT] = sprice;
-            _price[CurrencyERC20.USDT] = sprice;
-        } else {
+            _price[CurrencyERC20.USDC] = sprice / 1e6 * 1 ether;
+            _price[CurrencyERC20.DAI] = sprice / 1e6 * 1 ether;
+        } 
+        else {
             _price[_currency] = sprice;
         }
 
@@ -128,7 +118,7 @@ contract TokenSale721 is Context, ReentrancyGuard {
         if (_rarity_type == MSNFT.RarityType.Unique) {
             require(i_sale_limit == 1, "Tokensale: Attempt to create new Tokensale for unique NFT with wrong sale_limit");
         }
-        if (_rarity_type == MSNFT.RarityType.Common) {
+        if (_rarity_type == MSNFT.RarityType.Common) {  
             _sale_limit = 0;
         }
         if (_rarity_type == MSNFT.RarityType.Rare) {
@@ -167,20 +157,8 @@ contract TokenSale721 is Context, ReentrancyGuard {
         return _wallet;
     }
 
-    // @todo remove as deprecated?
-    /**
-     * @return the number of token units a buyer gets per wei.
-        // NOTE: As NFT should be always equal 1 (?)
-     */
-    function rate() public view returns (uint256) {
-        return _rate;
-    }
-
-    /**
-     * @return the amount of wei raised.
-     */
-    function weiRaised() public view returns (uint256) {
-        return _weiRaised;
+    function getBalances(CurrencyERC20 _currency) public view returns (uint) {
+        return currency_balances[_currency];
     }
 
     function master_id() public view returns (uint256) {
@@ -344,28 +322,13 @@ contract TokenSale721 is Context, ReentrancyGuard {
         // solhint-disable-previous-line no-empty-blocks
     }
 
-    // @todo remove as deprecated
-    /**
-     * @dev Override to extend the way in which ether is converted to tokens.
-     * @param weiAmount Value in wei to be converted into tokens
-     * @return Number of tokens that can be purchased with the specified _weiAmount
-     * 
-     *                  DEPRECATED
-     *  
-     */
-    function _getTokenAmount(uint256 weiAmount) internal view returns (uint256) {
-      
-        require(weiAmount >= _rate, "wei amount should be bigger or equal of rate");
-       // uint256 ta = SafeMath.mul(weiAmount, _rate);
-        uint256 ta = (weiAmount / (1 ether)) / (_rate / (1 ether));
-        return ta;
-       // return weiAmount.mul(_rate);
-        //FIXME: round result to int, check math
-    }
 
+    /*
+    *   How much is needed to pay for this token amount to buy
+    */
     function getWeiAmount(uint256 tokenAmountToBuy, CurrencyERC20 currency) public view returns(uint256){
         uint256 price = get_price(currency);
-        uint256 weiAmount = price * tokenAmountToBuy;
+        uint256 weiAmount = price * tokenAmountToBuy; 
         return weiAmount;
     }
 
