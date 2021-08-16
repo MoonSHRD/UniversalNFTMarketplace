@@ -42,14 +42,6 @@ contract TokenSale721 is Context, ReentrancyGuard {
     // Address where we collect comission
     address payable public treasure_fund;
 
-    // @todo : probably deprecated, cause it is NON-FUNGIBLE token , need to remove it
-    // How many token units a buyer gets per wei.
-    // NOTE : AS NFT SHOULD BE EQUAL 1
-    // The rate is the conversion between wei and the smallest and indivisible token unit.
-    // So, if you are using a rate of 1 with a ERC20Detailed token with 3 decimals called TOK
-    // 1 wei will give you 1 unit, or 0.001 TOK.
-    uint256 private _rate;
-
     // @todo: Rework this as separate contract 
     // Supported erc20 currencies: .. to be extended
     enum CurrencyERC20 {USDT, USDC, DAI, SNM} 
