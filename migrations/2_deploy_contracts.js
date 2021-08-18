@@ -23,7 +23,7 @@ var SNM = artifacts.require("./test_erc20_tokens/WETH.sol")
 //var custom_gas_price = 
 
 
-var custom_gas_price = '100';
+var custom_gas_price = '150';
 var wei_gas_price = web3.utils.toWei(custom_gas_price, 'gwei');
 //var string_gas_price = wei_gas_price.toString;
 

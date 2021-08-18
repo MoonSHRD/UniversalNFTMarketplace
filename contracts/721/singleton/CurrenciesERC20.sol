@@ -1,18 +1,18 @@
 pragma solidity ^0.8.0;
 //"SPDX-License-Identifier: UNLICENSED"
 
-import "../../../node_modules/@openzeppelin/contracts/token/ERC20/IERC20.sol";
+//import "../../../node_modules/@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "../../../node_modules/@openzeppelin/contracts/token/ERC20/extensions/IERC20Metadata.sol";
 //import "../../../node_modules/@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import "../../../node_modules/@openzeppelin/contracts/utils/math/SafeMath.sol";
-import "../../../node_modules/@openzeppelin/contracts/utils/Context.sol";
+//import "../../../node_modules/@openzeppelin/contracts/utils/Context.sol";
 import "../../../node_modules/@openzeppelin/contracts/security/ReentrancyGuard.sol";
 //import "../../../node_modules/@openzeppelin/contracts/utils/Counters.sol";
 import "../../../node_modules/@openzeppelin/contracts/access/Ownable.sol";
 
 
 
-contract CurrenciesERC20 is Context, ReentrancyGuard, Ownable {
+contract CurrenciesERC20 is ReentrancyGuard, Ownable {
 
 
     using SafeMath for uint256;
