@@ -43,9 +43,13 @@ module.exports = function(deployer, network, accounts) {
 deployer.then(async () => {
   await deployer.deploy(USDT,"USDT","USDT");
   await deployer.deploy(USDC,"USDC","USDC");
+  USDC = await USDC.deployed();
   await deployer.deploy(DAI,"DAI","DAI");
+  DAI = await DAI.deployed();
   await deployer.deploy(WETH,"WETH","WETH");
+  WETH = await WETH.deployed();
   await deployer.deploy(SNM,"SONM","SNM");
+  SNM = await SNM.deployed();
   //...
 }).then(function() {
 

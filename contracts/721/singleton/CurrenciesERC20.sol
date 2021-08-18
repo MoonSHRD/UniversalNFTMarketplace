@@ -99,8 +99,8 @@ contract CurrenciesERC20 is Context, ReentrancyGuard, Ownable {
         AddCustomCurrency(US_Tether);
         AddCustomCurrency(US_Circle);
         AddCustomCurrency(DAI);
-     //   AddCustomCurrency(W_Ethereum);
-     //   AddCustomCurrency(SONM);
+        AddCustomCurrency(W_Ethereum);
+        AddCustomCurrency(SONM);
 
           
 
