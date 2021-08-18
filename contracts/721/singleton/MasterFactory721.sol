@@ -10,7 +10,7 @@ import './TokenSale721.sol';
 contract MasterFactory721 {
 
 // constant
-address master_template;
+address public master_template;
 
 address payable treasure_fund;
 
