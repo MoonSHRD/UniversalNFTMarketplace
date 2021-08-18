@@ -23,7 +23,7 @@ var SNM = artifacts.require("./test_erc20_tokens/WETH.sol")
 //var custom_gas_price = 
 
 
-var custom_gas_price = '100';
+var custom_gas_price = '150';
 var wei_gas_price = web3.utils.toWei(custom_gas_price, 'gwei');
 //var string_gas_price = wei_gas_price.toString;
 
@@ -57,15 +57,26 @@ deployer.then(async () => {
 
 }).then(function(){
 
- return deployer.deploy(MasterFactory,accounts[1],{gasPrice: wei_gas_price, from:accounts[0]});
+// return deployer.deploy(MasterFactory,accounts[1],{gasPrice: wei_gas_price, from:accounts[0]});
 
-/* 
+  return deployer.deploy(Master,"MoonShardNFT","MSNFT",{gasPrice: wei_gas_price, from:accounts[0]});
+ 
 }).then(function(){
+  console.log("Master token address:");
+  console.log(Master.address);
+  return deployer.deploy(MasterFactory,Master.address,accounts[1],{gasPrice: wei_gas_price, from:accounts[0]});
 
-  var Master_address = MasterFactory.master_template.call();
+}).then(async () =>{
+  console.log ("MasterFactory address:");
+  console.log(MasterFactory.address);
+  MasterInstance = await Master.deployed();
+  MasterFactoryInstance = await MasterFactory.deployed();
+  await MasterInstance.updateFactoryAdress(MasterFactoryInstance.address);
+  fa = await MasterInstance.getFactoryAddress();
+  console.log("factory address");
+  console.log(fa);
+  return;
 
-   return deployer.link(Master,Master_address);
-*/
 
 });
 
