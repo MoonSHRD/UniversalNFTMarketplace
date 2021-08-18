@@ -28,13 +28,15 @@ constructor(address _master, address payable _treasure_fund)  {
 }
 */
 
-constructor(address payable _treasure_fund)  {
+constructor(address msnft_,address payable _treasure_fund)  {
    // ticket_template = createMSNFT();
-   master_template = createMSNFT();
+ //  master_template = createMSNFT();
+   master_template = msnft_;
    treasure_fund = _treasure_fund;
 }
 
 
+/*
 function createMSNFT() internal returns (address ticket_address) {
  //  address factory_address = address(this);
    string memory name_ = "MoonShardNFT";
@@ -42,6 +44,7 @@ function createMSNFT() internal returns (address ticket_address) {
    ticket_address = address(new MSNFT(name_,smbl_));
    return ticket_address;
 }
+*/
 
 function createItemSale721(address organizer, uint price, MSNFT token,uint sale_limit, TokenSale721.CurrencyERC20 currency, uint _master_id) internal returns(address ticket_sale) {
     // calculate price

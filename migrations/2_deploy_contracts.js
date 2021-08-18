@@ -57,15 +57,21 @@ deployer.then(async () => {
 
 }).then(function(){
 
- return deployer.deploy(MasterFactory,accounts[1],{gasPrice: wei_gas_price, from:accounts[0]});
+// return deployer.deploy(MasterFactory,accounts[1],{gasPrice: wei_gas_price, from:accounts[0]});
 
-/* 
+  return deployer.deploy(Master,"MoonShardNFT","MSNFT",{gasPrice: wei_gas_price, from:accounts[0]});
+ 
 }).then(function(){
 
-  var Master_address = MasterFactory.master_template.call();
+  return deployer.deploy(MasterFactory,Master.address,accounts[1],{gasPrice: wei_gas_price, from:accounts[0]});
 
-   return deployer.link(Master,Master_address);
-*/
+}).then(async () =>{
+
+  MasterInstance = await Master.deployed();
+  MasterFactoryInstance = await MasterFactory.deployed();
+  await MasterInstance.updateFactoryAdress(MasterFactoryInstance.address);
+  return;
+
 
 });
 

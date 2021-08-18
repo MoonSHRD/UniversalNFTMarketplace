@@ -6,6 +6,7 @@ import "../../../node_modules/@openzeppelin/contracts/token/ERC721/ERC721.sol";
 //import "../../../node_modules/@openzeppelin/contracts/token/ERC721/presets/ERC721PresetMinterPauserAutoId.sol";
 import "../../../node_modules/@openzeppelin/contracts/utils/Counters.sol";
 import "../../../node_modules/@openzeppelin/contracts/utils/math/SafeMath.sol";
+import "../../../node_modules/@openzeppelin/contracts/access/Ownable.sol";
 
 
 
@@ -41,7 +42,7 @@ import "../../../node_modules/@openzeppelin/contracts/utils/math/SafeMath.sol";
 
  **/
 
-contract MSNFT is ERC721Enumerable {
+contract MSNFT is ERC721Enumerable, Ownable {
    using SafeMath for uint256;
    using Counters for Counters.Counter;
 
@@ -71,7 +72,8 @@ contract MSNFT is ERC721Enumerable {
 
 
     // Motherland
-    address factory_address;
+    address factory_address;    // ITS A VERY IMPORTANT TO KEEP THIS SAFE!!  THIS CONTRACT DO NOT KNOW ABOUT FACTORY CODE SO IT COULD BE REPLACED BY UNKNOWN CONTRACT AND GET ACCESS TO SERVICE FUNCTIONS
+    // HOWEVER IT'S THE ONLY WAY TO MAKE THIS CONTRACT UPGRADABLE AND INDEPENDENT FROM FACTORY.
 
 
 
@@ -145,7 +147,8 @@ contract MSNFT is ERC721Enumerable {
     constructor(string memory name_, string memory smbl_) ERC721(name_,smbl_) ERC721Enumerable() {
       //  _addMinter(address(this));
       // @todo: only factory can deploy this contract?
-        factory_address = msg.sender;
+      //  factory_address = msg.sender;
+
     }
 
 
@@ -356,4 +359,13 @@ contract MSNFT is ERC721Enumerable {
         return status;
     }
     */
+
+
+    // @TODO: THERE IS A HACK WE NEED TO REFACTOR IT
+    function updateFactoryAdress(address factory_address_) public onlyOwner() {
+        factory_address = factory_address_;
+    }
+
+
+
 }
