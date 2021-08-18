@@ -46,7 +46,11 @@ await deployer.deploy(DAI);
 await deployer.deploy(WETH);
 await deployer.deploy(SNM);
 
-deployer.deploy()
+deployer.deploy(Currencies,USDT.address,USDC.address,DAI.address,WETH.address,SNM.address, {gasPrice: wei_gas_price, from:accounts[0]}).then(function() {
+
+  deployer.deploy(MasterFactory,accounts[1],{gasPrice: wei_gas_price, from:accounts[0]});
+
+});
 
 
 /*
