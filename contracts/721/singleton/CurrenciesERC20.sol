@@ -25,8 +25,6 @@ contract CurrenciesERC20 is Context, ReentrancyGuard, Ownable {
     enum CurrencyERC20 {USDT, USDC, DAI, SNM, WETH} 
 
     struct CurrencyERC20_Custom {
-       // string name;
-     //   uint8 decimals;
         address contract_address;
         IERC20Metadata itoken; // contract interface
     }
@@ -66,14 +64,6 @@ contract CurrenciesERC20 is Context, ReentrancyGuard, Ownable {
             _currencies_custom_user[_name_c].contract_address = _token_contract;
         }
     }
-
-
-/*
-    function hardcodeCurrencies() internal {
-
-    }
-*/
-
 
 
     constructor(address US_Tether, address US_Circle, address DAI, address W_Ethereum, address SONM) {
