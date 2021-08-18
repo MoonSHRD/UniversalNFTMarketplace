@@ -9,7 +9,12 @@ import "../../../node_modules/@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import "../../../node_modules/@openzeppelin/contracts/access/Ownable.sol";
 
 
-abstract contract TestUSDT is ERC20, Ownable {
+ contract TestUSDT is ERC20, Ownable {
+
+    constructor(string memory name_, string memory symbol_) ERC20(name_,symbol_) {}
+
+
+
 
     function MintERC20 (address to, uint amount) public onlyOwner{
         super._mint(to, amount);

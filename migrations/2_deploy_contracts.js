@@ -40,18 +40,39 @@ module.exports = function(deployer, network, accounts) {
 });
 */
 
-await deployer.deploy(USDT);
-await deployer.deploy(USDC);
-await deployer.deploy(DAI);
-await deployer.deploy(WETH);
-await deployer.deploy(SNM);
+deployer.then(async () => {
+  await deployer.deploy(USDT,"USDT","USDT");
+  await deployer.deploy(USDC,"USDC","USDC");
+  await deployer.deploy(DAI,"DAI","DAI");
+  await deployer.deploy(WETH,"WETH","WETH");
+  await deployer.deploy(SNM,"SONM","SNM");
+  //...
+}).then(function() {
 
+  deployer.deploy(Currencies,USDT.address,USDC.address,DAI.address,WETH.address,SNM.address, {gasPrice: wei_gas_price, from:accounts[0]})
+
+}).then(function(){
+
+ return deployer.deploy(MasterFactory,accounts[1],{gasPrice: wei_gas_price, from:accounts[0]});
+
+});
+
+
+/*
+deployer.deploy(USDT,"USDT","USDT");
+deployer.deploy(USDC,"USDC","USDC");
+deployer.deploy(DAI,"DAI","DAI");
+deployer.deploy(WETH,"WETH","WETH");
+deployer.deploy(SNM,"SONM","SNM");
+*/
+
+/*
 deployer.deploy(Currencies,USDT.address,USDC.address,DAI.address,WETH.address,SNM.address, {gasPrice: wei_gas_price, from:accounts[0]}).then(function() {
 
   deployer.deploy(MasterFactory,accounts[1],{gasPrice: wei_gas_price, from:accounts[0]});
 
 });
-
+*/
 
 /*
 deployer.deploy(Ticket, {gasPrice:'1'}).then(function() {
