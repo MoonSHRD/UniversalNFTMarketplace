@@ -54,13 +54,13 @@ contract CurrenciesERC20 is Context, ReentrancyGuard, Ownable {
 
         address _owner_c = owner();
         if(msg.sender == _owner_c) {
-            require(_currencies_custom[_name_c].contract_address == address(0), "Currency token contract with this address is already exists");
+            require(_currencies_custom[_name_c].contract_address == address(0), "AddCustomCurrency[admin]: Currency token contract with this address is already exists");
             _currencies_custom[_name_c].itoken = _currency_contract;
          //   _currencies_custom[_name_c].decimals = _dec;
             _currencies_custom[_name_c].contract_address = _token_contract;
         }
         else {
-            require(_currencies_custom_user[_name_c].contract_address == address(0), "Currency token contract with this address is already exists");
+            require(_currencies_custom_user[_name_c].contract_address == address(0), "AddCustomCurrency[user]: Currency token contract with this address is already exists");
             _currencies_custom_user[_name_c].itoken = _currency_contract;
           //  _currencies_custom_user[_name_c].decimals = _dec;
             _currencies_custom_user[_name_c].contract_address = _token_contract;
@@ -97,12 +97,12 @@ contract CurrenciesERC20 is Context, ReentrancyGuard, Ownable {
 
 
         AddCustomCurrency(US_Tether);
-        AddCustomCurrency(US_Circle);
-        AddCustomCurrency(DAI);
-        AddCustomCurrency(W_Ethereum);
-        AddCustomCurrency(SONM);
+     //   AddCustomCurrency(US_Circle);
+     //   AddCustomCurrency(DAI);
+     //   AddCustomCurrency(W_Ethereum);
+     //   AddCustomCurrency(SONM);
 
-
+          
 
 
     }

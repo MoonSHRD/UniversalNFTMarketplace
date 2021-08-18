@@ -49,7 +49,7 @@ deployer.then(async () => {
   //...
 }).then(function() {
 
-  deployer.deploy(Currencies,USDT.address,USDC.address,DAI.address,WETH.address,SNM.address, {gasPrice: wei_gas_price, from:accounts[0]})
+  return deployer.deploy(Currencies,USDT.address,USDC.address,DAI.address,WETH.address,SNM.address, {gasPrice: wei_gas_price, from:accounts[0]})
 
 }).then(function(){
 
