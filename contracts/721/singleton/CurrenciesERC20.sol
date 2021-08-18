@@ -33,7 +33,6 @@ contract CurrenciesERC20 is Context, ReentrancyGuard, Ownable {
 
 
     // map currency contract addresses
-    // FIXME: rework this part to have separate contract with ability to modify currency list 
     mapping (CurrencyERC20 => IERC20Metadata) public _currencies_hardcoded;
 
     // mapping from name to currency contract (protected)
@@ -93,7 +92,7 @@ contract CurrenciesERC20 is Context, ReentrancyGuard, Ownable {
         AddCustomCurrency(W_Ethereum);
         AddCustomCurrency(SONM);
 
-        
+
 
 
     }
