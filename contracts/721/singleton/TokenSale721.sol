@@ -51,7 +51,7 @@ contract TokenSale721 is Context, ReentrancyGuard {
 
     // map currency contract addresses
     // FIXME: rework this part to have separate contract with ability to modify currency list 
-    mapping (CurrencyERC20 => IERC20) internal _currencys;
+    mapping (CurrencyERC20 => IERC20) internal _currencies;
 
     mapping (CurrencyERC20 => uint256) internal currency_balances;
 
@@ -90,7 +90,6 @@ contract TokenSale721 is Context, ReentrancyGuard {
      */
      // TODO: price calculation (?)
     constructor (address i_wallet, MSNFT i_token, uint i_sale_limit, address payable _treasure_fund, uint256 sprice, CurrencyERC20 _currency, uint256 c_master_id)  {
-     //   require(rate > 0, "Crowdsale: rate is 0");
         require(i_wallet != address(0), "Crowdsale: wallet is the zero address");
         require(address(i_token) != address(0), "Crowdsale: token is the zero address");
 
@@ -179,7 +178,7 @@ contract TokenSale721 is Context, ReentrancyGuard {
     }
 
     function get_currency(CurrencyERC20 currency) public view returns (IERC20) {
-        return _currencys[currency];
+        return _currencies[currency];
     }
 
 
