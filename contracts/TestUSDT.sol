@@ -9,12 +9,16 @@ import "../../../node_modules/@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import "../../../node_modules/@openzeppelin/contracts/access/Ownable.sol";
 
 
-abstract contract TestTokenERC20 is ERC20, Ownable {
+abstract contract TestUSDT is ERC20, Ownable {
 
     function MintERC20 (address to, uint amount) public onlyOwner{
         super._mint(to, amount);
     }
 
+
+    function decimals() public view virtual override returns (uint8) {
+        return 6; // USDT decimal = 6
+    }
 
 }
 

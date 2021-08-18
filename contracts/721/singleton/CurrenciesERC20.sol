@@ -78,6 +78,16 @@ contract CurrenciesERC20 is Context, ReentrancyGuard, Ownable {
 
     constructor(address US_Tether, address US_Circle, address DAI, address W_Ethereum, address SONM) {
 
+       
+       require(US_Tether != address(0), "USDT contract address is zero!");
+       require(US_Circle != address(0), "US_Circle contract address is zero!");
+       require(DAI != address(0), "DAI contract address is zero!");
+       require(W_Ethereum != address(0), "W_Ethereum contract address is zero!");
+       require(SONM != address(0), "SONM contract address is zero!");
+       
+       
+       
+       
         _currencies_hardcoded[CurrencyERC20.USDT] = IERC20Metadata(US_Tether);
         _currencies_hardcoded[CurrencyERC20.USDC] = IERC20Metadata(US_Circle);
         _currencies_hardcoded[CurrencyERC20.DAI] = IERC20Metadata(DAI);

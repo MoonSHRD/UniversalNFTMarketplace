@@ -8,12 +8,15 @@ var accounts = web3.eth.getAccounts();
 var limitGas = web3.eth.getBlock("latest").gasLimit;
 
 
+// CurrencyERC20 contract
+var Currencies = artifacts.require("./721/singleton/CurrenciesERC20.sol")
+
 // Test dummy erc20 tokens
-var USDT = artifacts.require("./721/singleton/TestTokenERC20.sol")
-var USDC = artifacts.require("./721/singleton/TestTokenERC20.sol")
-var DAI = artifacts.require("./721/singleton/TestTokenERC20.sol")
-var WETH = artifacts.require("./721/singleton/TestTokenERC20.sol")
-var SNM = artifacts.require("./721/singleton/TestTokenERC20.sol")
+var USDT = artifacts.require("./TestUSDT.sol")
+var USDC = artifacts.require("./TestTokenERC20.sol")
+var DAI = artifacts.require("./TestTokenERC20.sol")
+var WETH = artifacts.require("./TestTokenERC20.sol")
+var SNM = artifacts.require("./TestTokenERC20.sol")
 
 //var deposit_value = '50000';  // deposit INITIAL exchange market cup (turn capital)
 //var deposit_value_wei = web3.utils.toWei(deposit_value,'ether');
@@ -43,7 +46,7 @@ await deployer.deploy(DAI);
 await deployer.deploy(WETH);
 await deployer.deploy(SNM);
 
-
+deployer.deploy()
 
 
 /*
