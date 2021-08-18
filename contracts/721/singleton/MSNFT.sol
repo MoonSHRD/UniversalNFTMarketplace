@@ -72,7 +72,7 @@ contract MSNFT is ERC721Enumerable, Ownable {
 
 
     // Motherland
-    address factory_address;    // ITS A VERY IMPORTANT TO KEEP THIS SAFE!!  THIS CONTRACT DO NOT KNOW ABOUT FACTORY CODE SO IT COULD BE REPLACED BY UNKNOWN CONTRACT AND GET ACCESS TO SERVICE FUNCTIONS
+    address private factory_address;    // ITS A VERY IMPORTANT TO KEEP THIS SAFE!!  THIS CONTRACT DO NOT KNOW ABOUT FACTORY CODE SO IT COULD BE REPLACED BY UNKNOWN CONTRACT AND GET ACCESS TO SERVICE FUNCTIONS
     // HOWEVER IT'S THE ONLY WAY TO MAKE THIS CONTRACT UPGRADABLE AND INDEPENDENT FROM FACTORY.
 
 
@@ -366,6 +366,8 @@ contract MSNFT is ERC721Enumerable, Ownable {
         factory_address = factory_address_;
     }
 
-
+    function getFactoryAddress() public view returns(address) {
+        return factory_address;
+    }
 
 }

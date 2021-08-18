@@ -62,14 +62,19 @@ deployer.then(async () => {
   return deployer.deploy(Master,"MoonShardNFT","MSNFT",{gasPrice: wei_gas_price, from:accounts[0]});
  
 }).then(function(){
-
+  console.log("Master token address:");
+  console.log(Master.address);
   return deployer.deploy(MasterFactory,Master.address,accounts[1],{gasPrice: wei_gas_price, from:accounts[0]});
 
 }).then(async () =>{
-
+  console.log ("MasterFactory address:");
+  console.log(MasterFactory.address);
   MasterInstance = await Master.deployed();
   MasterFactoryInstance = await MasterFactory.deployed();
   await MasterInstance.updateFactoryAdress(MasterFactoryInstance.address);
+  fa = await MasterInstance.getFactoryAddress();
+  console.log("factory address");
+  console.log(fa);
   return;
 
 
