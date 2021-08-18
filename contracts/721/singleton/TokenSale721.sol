@@ -44,7 +44,7 @@ contract TokenSale721 is Context, ReentrancyGuard {
 
     // @todo: Rework this as separate contract 
     // Supported erc20 currencies: .. to be extended
-    enum CurrencyERC20 {USDT, USDC, DAI, SNM} 
+    enum CurrencyERC20 {USDT, USDC, DAI, SNM, WETH} 
 
     // Map from currency to price
     mapping (CurrencyERC20 => uint256) public _price;
@@ -231,7 +231,7 @@ contract TokenSale721 is Context, ReentrancyGuard {
         uint256 tokens = tokenAmountToBuy;
 
         // How much is needed to pay
-        uint256 weiAmount = getWeiAmount(tokens,currency);
+        uint256 weiAmount = getWeiAmount(tokens,currency);  // can be zero if wrong currency set-up to pay. in this case tx will fail under pre-validate purchase check
 
         _preValidatePurchase(beneficiary, weiAmount, tokens, currency);
 
@@ -263,7 +263,7 @@ contract TokenSale721 is Context, ReentrancyGuard {
      */
     function _preValidatePurchase(address beneficiary, uint256 weiAmount, uint256 tokens, CurrencyERC20 currency) internal view {
         require(beneficiary != address(0), "Crowdsale: beneficiary is the zero address");
-        require(weiAmount != 0, "Crowdsale: weiAmount is 0");
+        require(weiAmount != 0, "Crowdsale: Pre-validate: weiAmount is 0, consider you have choose right currency to pay with");
         uint sc = _sold_count;
         uint limit = sc + tokens;
 
@@ -327,7 +327,7 @@ contract TokenSale721 is Context, ReentrancyGuard {
     *   How much is needed to pay for this token amount to buy
     */
     function getWeiAmount(uint256 tokenAmountToBuy, CurrencyERC20 currency) public view returns(uint256){
-        uint256 price = get_price(currency);
+        uint256 price = get_price(currency);    // @todo: WARNING -- it can be 0 if buyer mismatch currency, but such transaction will fail at pre-validate purchase check!
         uint256 weiAmount = price * tokenAmountToBuy; 
         return weiAmount;
     }
