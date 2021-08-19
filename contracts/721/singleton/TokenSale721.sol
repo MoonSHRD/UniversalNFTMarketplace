@@ -1,8 +1,9 @@
 pragma solidity ^0.8.0;
 //"SPDX-License-Identifier: UNLICENSED"
 
-import './crowdsale/Crowdsale.sol';
+//import './crowdsale/Crowdsale.sol';
 
+import "../../../node_modules/@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import "../../../node_modules/@openzeppelin/contracts/security/ReentrancyGuard.sol";
 import "../../../node_modules/@openzeppelin/contracts/utils/math/SafeMath.sol";
 import "../../../node_modules/@openzeppelin/contracts/utils/Context.sol";
