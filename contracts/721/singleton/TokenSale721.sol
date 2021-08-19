@@ -2,27 +2,33 @@ pragma solidity ^0.8.0;
 //"SPDX-License-Identifier: UNLICENSED"
 
 import './crowdsale/Crowdsale.sol';
+
 import "../../../node_modules/@openzeppelin/contracts/security/ReentrancyGuard.sol";
 import "../../../node_modules/@openzeppelin/contracts/utils/math/SafeMath.sol";
 import "../../../node_modules/@openzeppelin/contracts/utils/Context.sol";
 import "../../../node_modules/@openzeppelin/contracts/token/ERC721/extensions/IERC721Enumerable.sol";
-import "../../../node_modules/@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import "../../../node_modules/@openzeppelin/contracts/token/ERC20/extensions/IERC20Metadata.sol";
 import "../../../node_modules/@openzeppelin/contracts/utils/Counters.sol";
 
+
 import './MSNFT.sol';
+import './CurrenciesERC20.sol';
 
 contract TokenSale721 is Context, ReentrancyGuard {
 
 
     using SafeMath for uint256;
-    using SafeERC20 for IERC20;
+    using SafeERC20 for IERC20Metadata;
   //  using Counters for Counters.Counter;
 
     // The token being sold
     MSNFT public _token;
 
     // Interface to currency token
-    IERC20 public _currency_token;
+    IERC20Metadata public _currency_token;
+
+    // Currencies lib
+    CurrenciesERC20 _currency_contract;
 
     //master_id
     uint256 public _master_id;
@@ -42,18 +48,23 @@ contract TokenSale721 is Context, ReentrancyGuard {
     // Address where we collect comission
     address payable public treasure_fund;
 
-    // @todo: Rework this as separate contract 
+    
     // Supported erc20 currencies: .. to be extended
-    enum CurrencyERC20 {USDT, USDC, DAI, SNM, WETH} 
+    //enum CurrencyERC20 {USDT, USDC, DAI, SNM, WETH} 
+    // CurrenciesERC20.CurrencyERC20 -- enum from above
+    // Alternativly use CurrenciesERC20.
 
     // Map from currency to price
-    mapping (CurrencyERC20 => uint256) public _price;
+    mapping (CurrenciesERC20.CurrencyERC20 => uint256) public _price;
 
-    // map currency contract addresses
     // FIXME: rework this part to have separate contract with ability to modify currency list 
-    mapping (CurrencyERC20 => IERC20) internal _currencies;
+    // map from currency to contract addresses
+   // mapping (CurrenciesERC20.CurrencyERC20 => IERC20) internal _currencies; // setting up currency list
+    // CurrenciesERC20._currencies_hardcoded
 
-    mapping (CurrencyERC20 => uint256) internal currency_balances;
+   
+    // balances of this sale contract in those currencies
+    mapping (CurrenciesERC20.CurrencyERC20 => uint256) internal currency_balances; 
 
     // service comission fee
     uint public percent_fee = 5;
@@ -88,21 +99,20 @@ contract TokenSale721 is Context, ReentrancyGuard {
      * @param i_wallet Address where collected funds will be forwarded to
      * @param i_token Address of the token being sold
      */
-     // TODO: price calculation (?)
-    constructor (address i_wallet, MSNFT i_token, uint i_sale_limit, address payable _treasure_fund, uint256 sprice, CurrencyERC20 _currency, uint256 c_master_id)  {
+    constructor (address i_wallet, MSNFT i_token, uint i_sale_limit, address payable _treasure_fund, uint256 sprice, CurrenciesERC20.CurrencyERC20 _currency, uint256 c_master_id, address currency_contract_)  {
         require(i_wallet != address(0), "Crowdsale: wallet is the zero address");
         require(address(i_token) != address(0), "Crowdsale: token is the zero address");
 
         // Check if stable
-        if (_currency == CurrencyERC20.DAI || _currency == CurrencyERC20.USDC) {
+        if (_currency == CurrenciesERC20.CurrencyERC20.DAI || _currency == CurrenciesERC20.CurrencyERC20.USDC) {
            // _price[_currency] = sprice;
-            _price[CurrencyERC20.DAI] = sprice;
-            _price[CurrencyERC20.USDC] = sprice;
-            _price[CurrencyERC20.USDT] = sprice / 1 ether * 1e6;    // USDT have 6 decimals, not 18
-        } else if(_currency == CurrencyERC20.USDT) {
-            _price[CurrencyERC20.USDT] = sprice;
-            _price[CurrencyERC20.USDC] = sprice / 1e6 * 1 ether;
-            _price[CurrencyERC20.DAI] = sprice / 1e6 * 1 ether;
+            _price[CurrenciesERC20.CurrencyERC20.DAI] = sprice;
+            _price[CurrenciesERC20.CurrencyERC20.USDC] = sprice;
+            _price[CurrenciesERC20.CurrencyERC20.USDT] = sprice / 1 ether * 1e6;    // USDT have 6 decimals, not 18
+        } else if(_currency == CurrenciesERC20.CurrencyERC20.USDT) {
+            _price[CurrenciesERC20.CurrencyERC20.USDT] = sprice;
+            _price[CurrenciesERC20.CurrencyERC20.USDC] = sprice / 1e6 * 1 ether;
+            _price[CurrenciesERC20.CurrencyERC20.DAI] = sprice / 1e6 * 1 ether;
         } 
         else {
             _price[_currency] = sprice;
@@ -111,6 +121,7 @@ contract TokenSale721 is Context, ReentrancyGuard {
         _wallet = i_wallet;
         treasure_fund = _treasure_fund;
         _token = i_token;
+        _currency_contract = CurrenciesERC20(currency_contract_);
         
         // Get rarity type and check sale_limit
         _rarity_type = _token.get_rarity(c_master_id);
@@ -156,7 +167,7 @@ contract TokenSale721 is Context, ReentrancyGuard {
         return _wallet;
     }
 
-    function getBalances(CurrencyERC20 _currency) public view returns (uint) {
+    function getBalances(CurrenciesERC20.CurrencyERC20 _currency) public view returns (uint) {
         return currency_balances[_currency];
     }
 
@@ -173,12 +184,14 @@ contract TokenSale721 is Context, ReentrancyGuard {
         return _sold_count;
     }
 
-    function get_price(CurrencyERC20 currency) public view returns (uint256) {
+    function get_price(CurrenciesERC20.CurrencyERC20 currency) public view returns (uint256) {
         return _price[currency];
     }
 
-    function get_currency(CurrencyERC20 currency) public view returns (IERC20) {
-        return _currencies[currency];
+
+    function get_currency(CurrenciesERC20.CurrencyERC20 currency) public view returns (IERC20Metadata) {
+        return _currency_contract.get_hardcoded_currency(currency);
+      //  return _currencies[currency];
     }
 
 
@@ -226,7 +239,9 @@ contract TokenSale721 is Context, ReentrancyGuard {
     }
     **/
 
-     function buyTokens(address beneficiary,uint256 tokenAmountToBuy, CurrencyERC20 currency) public nonReentrant payable {
+
+
+     function buyTokens(address beneficiary,uint256 tokenAmountToBuy, CurrenciesERC20.CurrencyERC20 currency) public nonReentrant payable {
         uint256 tokens = tokenAmountToBuy;
 
         // How much is needed to pay
@@ -260,7 +275,7 @@ contract TokenSale721 is Context, ReentrancyGuard {
      * @param beneficiary Address performing the token purchase
      * @param weiAmount Value in wei involved in the purchase
      */
-    function _preValidatePurchase(address beneficiary, uint256 weiAmount, uint256 tokens, CurrencyERC20 currency) internal view {
+    function _preValidatePurchase(address beneficiary, uint256 weiAmount, uint256 tokens, CurrenciesERC20.CurrencyERC20 currency) internal view {
         require(beneficiary != address(0), "Crowdsale: beneficiary is the zero address");
         require(weiAmount != 0, "Crowdsale: Pre-validate: weiAmount is 0, consider you have choose right currency to pay with");
         uint sc = _sold_count;
@@ -271,7 +286,7 @@ contract TokenSale721 is Context, ReentrancyGuard {
 
 
      // Check allowance of currency balance
-        IERC20 currency_token = get_currency(currency);
+        IERC20Metadata currency_token = get_currency(currency);
         uint256 approved_balance = currency_token.allowance(beneficiary, address(this));
         require(approved_balance >= weiAmount, "Tokensale: ERC20:approved spending limit is not enoght");
 
@@ -305,8 +320,8 @@ contract TokenSale721 is Context, ReentrancyGuard {
      * @param beneficiary Address receiving the tokens
      * @param tokenAmount Number of tokens to be purchased
      */
-    function _processPurchase(address beneficiary, uint256 tokenAmount, CurrencyERC20 currency, uint256 weiAmount) internal {
-        IERC20 currency_token = get_currency(currency);
+    function _processPurchase(address beneficiary, uint256 tokenAmount, CurrenciesERC20.CurrencyERC20 currency, uint256 weiAmount) internal {
+        IERC20Metadata currency_token = get_currency(currency);
         require(currency_token.transferFrom(beneficiary, address(this), weiAmount), "TokenSale: ERC20: transferFrom buyer to itemsale contract failed ");
         _deliverTokens(beneficiary, tokenAmount);
     }
@@ -325,7 +340,7 @@ contract TokenSale721 is Context, ReentrancyGuard {
     /*
     *   How much is needed to pay for this token amount to buy
     */
-    function getWeiAmount(uint256 tokenAmountToBuy, CurrencyERC20 currency) public view returns(uint256){
+    function getWeiAmount(uint256 tokenAmountToBuy, CurrenciesERC20.CurrencyERC20 currency) public view returns(uint256){
         uint256 price = get_price(currency);    // @todo: WARNING -- it can be 0 if buyer mismatch currency, but such transaction will fail at pre-validate purchase check!
         uint256 weiAmount = price * tokenAmountToBuy; 
         return weiAmount;
@@ -334,8 +349,8 @@ contract TokenSale721 is Context, ReentrancyGuard {
     /**
      * @dev Determines how ERC20 is stored/forwarded on purchases.
      */
-    function _forwardFunds(CurrencyERC20 currency) internal {
-        IERC20 currency_token =  get_currency(currency);
+    function _forwardFunds(CurrenciesERC20.CurrencyERC20 currency) internal {
+        IERC20Metadata currency_token =  get_currency(currency);
         uint256 amount = currency_token.balanceOf(address(this));
         uint256 scale = 100;
         uint256 fees = calculateFee(amount,scale);
@@ -348,7 +363,7 @@ contract TokenSale721 is Context, ReentrancyGuard {
 
 
     // WithDraw locked funds to organiser
-    function withDrawFunds(CurrencyERC20 currency) public {
+    function withDrawFunds(CurrenciesERC20.CurrencyERC20 currency) public {
         require(msg.sender == _wallet, "only organaizer can do it");
       /*
         if (block.timestamp >= crDate - _timeToStart) {
