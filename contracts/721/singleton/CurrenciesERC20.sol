@@ -31,7 +31,7 @@ contract CurrenciesERC20 is ReentrancyGuard, Ownable {
 
 
     // map currency contract addresses
-    mapping (CurrencyERC20 => IERC20Metadata) public _currencies_hardcoded;
+    mapping (CurrencyERC20 => IERC20Metadata) public _currencies_hardcoded; // should be internal?
 
     // mapping from name to currency contract (protected)
     mapping (string => CurrencyERC20_Custom) public _currencies_custom;
@@ -98,6 +98,8 @@ contract CurrenciesERC20 is ReentrancyGuard, Ownable {
     }
 
 
-
+  function get_hardcoded_currency(CurrencyERC20 currency) public view returns (IERC20Metadata) {
+       return _currencies_hardcoded[currency];
+    }
 
 }
