@@ -14,17 +14,20 @@ address public master_template;
 
 address payable treasure_fund;
 
+address public currencies_router;
+
 // event
 event SaleCreated(address indexed author, uint price, CurrenciesERC20.CurrencyERC20 indexed currency, uint256 indexed master_id);
 event SaleCreatedHuman(address author, uint price, CurrenciesERC20.CurrencyERC20 currency,uint256 master_id);
 
 
 
-constructor(address msnft_,address payable _treasure_fund)  {
+constructor(address msnft_,address payable _treasure_fund, address currencies_router_)  {
    // ticket_template = createMSNFT();
  //  master_template = createMSNFT();
    master_template = msnft_;
    treasure_fund = _treasure_fund;
+   currencies_router = currencies_router_;
 }
 
 
@@ -42,7 +45,7 @@ function createItemSale721(address organizer, uint price, MSNFT token,uint sale_
     // calculate price
     //uint256 cena = calculateRate(price);
    // CurrencyERC20 currency = GetCurrencyEnum(currency_int);
-    ticket_sale = address(new TokenSale721(organizer, token, sale_limit,treasure_fund, price, currency, _master_id));
+    ticket_sale = address(new TokenSale721(organizer, token, sale_limit,treasure_fund, price, currency, _master_id,currencies_router));
     return ticket_sale;
 }
 

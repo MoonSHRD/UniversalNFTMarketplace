@@ -64,7 +64,7 @@ deployer.then(async () => {
 }).then(function(){
   console.log("Master token address:");
   console.log(Master.address);
-  return deployer.deploy(MasterFactory,Master.address,accounts[1],{gasPrice: wei_gas_price, from:accounts[0]});
+  return deployer.deploy(MasterFactory,Master.address,accounts[1],Currencies.address,{gasPrice: wei_gas_price, from:accounts[0]});
 
 }).then(async () =>{
   console.log ("MasterFactory address:");

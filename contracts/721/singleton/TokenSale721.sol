@@ -99,7 +99,7 @@ contract TokenSale721 is Context, ReentrancyGuard {
      * @param i_wallet Address where collected funds will be forwarded to
      * @param i_token Address of the token being sold
      */
-    constructor (address i_wallet, MSNFT i_token, uint i_sale_limit, address payable _treasure_fund, uint256 sprice, CurrenciesERC20.CurrencyERC20 _currency, uint256 c_master_id)  {
+    constructor (address i_wallet, MSNFT i_token, uint i_sale_limit, address payable _treasure_fund, uint256 sprice, CurrenciesERC20.CurrencyERC20 _currency, uint256 c_master_id, address currency_contract_)  {
         require(i_wallet != address(0), "Crowdsale: wallet is the zero address");
         require(address(i_token) != address(0), "Crowdsale: token is the zero address");
 
@@ -121,6 +121,7 @@ contract TokenSale721 is Context, ReentrancyGuard {
         _wallet = i_wallet;
         treasure_fund = _treasure_fund;
         _token = i_token;
+        _currency_contract = CurrenciesERC20(currency_contract_);
         
         // Get rarity type and check sale_limit
         _rarity_type = _token.get_rarity(c_master_id);
