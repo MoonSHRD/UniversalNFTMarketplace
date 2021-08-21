@@ -210,8 +210,8 @@ contract TokenSale721 is Context, ReentrancyGuard {
     }
 
     /**
-     *  @dev check if sale limit is not exceeded 
-     *  @param amountToBuy how much of tokens want to buy
+     * @dev check if sale limit is not exceeded 
+     * @param amountToBuy how much of tokens want to buy
      */
     function check_sale_limit(uint256 amountToBuy) public view returns (bool) {
         uint sl = sale_limit();
