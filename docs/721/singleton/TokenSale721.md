@@ -1,18 +1,21 @@
 ## `TokenSale721`
 
+                 TOKENSALE721
+ @title TokenSale721
+ @dev TokenSale721 is a reworked OZ Crowdsale contract (see Crowdsale.sol). Originall contract was designed to sell ERC20 tokens
+ This contract is defining rules of token (ERC721Enumerable) sell.
+ This version of contract suppose to accept ERC20 tokens as a currency (instead of ethereum), and support work with stable-coins as a currency
 
 
 
 
 
-### `constructor(address i_wallet, contract MSNFT i_token, uint256 i_sale_limit, address payable _treasure_fund, uint256 sprice, enum TokenSale721.CurrencyERC20 _currency, uint256 c_master_id)` (public)
+### `constructor(address i_wallet, contract MSNFT i_token, uint256 i_sale_limit, address payable _treasure_fund, uint256 sprice, enum CurrenciesERC20.CurrencyERC20 _currency, uint256 c_master_id, address currency_contract_)` (public)
 
- rate Number of token units a buyer gets per wei
+ 
 
 
-The rate is the conversion between wei and the smallest and indivisible
-token unit. So, if you are using a rate of 1 with a ERC20Detailed token
-with 3 decimals called TOK, 1 wei will give you 1 unit, or 0.001 TOK.
+Constructor of TokenSale721
 
 
 ### `token() → contract MSNFT` (public)
@@ -27,7 +30,7 @@ with 3 decimals called TOK, 1 wei will give you 1 unit, or 0.001 TOK.
 
 
 
-### `getBalances(enum TokenSale721.CurrencyERC20 _currency) → uint256` (public)
+### `getBalances(enum CurrenciesERC20.CurrencyERC20 _currency) → uint256` (public)
 
 
 
@@ -51,13 +54,13 @@ with 3 decimals called TOK, 1 wei will give you 1 unit, or 0.001 TOK.
 
 
 
-### `get_price(enum TokenSale721.CurrencyERC20 currency) → uint256` (public)
+### `get_price(enum CurrenciesERC20.CurrencyERC20 currency) → uint256` (public)
 
 
 
 
 
-### `get_currency(enum TokenSale721.CurrencyERC20 currency) → contract IERC20` (public)
+### `get_currency(enum CurrenciesERC20.CurrencyERC20 currency) → contract IERC20Metadata` (public)
 
 
 
@@ -65,20 +68,21 @@ with 3 decimals called TOK, 1 wei will give you 1 unit, or 0.001 TOK.
 
 ### `check_sale_limit(uint256 amountToBuy) → bool` (public)
 
+ @dev check if sale limit is not exceeded 
+ @param amountToBuy how much of tokens want to buy
 
 
 
+### `buyTokens(address beneficiary, uint256 tokenAmountToBuy, enum CurrenciesERC20.CurrencyERC20 currency)` (public)
 
-### `buyTokens(address beneficiary, uint256 tokenAmountToBuy, enum TokenSale721.CurrencyERC20 currency)` (public)
-
-
-
-low level token purchase ***DO NOT OVERRIDE***
-This function has a non-reentrancy guard, so it shouldn't be called by
-another `nonReentrant` function.
+     @dev Main function to buyTokens
+     @param beneficiary buyer address
+     @param tokenAmountToBuy how much tokens we want to buy by one tx
+     @param currency ERC20 token used as a currency
 
 
-### `_preValidatePurchase(address beneficiary, uint256 weiAmount, uint256 tokens, enum TokenSale721.CurrencyERC20 currency)` (internal)
+
+### `_preValidatePurchase(address beneficiary, uint256 weiAmount, uint256 tokens, enum CurrenciesERC20.CurrencyERC20 currency)` (internal)
 
 
 
@@ -105,7 +109,7 @@ Source of tokens. Override this method to modify the way in which the crowdsale 
 its tokens.
 
 
-### `_processPurchase(address beneficiary, uint256 tokenAmount, enum TokenSale721.CurrencyERC20 currency, uint256 weiAmount)` (internal)
+### `_processPurchase(address beneficiary, uint256 tokenAmount, enum CurrenciesERC20.CurrencyERC20 currency, uint256 weiAmount)` (internal)
 
 
 
@@ -121,27 +125,34 @@ Override for extensions that require an internal state to check for validity (cu
 etc.)
 
 
-### `getWeiAmount(uint256 tokenAmountToBuy, enum TokenSale721.CurrencyERC20 currency) → uint256` (public)
+### `getWeiAmount(uint256 tokenAmountToBuy, enum CurrenciesERC20.CurrencyERC20 currency) → uint256` (public)
+
+ @dev How much is needed to pay for this token amount to buy
+ @param tokenAmountToBuy how much we want to buy
+ @param currency  ERC20 used as currency
+ @return weiAmount how much we need to pay, could be zero if wrong currency, but will fail at pre-validation
 
 
 
-
-
-### `_forwardFunds(enum TokenSale721.CurrencyERC20 currency)` (internal)
+### `_forwardFunds(enum CurrenciesERC20.CurrencyERC20 currency)` (internal)
 
 
 
-Determines how ERC20 is stored/forwarded on purchases.
-
-### `withDrawFunds(enum TokenSale721.CurrencyERC20 currency)` (public)
+Determines how ERC20 is stored/forwarded on purchases. Here we take our fee. This function can be tethered to buy tx or can be separate from buy flow.
 
 
+### `withDrawFunds(enum CurrenciesERC20.CurrencyERC20 currency)` (public)
+
+  @dev determine how funds are collected by seller
+  @param currency ERC20 currency
 
 
 
 ### `calculateFee(uint256 amount, uint256 scale) → uint256` (internal)
 
-
+  Calculate fee (SafeMath)
+  @param amount number from whom we take fee
+  @param scale scale for rounding. 100 is 1/100 (percent). we can encreace scale if we want better division (like we need to take 0.5% instead of 5%, then scale = 1000)
 
 
 

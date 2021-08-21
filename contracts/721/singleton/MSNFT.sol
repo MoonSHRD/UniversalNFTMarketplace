@@ -9,39 +9,17 @@ import "../../../node_modules/@openzeppelin/contracts/utils/math/SafeMath.sol";
 import "../../../node_modules/@openzeppelin/contracts/access/Ownable.sol";
 
 
-
-
-
-
-// @todo: remove it
-// Ticket is ERC721 (NFT) token with  availability to reedem tickets
-
 /**
-
-    ERC-721 is non-fungible token.  So, each tokenID is a unique ticket
-
-    Usefull tips:
-    // Mapping from owner to list of owned token IDs
-    mapping(address => uint256[]) private _ownedTokens;
-
-    // Mapping from token ID to index of the owner tokens list
-    mapping(uint256 => uint256) private _ownedTokensIndex;
-
-    // Array with all token ids, used for enumeration
-    uint256[] private _allTokens;
-
-    // Mapping from token id to position in the allTokens array
-    mapping(uint256 => uint256) private _allTokensIndex;
-
-    Gets the list of token IDs of the requested owner.
-     function _tokensOfOwner(address owner) internal view returns (uint256[] storage) {
-        return _ownedTokens[owner];
-    }
-
-
-
- **/
-
+ *      MoonShard Non-fungible Token
+ *  @title MSNFT
+ *  @author JackBekket
+ *  @dev MSNFT is a ERC721Enumerable token contract
+ *  ERC721Enumerable stand for singletone pattern, which mean each created NFT is NOT a separate contract, but record in this single contract
+ * When user want's to create NFT -- he creates MasterCopy first (with link to a file), then he can emit items(tokens) or start crowdsale of them
+ * Each token is ITEM. Each item is a link to a MasterCopy
+ * Each NFT have a rarity type (Unique -- only one exist, Rare -- limited edition, Common -- unlimited edition)
+ * createMasterCopy, plugSale, buyItem -- external intefaces to be called from factory contract 
+*/
 contract MSNFT is ERC721Enumerable, Ownable {
    using SafeMath for uint256;
    using Counters for Counters.Counter;
@@ -54,6 +32,12 @@ contract MSNFT is ERC721Enumerable, Ownable {
 
 
     //events
+    /**
+     * @dev Events about buying item. events named *Human stands for human readability
+     * @param buyer -- user who buy item
+     * @param master_id -- unique id of mastercopy
+     * @param item_id -- unique id of item
+     */
     event ItemBought(address indexed buyer,uint256 indexed master_id, uint256 indexed item_id);
     event ItemBoughtHuman(address buyer,uint256 master_id, uint256 item_id);
 
@@ -63,10 +47,21 @@ contract MSNFT is ERC721Enumerable, Ownable {
     event MasterIdReservedHuman(address author, uint256 master_id);
 
     // MasterCopyCreation
+    /**
+     * @dev event about master-copy creation
+     * @param master_id -- unique master id 
+     * @param description -- indexed description, which can be key for search. we do not store description info in state, only in event
+     * @param link -- link to a file in CDN
+     */
     event MaterCopyCreated(address indexed author, uint256 master_id, string indexed description, string indexed link);
-    event MasterCopyCreatedHuman(address author, uint256 master_id, string indexed description, string indexed link);
+    event MasterCopyCreatedHuman(address author, uint256 indexed master_id, string description, string link);
 
     // Global counters for item_id and master_id
+    /**
+     * @dev Global counters for item_id and master_id. They are replacing atomic lock algo for reserving id
+     *
+     *
+     */
     Counters.Counter _item_id_count;
     Counters.Counter _master_id_count;
 
@@ -81,9 +76,12 @@ contract MSNFT is ERC721Enumerable, Ownable {
     //enum TicketState {Non_Existed, Paid, Fulfilled, Cancelled}
 
     // Rarity type
-    // Unique -- the one
-    // Rare -- limited
-    // Common -- unlimited
+    /**
+     * @dev Rarity type of token
+     * @param Unique -- only one token can exist
+     * @param Rare -- there are limited number of tokens
+     * @param Common -- there are unlimited number of tokens
+     */
     enum RarityType {Unique, Rare, Common}
 
     // map from mastercopy_id  to itemsale address
@@ -122,6 +120,11 @@ contract MSNFT is ERC721Enumerable, Ownable {
 
     /**
    *                                                            Item information
+   *    @dev ItemInfo contains meta information about Master/Item. 
+   *    @param magnet_link -- unique link to a torrent
+   *    @param author -- address of author
+   *    @param rarity -- rarity of an item, see RarityType
+   *    @param i_totalSupply -- it is not a total supply. total supply of a token is itemIds[mater_id].lenght
    */
     struct ItemInfo 
     {
@@ -144,15 +147,15 @@ contract MSNFT is ERC721Enumerable, Ownable {
 
 
     
-    constructor(string memory name_, string memory smbl_) ERC721(name_,smbl_) ERC721Enumerable() {
-      //  _addMinter(address(this));
-      // @todo: only factory can deploy this contract?
-      //  factory_address = msg.sender;
+    constructor(string memory name_, string memory smbl_) ERC721(name_,smbl_) ERC721Enumerable() {}
 
-    }
-
-
-    // This function 'plug' itemsale contract from factory to mastersales map (works only for MoonShard NFT, should be called after MasterCopy creation)
+    // @todo should be changed visibility to external?
+    /**
+     *  @dev This function 'plug' itemsale contract from factory to mastersales map (works only for MoonShard NFT, should be called after MasterCopy creation)
+     *  @param organizer -- address of seller (author)
+     *  @param _masterId -- Id of mastercopy, which has been created by CreateMasterCopy
+     *  @param _sale -- address of crowdsale contract. Note that this function can be called only from factory.
+     */
     function PlugCrowdSale(address organizer, uint256 _masterId, address _sale) public {
         // only factory knows about crowdsale contracts and only she should have access to this
         require(msg.sender == factory_address, "MSNFT: only factory contract can plug crowdsale");
@@ -166,6 +169,11 @@ contract MSNFT is ERC721Enumerable, Ownable {
 
     }
 
+    /**
+     * @dev safely reserve master_id
+     * @param _author -- address of author
+     * @return _master_id 
+     */
     function _reserveMasterId(address _author) internal returns(uint256 _master_id) {
         _master_id_count.increment();
         _master_id = _master_id_count.current();
@@ -177,7 +185,15 @@ contract MSNFT is ERC721Enumerable, Ownable {
     }
 
 
-    // create Master Copy of item (without starting sale). It wraps file info into nft and create record in blockchain. Other items(tokens) are just links to master record
+    // 
+    /**
+     * @dev create Master Copy of item (without starting sale). It wraps file info into nft and create record in blockchain. Other items(tokens) are just links to master record
+     * @param link -- link to a file
+     * @param _author -- address of author
+     * @param _description -- indexed description to be stored in events
+     * @param _supplyType -- type of supply, where 1 is for unique nft, 0 for common nft, anything else is rare. Used to check inside mint func
+     * @return c_master_id reserved mastercopy id
+     */
     function createMasterCopy(string memory link, address _author ,string memory _description, uint256 _supplyType) public returns(uint256 c_master_id){
 
         require(msg.sender == factory_address, "MSNFT: only factory contract can create mastercopy");
@@ -202,25 +218,32 @@ contract MSNFT is ERC721Enumerable, Ownable {
         return mid;
     }
 
+
+     /**
+     * @dev setting rarity for token
+     * @param _supplyType type of supply, see createMasterCopy
+     * @return _rarity type of rarity based at supplyType
+     */
      function set_rarity(uint256 _supplyType) private pure returns(RarityType _rarity) {
-       
-        // only one token exist
-        if (_supplyType == 1) {
+
+        if (_supplyType == 1) {         // Only one token exist
             _rarity = RarityType.Unique;
         }
-        // Unlimited sale
-        if (_supplyType == 0) {
+        if (_supplyType == 0) {         // Unlimited sale
             _rarity = RarityType.Common;
         } else {
-            // Limited sale
-            _rarity = RarityType.Rare;
+            _rarity = RarityType.Rare;  // Limited sale
         }
+        
         return _rarity;
-
-
     }
 
 
+    /**
+     *  @dev get rarity of specific master
+     *  @param _masterId master copy id
+     *  @return RarityType 
+     */
     function get_rarity(uint256 _masterId) public view returns (RarityType) {
         
         ItemInfo memory meta;
@@ -229,13 +252,22 @@ contract MSNFT is ERC721Enumerable, Ownable {
         return _rarity_type;
     }
 
+
+    /**
+     *  @dev get author of master
+     */
     function get_author(uint256 _masterId) public view returns (address _author) {
         _author = authors[_masterId];
         return _author;
     }
 
 
-
+    /**
+     *  @dev Mint new token. Require master_id and item_id
+     *  @param to whom address should mint
+     *  @param m_master_id master copy of item
+     *  @param item_id counter of item. There are no incrementation of this counter here, so make sure this function is purely internal(!)
+     */
     function Mint(address to, uint m_master_id, uint item_id) internal {
 
         ItemInfo memory meta;
@@ -267,9 +299,11 @@ contract MSNFT is ERC721Enumerable, Ownable {
     }
 
 
-    
-    // this function emit item outside of buying mechanism
-    // only owner of master can call it
+    /**
+     * @dev this function emit item outside of buying mechanism, only owner of master can call it
+     * @param to whom minted token will be sent
+     * @param m_master_id id of mastercopy
+     */
     function EmitItem(address to, uint m_master_id) public {
         ItemInfo memory meta;
         meta = MetaInfo[m_master_id];
@@ -278,9 +312,16 @@ contract MSNFT is ERC721Enumerable, Ownable {
         _item_id_count.increment();
         uint256 item_id = _item_id_count.current();
         Mint(to, m_master_id, item_id);
-
     }
 
+
+    // @todo -- make external instead of public?
+    /**
+     *  @dev external function for buying items, should be invoked from tokensale contract
+     *  @param buyer address of buyer
+     *  @param itemAmount how much of tokens we want to buy if possible
+     *  @param master_id Master copy id 
+     */
     function buyItem(address buyer, uint256 itemAmount, uint256 master_id) public{
        address _sale = mastersales[master_id];
         require(_sale == msg.sender, "MSNFT: you should call buyItem from itemsale contract");
@@ -297,12 +338,12 @@ contract MSNFT is ERC721Enumerable, Ownable {
 
     }
 
-    // This function is burning tokens.
+    // This function is burning tokens. 
     // @deprecated
     /*
     function redeemTicket(address owner,uint256 tokenId, uint256 event_id) public{
         require(eventsales[event_id] == msg.sender, "caller doesn't match with event_id");
-        super._burn(owner,tokenId);
+        super._burn(owner,tokenId); 
 
        // To prevent a gap in the tokens array, we store the last token in the index of the token to delete, and
        // then delete the last slot (swap and pop).
@@ -329,7 +370,7 @@ contract MSNFT is ERC721Enumerable, Ownable {
 
 
 
-//                  FIXME: fix get items of owner
+//                  @FIXME: fix get items of owner
 /*
   //  Gets the list of token IDs of the requested owner.
      function _tokensOfOwner(address owner) internal view returns (uint256[] storage) {
@@ -344,7 +385,9 @@ contract MSNFT is ERC721Enumerable, Ownable {
     }
 */
 
-
+    /**
+     * @dev get itemSale contract address tethered to this master_id
+     */
     function getItemSale(uint256 master_id) public view returns(address) {
         address sale = mastersales[master_id];
         return sale;
@@ -361,7 +404,10 @@ contract MSNFT is ERC721Enumerable, Ownable {
     */
 
 
-    // @TODO: THERE IS A HACK WE NEED TO REFACTOR IT
+    /**
+     *  @dev update factory address. as we deploy separately this contract, then factory contract, then we need to update factory address outside of MSNFT constructor
+     *  also, it may be useful if we would need to upgrade tokensale contract (which include upgrade of a factory contract), so it can be used when rollup new versions of factory and sale
+     */
     function updateFactoryAdress(address factory_address_) public onlyOwner() {
         factory_address = factory_address_;
     }
@@ -369,5 +415,26 @@ contract MSNFT is ERC721Enumerable, Ownable {
     function getFactoryAddress() public view returns(address) {
         return factory_address;
     }
+
+
+    /*
+    Usefull tips:
+    // Mapping from owner to list of owned token IDs
+    mapping(address => uint256[]) private _ownedTokens;
+
+    // Mapping from token ID to index of the owner tokens list
+    mapping(uint256 => uint256) private _ownedTokensIndex;
+
+    // Array with all token ids, used for enumeration
+    uint256[] private _allTokens;
+
+    // Mapping from token id to position in the allTokens array
+    mapping(uint256 => uint256) private _allTokensIndex;
+
+    Gets the list of token IDs of the requested owner.
+     function _tokensOfOwner(address owner) internal view returns (uint256[] storage) {
+        return _ownedTokens[owner];
+    }
+    */
 
 }

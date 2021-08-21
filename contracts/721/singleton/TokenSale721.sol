@@ -1,8 +1,8 @@
 pragma solidity ^0.8.0;
 //"SPDX-License-Identifier: UNLICENSED"
 
-import './crowdsale/Crowdsale.sol';
 
+import "../../../node_modules/@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import "../../../node_modules/@openzeppelin/contracts/security/ReentrancyGuard.sol";
 import "../../../node_modules/@openzeppelin/contracts/utils/math/SafeMath.sol";
 import "../../../node_modules/@openzeppelin/contracts/utils/Context.sol";
@@ -14,6 +14,16 @@ import "../../../node_modules/@openzeppelin/contracts/utils/Counters.sol";
 import './MSNFT.sol';
 import './CurrenciesERC20.sol';
 
+
+
+/**
+ *                  TOKENSALE721
+ *  @title TokenSale721
+ *  @dev TokenSale721 is a reworked OZ Crowdsale contract (see Crowdsale.sol). Originall contract was designed to sell ERC20 tokens
+ *  This contract is defining rules of token (ERC721Enumerable) sell.
+ *  This version of contract suppose to accept ERC20 tokens as a currency (instead of ethereum), and support work with stable-coins as a currency
+ * 
+*/
 contract TokenSale721 is Context, ReentrancyGuard {
 
 
@@ -92,12 +102,16 @@ contract TokenSale721 is Context, ReentrancyGuard {
 
 
     /**
-     *  rate Number of token units a buyer gets per wei
-     * @dev The rate is the conversion between wei and the smallest and indivisible
-     * token unit. So, if you are using a rate of 1 with a ERC20Detailed token
-     * with 3 decimals called TOK, 1 wei will give you 1 unit, or 0.001 TOK.
+     *  
+     * @dev Constructor of TokenSale721
      * @param i_wallet Address where collected funds will be forwarded to
-     * @param i_token Address of the token being sold
+     * @param i_token Address of the Master Contract
+     * @param i_sale_limit How much we want to sell. Should be consistent with rarity type
+     * @param _treasure_fund This is our wallet to collect fees
+     * @param sprice Price for 1 token. (in wei/lowest decimal format)
+     * @param _currency ERC20 token used as a currency. If it stable then price is setting equal for all stables. 
+     * @param c_master_id ID of mastercopy being sold
+     * @param currency_contract_ Address of currency registry contract (CurrenciesERC20.sol)
      */
     constructor (address i_wallet, MSNFT i_token, uint i_sale_limit, address payable _treasure_fund, uint256 sprice, CurrenciesERC20.CurrencyERC20 _currency, uint256 c_master_id, address currency_contract_)  {
         require(i_wallet != address(0), "Crowdsale: wallet is the zero address");
@@ -141,6 +155,7 @@ contract TokenSale721 is Context, ReentrancyGuard {
         _timeToStart = 0;
     }
 
+
     // @todo used to buy tokens for ether (deprecated)
     /**
      * @dev fallback function ***DO NOT OVERRIDE***
@@ -154,7 +169,7 @@ contract TokenSale721 is Context, ReentrancyGuard {
     */
 
     /**
-     * @return the token being sold.
+     * @return the Master NFT contract.
      */
     function token() public view returns (MSNFT) {
         return _token;
@@ -194,7 +209,10 @@ contract TokenSale721 is Context, ReentrancyGuard {
       //  return _currencies[currency];
     }
 
-
+    /**
+     * @dev check if sale limit is not exceeded 
+     * @param amountToBuy how much of tokens want to buy
+     */
     function check_sale_limit(uint256 amountToBuy) public view returns (bool) {
         uint sl = sale_limit();
         if (sl == 0){
@@ -241,6 +259,13 @@ contract TokenSale721 is Context, ReentrancyGuard {
 
 
 
+
+     /**
+     *      @dev Main function to buyTokens
+     *      @param beneficiary buyer address
+     *      @param tokenAmountToBuy how much tokens we want to buy by one tx
+     *      @param currency ERC20 token used as a currency
+     */
      function buyTokens(address beneficiary,uint256 tokenAmountToBuy, CurrenciesERC20.CurrencyERC20 currency) public nonReentrant payable {
         uint256 tokens = tokenAmountToBuy;
 
@@ -274,6 +299,8 @@ contract TokenSale721 is Context, ReentrancyGuard {
      *     require(weiRaised().add(weiAmount) <= cap);
      * @param beneficiary Address performing the token purchase
      * @param weiAmount Value in wei involved in the purchase
+     * @param tokens number of tokens we want to buy
+     * @param currency ERC20 we use as currency
      */
     function _preValidatePurchase(address beneficiary, uint256 weiAmount, uint256 tokens, CurrenciesERC20.CurrencyERC20 currency) internal view {
         require(beneficiary != address(0), "Crowdsale: beneficiary is the zero address");
@@ -319,6 +346,8 @@ contract TokenSale721 is Context, ReentrancyGuard {
      * tokens.
      * @param beneficiary Address receiving the tokens
      * @param tokenAmount Number of tokens to be purchased
+     * @param currency ERC20 used as currency
+     * @param weiAmount wei amount involved in transaction
      */
     function _processPurchase(address beneficiary, uint256 tokenAmount, CurrenciesERC20.CurrencyERC20 currency, uint256 weiAmount) internal {
         IERC20Metadata currency_token = get_currency(currency);
@@ -337,8 +366,11 @@ contract TokenSale721 is Context, ReentrancyGuard {
     }
 
 
-    /*
-    *   How much is needed to pay for this token amount to buy
+    /** 
+    *  @dev How much is needed to pay for this token amount to buy
+    *  @param tokenAmountToBuy how much we want to buy
+    *  @param currency  ERC20 used as currency
+    *  @return weiAmount how much we need to pay, could be zero if wrong currency, but will fail at pre-validation
     */
     function getWeiAmount(uint256 tokenAmountToBuy, CurrenciesERC20.CurrencyERC20 currency) public view returns(uint256){
         uint256 price = get_price(currency);    // @todo: WARNING -- it can be 0 if buyer mismatch currency, but such transaction will fail at pre-validate purchase check!
@@ -347,7 +379,8 @@ contract TokenSale721 is Context, ReentrancyGuard {
     }
 
     /**
-     * @dev Determines how ERC20 is stored/forwarded on purchases.
+     * @dev Determines how ERC20 is stored/forwarded on purchases. Here we take our fee. This function can be tethered to buy tx or can be separate from buy flow.
+     * @param currency ERC20 currency. Seller should specify what exactly currency he/she want to out
      */
     function _forwardFunds(CurrenciesERC20.CurrencyERC20 currency) internal {
         IERC20Metadata currency_token =  get_currency(currency);
@@ -362,7 +395,10 @@ contract TokenSale721 is Context, ReentrancyGuard {
     }
 
 
-    // WithDraw locked funds to organiser
+    /**
+    *   @dev determine how funds are collected by seller
+    *   @param currency ERC20 currency
+    */
     function withDrawFunds(CurrenciesERC20.CurrencyERC20 currency) public {
         require(msg.sender == _wallet, "only organaizer can do it");
       /*
@@ -399,8 +435,10 @@ contract TokenSale721 is Context, ReentrancyGuard {
     */
 
 
-    /*
+    /**
     *   Calculate fee (SafeMath)
+    *   @param amount number from whom we take fee
+    *   @param scale scale for rounding. 100 is 1/100 (percent). we can encreace scale if we want better division (like we need to take 0.5% instead of 5%, then scale = 1000)
     */
     function calculateFee(uint256 amount, uint256 scale) internal view returns (uint256) {
         uint256 a = SafeMath.div(amount, scale);
