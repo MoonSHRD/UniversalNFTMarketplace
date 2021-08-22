@@ -11,7 +11,12 @@ import "../../../node_modules/@openzeppelin/contracts/security/ReentrancyGuard.s
 import "../../../node_modules/@openzeppelin/contracts/access/Ownable.sol";
 
 
-
+/**
+ *      CurrenciesERC20
+ * @title CurrenciesERC20
+ * @dev This contract allow to use erc20 tokens as a currency in crowdsale-like contracts
+ *
+ */
 contract CurrenciesERC20 is ReentrancyGuard, Ownable {
 
 
@@ -22,6 +27,9 @@ contract CurrenciesERC20 is ReentrancyGuard, Ownable {
     //IERC20 public _currency_token;
 
     // Supported erc20 currencies: .. to be extended.  This is hard-coded values
+    /**
+     * @dev Hardcoded (not-extetiable after deploy) erc20 currencies
+     */
     enum CurrencyERC20 {USDT, USDC, DAI, SNM, WETH} 
 
     struct CurrencyERC20_Custom {
