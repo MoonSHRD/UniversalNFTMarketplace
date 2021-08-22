@@ -68,9 +68,9 @@ Constructor of TokenSale721
 
 ### `check_sale_limit(uint256 amountToBuy) → bool` (public)
 
- @dev check if sale limit is not exceeded 
- @param amountToBuy how much of tokens want to buy
 
+
+check if sale limit is not exceeded 
 
 
 ### `buyTokens(address beneficiary, uint256 tokenAmountToBuy, enum CurrenciesERC20.CurrencyERC20 currency)` (public)
