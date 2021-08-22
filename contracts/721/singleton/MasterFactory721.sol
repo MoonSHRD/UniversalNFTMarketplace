@@ -7,6 +7,20 @@ pragma solidity ^0.8.0;
 import './MSNFT.sol';
 import './TokenSale721.sol';
 
+
+
+/**
+ *  Master Factory
+ * @title MasterFactory721
+ * @dev This contract is a public interfaceble end-point for users
+ * Each time user want to create NFT he/she should cast createMasterItem
+ * Each time user want to set up a tokensale he/she should cast createItemSale (with obtained master-id) from creation of Master-Item
+ * It will create new tokensale contract and plug it to MSNFT (Master Token contract)
+ * This contract doesn't deploy MSNFT itself, only TokenSale
+ * 
+ * If there is a need to upgrade tokensale mechanism it is required to upgrade and redeploy this factory, but not required to upgrade and redeploy Master (MSNFT) and vice-versa
+ * 
+ */
 contract MasterFactory721 {
 
 // constant
@@ -21,38 +35,36 @@ event SaleCreated(address indexed author, uint price, CurrenciesERC20.CurrencyER
 event SaleCreatedHuman(address author, uint price, CurrenciesERC20.CurrencyERC20 currency,uint256 master_id);
 
 
-
+/**
+ * @param msnft_ address of Master token contract
+ * @param currencies_router_ address of ERC20 currency router
+ */
 constructor(address msnft_,address payable _treasure_fund, address currencies_router_)  {
-   // ticket_template = createMSNFT();
- //  master_template = createMSNFT();
    master_template = msnft_;
    treasure_fund = _treasure_fund;
    currencies_router = currencies_router_;
 }
 
 
-/*
-function createMSNFT() internal returns (address ticket_address) {
- //  address factory_address = address(this);
-   string memory name_ = "MoonShardNFT";
-   string memory smbl_ = "MSNFT";
-   ticket_address = address(new MSNFT(name_,smbl_));
-   return ticket_address;
-}
-*/
-
+/**
+ *  @dev Create Item Sale for obtained master copy id
+ */
 function createItemSale721(address organizer, uint price, MSNFT token,uint sale_limit, CurrenciesERC20.CurrencyERC20 currency, uint _master_id) internal returns(address ticket_sale) {
-    // calculate price
-    //uint256 cena = calculateRate(price);
-   // CurrencyERC20 currency = GetCurrencyEnum(currency_int);
     ticket_sale = address(new TokenSale721(organizer, token, sale_limit,treasure_fund, price, currency, _master_id,currencies_router));
     return ticket_sale;
 }
 
 
-// supply type -- how much copies can have
-// supplyType --> 1= unique, 0 = common, everything else is rare
-//
+/**
+    @dev Creates Master copy of item, store its meta in blockchain
+     supply type -- how much copies can have
+     supplyType --> 1= unique, 0 = common, everything else is rare
+
+    @param link magnet/ipfs link to file 
+    @param _description of a file, stored in EVENTS, not in state
+    @param _supplyType see above
+    @return master_id id of a mastercopy
+ */
 function createMasterItem(string memory link, string memory _description, uint256 _supplyType) public returns (uint256 master_id) {
     address master_adr = master_template;
     address _author = msg.sender;
@@ -60,7 +72,14 @@ function createMasterItem(string memory link, string memory _description, uint25
     master_id = master.createMasterCopy(link, _author, _description, _supplyType);
     return master_id;
 }
-
+/**
+ @dev deploy new tokensale contract, for specific master_id and plug this sale to Master contract
+ @param price in wei or least decimal (check this twice for USDT!)
+ @param sale_limit how much tokens we want to sell, will fail if there are no consistency with rarity
+ @param currency erc20 currency to set price, set equal price for all stables
+ @param f_master_id master copy id, which we got from createMasterItem
+ @return item_sale_adr address of deployed tokensale contract
+ */
 function createItemSale(uint price, uint sale_limit, CurrenciesERC20.CurrencyERC20 currency, uint f_master_id) public returns (address item_sale_adr) {
     address master_adr = master_template;
     address organizer = msg.sender;
@@ -77,7 +96,9 @@ function createItemSale(uint price, uint sale_limit, CurrenciesERC20.CurrencyERC
 
 }
 
-
+/**
+    @dev return address of Master
+ */
 function getMasterTemplateAddress() public view returns(address) {
     return master_template;
 }
