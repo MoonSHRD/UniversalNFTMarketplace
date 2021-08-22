@@ -73,12 +73,12 @@ function createMasterItem(string memory link, string memory _description, uint25
     return master_id;
 }
 /**
-    @dev deploy new tokensale contract, for specific master_id and plug this sale to Master contract
-    @param price in wei or least decimal (check this twice for USDT!)
-    @param sale_limit how much tokens we want to sell, will fail if there are no consistency with rarity
-    @param currency erc20 currency to set price, set equal price for all stables
-    @param f_master_id master copy id, which we got from createMasterItem
-    @return item_sale_adr address of deployed tokensale contract
+ @dev deploy new tokensale contract, for specific master_id and plug this sale to Master contract
+ @param price in wei or least decimal (check this twice for USDT!)
+ @param sale_limit how much tokens we want to sell, will fail if there are no consistency with rarity
+ @param currency erc20 currency to set price, set equal price for all stables
+ @param f_master_id master copy id, which we got from createMasterItem
+ @return item_sale_adr address of deployed tokensale contract
  */
 function createItemSale(uint price, uint sale_limit, CurrenciesERC20.CurrencyERC20 currency, uint f_master_id) public returns (address item_sale_adr) {
     address master_adr = master_template;
