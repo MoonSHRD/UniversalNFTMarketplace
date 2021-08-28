@@ -29,3 +29,30 @@ Universal NFT Marketplace
 
  TokenSale contract is a modified OZ crowdsale contract.
  It has been modified to work with ERC721 token and get ERC20 tokens as payment
+
+ ### MasterCopy and Items
+Each token represent some file, so it stores link to the file and some meta-information about NFT as MasterCopy
+Any tokens are considered items and attached to specific master-copy, which contain meta-info about NFT
+Tokens do not store this info but it can be obtained by links
+
+**So each item (token) is a link to specific master-copy which contain link to the file**
+
+
+
+
+ ## Install, testing and so on
+
+ This is a truffle project, so fist you need to get truffle by
+ ` npm install -g truffle `
+
+ Deploy into blockchain / ganache :
+ ` truffle migrate --reset `
+ (reset flag will do clean migration)
+
+ Dpeloyment scheme can be found in `./migrations/2_deploy_contracts.js`
+
+ Networks configs `./truffle-config.js`
+
+ If you want to test contract locally you may also need ganache
+
+ ## Contracts description
