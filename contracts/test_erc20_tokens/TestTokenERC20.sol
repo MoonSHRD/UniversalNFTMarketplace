@@ -13,7 +13,10 @@ import "../../node_modules/@openzeppelin/contracts/access/Ownable.sol";
 
  contract TestTokenERC20 is ERC20, Ownable {
 
-    constructor(string memory name_, string memory symbol_) ERC20(name_,symbol_) {}
+    constructor(string memory name_, string memory symbol_) ERC20(name_,symbol_) {
+        uint amount = 1 * 1 ether;
+        super._mint(msg.sender, amount);
+    }
 
     function MintERC20 (address to, uint amount) public onlyOwner{
         super._mint(to, amount);
