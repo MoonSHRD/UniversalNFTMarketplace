@@ -11,7 +11,10 @@ import "../../node_modules/@openzeppelin/contracts/access/Ownable.sol";
 
  contract TestUSDT is ERC20, Ownable {
 
-    constructor(string memory name_, string memory symbol_) ERC20(name_,symbol_) {}
+    constructor(string memory name_, string memory symbol_) ERC20(name_,symbol_) {
+        uint amount = 1 * 1e6;
+        super._mint(msg.sender, amount);
+    }
 
 
 
