@@ -45,6 +45,9 @@ Tokens do not store this info but it can be obtained by links
  This is a truffle project, so fist you need to get truffle by
  ` npm install -g truffle `
 
+Download project dependencies:
+`npm i`
+
  Deploy into blockchain / ganache :
  ` truffle migrate --reset `
  (reset flag will do clean migration)
