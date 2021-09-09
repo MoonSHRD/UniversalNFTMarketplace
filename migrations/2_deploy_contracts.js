@@ -1,22 +1,22 @@
 //var SuperFactory = artifacts.require("./SuperFactory.sol");
 //var KNS = artifacts.require("./KNS.sol");
-var MasterFactory = artifacts.require("./721/singleton/MasterFactory721.sol")
+var MasterFactory = artifacts.require("./721/singleton/MasterFactory721.sol");
 //var Deposit = artifacts.require("./Deposit.sol")
-var Master = artifacts.require("./721/singleton/MSNFT.sol")
+var Master = artifacts.require("./721/singleton/MSNFT.sol");
 
 var accounts = web3.eth.getAccounts();
 var limitGas = web3.eth.getBlock("latest").gasLimit;
 
 
 // CurrencyERC20 contract
-var Currencies = artifacts.require("./721/singleton/CurrenciesERC20.sol")
+var Currencies = artifacts.require("./721/singleton/CurrenciesERC20.sol");
 
 // Test dummy erc20 tokens
-var USDT = artifacts.require("./test_erc20_tokens/TestUSDT.sol")
-var USDC = artifacts.require("./test_erc20_tokens/USDC.sol")
-var DAI = artifacts.require("./test_erc20_tokens/DAI.sol")
-var WETH = artifacts.require("./test_erc20_tokens/SNM.sol")
-var SNM = artifacts.require("./test_erc20_tokens/WETH.sol")
+var USDT = artifacts.require("./test_erc20_tokens/TestUSDT.sol");
+var USDC = artifacts.require("./test_erc20_tokens/USDC.sol");
+var DAI = artifacts.require("./test_erc20_tokens/DAI.sol");
+var WETH = artifacts.require("./test_erc20_tokens/SNM.sol");
+var SNM = artifacts.require("./test_erc20_tokens/WETH.sol");
 
 //var deposit_value = '50000';  // deposit INITIAL exchange market cup (turn capital)
 //var deposit_value_wei = web3.utils.toWei(deposit_value,'ether');
@@ -53,7 +53,7 @@ deployer.then(async () => {
   //...
 }).then(function() {
 
-  return deployer.deploy(Currencies,USDT.address,USDC.address,DAI.address,WETH.address,SNM.address, {gasPrice: wei_gas_price, from:accounts[0]})
+  return deployer.deploy(Currencies,USDT.address,USDC.address,DAI.address,WETH.address,SNM.address, {gasPrice: wei_gas_price, from:accounts[0]});
 
 }).then(function(){
 

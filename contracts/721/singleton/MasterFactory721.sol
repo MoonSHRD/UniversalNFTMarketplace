@@ -34,7 +34,6 @@ address public currencies_router;
 event SaleCreated(address indexed author, uint price, CurrenciesERC20.CurrencyERC20 indexed currency, uint256 indexed master_id);
 event SaleCreatedHuman(address author, uint price, CurrenciesERC20.CurrencyERC20 currency,uint256 master_id);
 
-
 /**
  * @param msnft_ address of Master token contract
  * @param currencies_router_ address of ERC20 currency router
