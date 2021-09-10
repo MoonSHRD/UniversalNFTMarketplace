@@ -30,10 +30,14 @@ address payable treasure_fund;
 
 address public currencies_router;
 
+mapping(address => mapping(uint => string)) internal creatorLinks;
+
+uint private createMasterItemCounts = 0;
+
 // event
 event SaleCreated(address indexed author, uint price, CurrenciesERC20.CurrencyERC20 indexed currency, uint256 indexed master_id);
 event SaleCreatedHuman(address author, uint price, CurrenciesERC20.CurrencyERC20 currency,uint256 master_id);
-
+event CreateMasterItem(string link, string _description, uint256 _supplyType);
 /**
  * @param msnft_ address of Master token contract
  * @param currencies_router_ address of ERC20 currency router
@@ -54,6 +58,14 @@ function createItemSale721(address organizer, uint price, MSNFT token,uint sale_
 }
 
 
+function compareLinks(string memory a, string memory b) public view returns (bool) {
+    return (keccak256(abi.encodePacked((a))) == keccak256(abi.encodePacked((b))));
+}
+
+function getCreatorLinks(address _creator, uint _linkPosition) public view returns(string memory) {
+    return creatorLinks[_creator][_linkPosition];
+}
+
 /**
     @dev Creates Master copy of item, store its meta in blockchain
      supply type -- how much copies can have
@@ -65,12 +77,20 @@ function createItemSale721(address organizer, uint price, MSNFT token,uint sale_
     @return master_id id of a mastercopy
  */
 function createMasterItem(string memory link, string memory _description, uint256 _supplyType) public returns (uint256 master_id) {
+    // string memory linkone = link;
+    // string memory linktwo = !compareLinks(linkone, '') ? link : '';
+    // require(!compareLinks(linkone, linktwo) , 'links should not be equal');
     address master_adr = master_template;
     address _author = msg.sender;
+    creatorLinks[_author][createMasterItemCounts] = link;
+    // require(!compareLinks(creatorLinks[_author][createMasterItemCounts], creatorLinks[_author][createMasterItemCounts-1]), 'links should not be equal');
+    createMasterItemCounts++;
     MSNFT master = MSNFT(master_adr);
     master_id = master.createMasterCopy(link, _author, _description, _supplyType);
+    emit CreateMasterItem(link, _description, _supplyType);
     return master_id;
 }
+
 /**
  @dev deploy new tokensale contract, for specific master_id and plug this sale to Master contract
  @param price in wei or least decimal (check this twice for USDT!)

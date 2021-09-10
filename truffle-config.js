@@ -82,10 +82,6 @@ module.exports = {
       gasPrice: '1',
       network_id: '5777'
     },
-
-
-
-
   },
 
   // Set default mocha options here, use special reporters etc.

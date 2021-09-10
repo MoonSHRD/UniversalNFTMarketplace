@@ -3,6 +3,7 @@
 var MasterFactory = artifacts.require("./721/singleton/MasterFactory721.sol");
 //var Deposit = artifacts.require("./Deposit.sol")
 var Master = artifacts.require("./721/singleton/MSNFT.sol");
+var TokenSale721 = artifacts.require("./721/singleton/TokenSale721.sol");
 
 var accounts = web3.eth.getAccounts();
 var limitGas = web3.eth.getBlock("latest").gasLimit;
@@ -36,7 +37,7 @@ module.exports = function(deployer, network, accounts) {
   deployer.deploy(MasterFactory,accounts[1],{gasPrice: wei_gas_price, from:accounts[0]}).then(function() {
  
   return;
- // return deployer.deploy(SuperFactory, KNS.address,accounts[1],accounts[2],{gasPrice:'1'});
+ // return deployer.deploy(SuperFactory, KNS.address,accounts[1],accounts[2],{gasPrice:'1'}); 
 });
 */
 
@@ -76,8 +77,8 @@ deployer.then(async () => {
   console.log("factory address");
   console.log(fa);
   return;
-
-
+}).then(async () => {
+  return;
 });
 
 
