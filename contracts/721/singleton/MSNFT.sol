@@ -56,11 +56,9 @@ contract MSNFT is ERC721Enumerable, Ownable {
     event MaterCopyCreated(address indexed author, uint256 master_id, string indexed description, string indexed link);
     event MasterCopyCreatedHuman(address author, uint256 indexed master_id, string description, string link);
 
-    // Global counters for item_id and master_id
+    
     /**
      * @dev Global counters for item_id and master_id. They are replacing atomic lock algo for reserving id
-     *
-     *
      */
     Counters.Counter _item_id_count;
     Counters.Counter _master_id_count;
@@ -88,6 +86,7 @@ contract MSNFT is ERC721Enumerable, Ownable {
     mapping(uint256 => address) public mastersales;
 
 
+
      /*
                     @NOTE
             if we mint 3rd item for some master (and already have two minted items) then
@@ -113,6 +112,8 @@ contract MSNFT is ERC721Enumerable, Ownable {
     // map from masterId to author address
     mapping(uint256 => address) public authors;
 
+    // map from from link to master_id
+    mapping(string => uint256) public links;
 
     // map from MasterCopyId to Meta info
     mapping(uint256 => ItemInfo) public MetaInfo;
@@ -199,6 +200,8 @@ contract MSNFT is ERC721Enumerable, Ownable {
         require(msg.sender == factory_address, "MSNFT: only factory contract can create mastercopy");
 
         uint256 mid = _reserveMasterId(_author);
+        require(links[link] == 0, "MSNFT: file with that link already have been tethered");
+
         RarityType _rarity = set_rarity(_supplyType);
         uint m_totalSupply;
         if (_rarity == RarityType.Rare){
@@ -210,6 +213,7 @@ contract MSNFT is ERC721Enumerable, Ownable {
         }
         MetaInfo[mid] = ItemInfo(link, _description,_author,_rarity, m_totalSupply);
         authors[mid] = _author;
+        links[link] = mid;
         
         emit MaterCopyCreated(_author, mid, _description, link);
         emit MasterCopyCreatedHuman(_author,mid,_description,link);
@@ -253,14 +257,7 @@ contract MSNFT is ERC721Enumerable, Ownable {
     }
 
 
-    /**
-     *  @dev get author of master
-     */
-    function get_author(uint256 _masterId) public view returns (address _author) {
-        _author = authors[_masterId];
-        return _author;
-    }
-
+   
 
     /**
      *  @dev Mint new token. Require master_id and item_id
@@ -370,8 +367,8 @@ contract MSNFT is ERC721Enumerable, Ownable {
 
 
 
-//                  @FIXME: fix get items of owner
-/*
+    //                  @FIXME: fix get items of owner
+    /*
   //  Gets the list of token IDs of the requested owner.
      function _tokensOfOwner(address owner) internal view returns (uint256[] storage) {
         return super._ownedTokens[owner];
@@ -383,7 +380,9 @@ contract MSNFT is ERC721Enumerable, Ownable {
         uint256[] storage tickets = _tokensOfOwner(_owner);
         return tickets;
     }
-*/
+    */
+
+
 
     /**
      * @dev get itemSale contract address tethered to this master_id
@@ -395,7 +394,27 @@ contract MSNFT is ERC721Enumerable, Ownable {
 
 
 
-/*      
+     /**
+     *  @dev get author of master
+     */
+    function get_author(uint256 _masterId) public view returns (address _author) {
+        _author = authors[_masterId];
+        return _author;
+    }
+
+    function get_master_id_by_link (string memory link_) public view returns (uint256 _masterId) {
+        _masterId = links[link_];
+        return _masterId;
+    }
+
+    function get_author_by_link(string memory link_) public view returns (address author_) {
+        uint256 _masterId = get_master_id_by_link(link_);
+        author_ = authors[_masterId];
+        return author_;
+    }
+
+
+    /*      
     function getTicketStatus(uint item_id) public view returns (TicketState status) {
         ItemInfo memory info = itemInfoStorage[item_id];
         status = info.state;
