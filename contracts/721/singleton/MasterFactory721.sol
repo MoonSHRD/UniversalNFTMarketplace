@@ -2,12 +2,8 @@ pragma solidity ^0.8.0;
 //"SPDX-License-Identifier: UNLICENSED"
 //import './zeppeline/token/ERC20/ERC20Mintable.sol';
 
-
-
 import './MSNFT.sol';
 import './TokenSale721.sol';
-
-
 
 /**
  *  Master Factory
@@ -30,14 +26,9 @@ address payable treasure_fund;
 
 address public currencies_router;
 
-mapping(address => mapping(uint => string)) internal creatorLinks;
-
-uint private createMasterItemCounts = 0;
-
 // event
 event SaleCreated(address indexed author, uint price, CurrenciesERC20.CurrencyERC20 indexed currency, uint256 indexed master_id);
 event SaleCreatedHuman(address author, uint price, CurrenciesERC20.CurrencyERC20 currency,uint256 master_id);
-event CreateMasterItem(string link, string _description, uint256 _supplyType);
 /**
  * @param msnft_ address of Master token contract
  * @param currencies_router_ address of ERC20 currency router
@@ -48,22 +39,12 @@ constructor(address msnft_,address payable _treasure_fund, address currencies_ro
    currencies_router = currencies_router_;
 }
 
-
 /**
  *  @dev Create Item Sale for obtained master copy id
  */
 function createItemSale721(address organizer, uint price, MSNFT token,uint sale_limit, CurrenciesERC20.CurrencyERC20 currency, uint _master_id) internal returns(address ticket_sale) {
     ticket_sale = address(new TokenSale721(organizer, token, sale_limit,treasure_fund, price, currency, _master_id,currencies_router));
     return ticket_sale;
-}
-
-
-function compareLinks(string memory a, string memory b) public view returns (bool) {
-    return (keccak256(abi.encodePacked((a))) == keccak256(abi.encodePacked((b))));
-}
-
-function getCreatorLinks(address _creator, uint _linkPosition) public view returns(string memory) {
-    return creatorLinks[_creator][_linkPosition];
 }
 
 /**
@@ -77,17 +58,10 @@ function getCreatorLinks(address _creator, uint _linkPosition) public view retur
     @return master_id id of a mastercopy
  */
 function createMasterItem(string memory link, string memory _description, uint256 _supplyType) public returns (uint256 master_id) {
-    // string memory linkone = link;
-    // string memory linktwo = !compareLinks(linkone, '') ? link : '';
-    // require(!compareLinks(linkone, linktwo) , 'links should not be equal');
     address master_adr = master_template;
     address _author = msg.sender;
-    creatorLinks[_author][createMasterItemCounts] = link;
-    // require(!compareLinks(creatorLinks[_author][createMasterItemCounts], creatorLinks[_author][createMasterItemCounts-1]), 'links should not be equal');
-    createMasterItemCounts++;
     MSNFT master = MSNFT(master_adr);
     master_id = master.createMasterCopy(link, _author, _description, _supplyType);
-    emit CreateMasterItem(link, _description, _supplyType);
     return master_id;
 }
 
@@ -121,6 +95,5 @@ function createItemSale(uint price, uint sale_limit, CurrenciesERC20.CurrencyERC
 function getMasterTemplateAddress() public view returns(address) {
     return master_template;
 }
-
 
 }

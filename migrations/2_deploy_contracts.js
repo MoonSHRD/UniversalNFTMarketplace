@@ -3,8 +3,6 @@
 var MasterFactory = artifacts.require("./721/singleton/MasterFactory721.sol");
 //var Deposit = artifacts.require("./Deposit.sol")
 var Master = artifacts.require("./721/singleton/MSNFT.sol");
-var TokenSale721 = artifacts.require("./721/singleton/TokenSale721.sol");
-
 var accounts = web3.eth.getAccounts();
 var limitGas = web3.eth.getBlock("latest").gasLimit;
 
