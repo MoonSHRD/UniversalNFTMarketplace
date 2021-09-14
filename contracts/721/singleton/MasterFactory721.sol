@@ -86,7 +86,6 @@ function createItemSale(uint price, uint sale_limit, CurrenciesERC20.CurrencyERC
     emit SaleCreated(msg.sender, price, currency, master_id);
     emit SaleCreatedHuman(msg.sender, price, currency, master_id);
     return item_sale_adr;
-
 }
 
 /**

@@ -1,10 +1,13 @@
 const MasterFactory721 = artifacts.require('MasterFactory721');
 const MSNFT = artifacts.require('MSNFT');
+const USDC = artifacts.require('USDC');
 
-const {expectEvent} = require('@openzeppelin/test-helpers');
+const {BN,expectEvent} = require('@openzeppelin/test-helpers');
 
 contract('MasterFactory721', accounts => {
     let factory;
+    let usdc;
+    let tokensTotal = '20';
     const admin = accounts[0];
     let unlimitLinksArr = [];
     let uniqueLinksArr = [];
@@ -20,6 +23,7 @@ contract('MasterFactory721', accounts => {
     before(async () => {
         factory = await MasterFactory721.deployed();
         nft = await MSNFT.deployed();
+        usdc = await USDC.deployed();
     });
 
     it('should create master copy with no limit supply type', async () => {
@@ -126,6 +130,25 @@ contract('MasterFactory721', accounts => {
         } catch(e) {
             assert(e.message, 'error message must contain revert');
         }
+    });
+
+    it('should buy nft tokens', async () => {
+        let adminTokenBalanceBefore = await usdc.balanceOf(admin);
+        console.log('adminTokenBalanceBefore '+adminTokenBalanceBefore);
+        assert.equal(adminTokenBalanceBefore, 0, 'current admins token balance');
+
+        let tokensToMint = web3.utils.toWei(web3.utils.toBN(tokensTotal));
+        const receipt = await usdc.MintERC20(admin, tokensToMint);
+        assert.equal(receipt.logs.length, 1, 'triggers one event');
+		assert.equal(receipt.logs[0].event, 'Transfer', 'should be the Transfer event');
+        assert.equal(receipt.logs[0].address, usdc.address, 'minted tokens are transferred from');
+
+        let adminTokenBalanceAfter = await usdc.balanceOf(admin);
+        assert.equal(adminTokenBalanceAfter.toString(), tokensToMint.toString(), 'admins token balance after mint');
+        const tokenUsdtPriceStr = '10';
+        let tokenUsdtPrice =  web3.utils.toWei(web3.utils.toBN(tokenUsdtPriceStr));
+        const receiptItemSale = await factory.createItemSale(tokenUsdtPrice, unlimit, usdc, 1);
+        console.log('receiptItemSale '+ receiptItemSale);
     });
 
 });
