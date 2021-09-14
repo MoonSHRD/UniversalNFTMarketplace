@@ -153,9 +153,11 @@ contract('MasterFactory721', accounts => {
         let tokenUsdcPrice =  web3.utils.toWei(tokenUsdcPriceStr);
         console.log("tokenUSDC price converted: ");
         console.log(tokenUsdcPrice);
-        await debug(factory.createItemSale(tokenUsdcPrice, unlimit, usdc, 1));      // 
-       // const receiptItemSale = await debug(factory.createItemSale(tokenUsdcPrice, unlimit, usdc, 1));
-      //  console.log('receiptItemSale '+ receiptItemSale);
+        // usdc enum type = 1
+        // reference -- CurrenciesERC20
+      //  await debug(factory.createItemSale(tokenUsdcPrice, unlimit, 1, 1));      // 
+        const receiptItemSale = await factory.createItemSale(tokenUsdcPrice, unlimit, 1, 1);
+        console.log('receiptItemSale '+ receiptItemSale);
        // console.log("receipt: ");
        // console.log(receiptItemSale.status);
     });
