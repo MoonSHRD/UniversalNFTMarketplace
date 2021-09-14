@@ -8,6 +8,7 @@ contract('MasterFactory721', accounts => {
     let factory;
     let usdc;
     let tokensTotal = '20';
+    let tokenUsdcPriceStr = '10';
     const admin = accounts[0];
     let unlimitLinksArr = [];
     let uniqueLinksArr = [];
@@ -145,10 +146,18 @@ contract('MasterFactory721', accounts => {
 
         let adminTokenBalanceAfter = await usdc.balanceOf(admin);
         assert.equal(adminTokenBalanceAfter.toString(), tokensToMint.toString(), 'admins token balance after mint');
-        const tokenUsdtPriceStr = '10';
-        let tokenUsdtPrice =  web3.utils.toWei(web3.utils.toBN(tokenUsdtPriceStr));
-        const receiptItemSale = await factory.createItemSale(tokenUsdtPrice, unlimit, usdc, 1);
-        console.log('receiptItemSale '+ receiptItemSale);
+        console.log('tokensToMint: '+ tokensToMint);
+       // let tokenUsdcPriceStr = '10';
+        console.log('tokensUSDC price raw: ');
+        console.log(tokenUsdcPriceStr);
+        let tokenUsdcPrice =  web3.utils.toWei(tokenUsdcPriceStr);
+        console.log("tokenUSDC price converted: ");
+        console.log(tokenUsdcPrice);
+        await debug(factory.createItemSale(tokenUsdcPrice, unlimit, usdc, 1));      // 
+       // const receiptItemSale = await debug(factory.createItemSale(tokenUsdcPrice, unlimit, usdc, 1));
+      //  console.log('receiptItemSale '+ receiptItemSale);
+       // console.log("receipt: ");
+       // console.log(receiptItemSale.status);
     });
 
 });
