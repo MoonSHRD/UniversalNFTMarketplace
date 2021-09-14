@@ -8,7 +8,6 @@ contract('MasterFactory721', accounts => {
     let factory;
     let usdc;
     let tokensTotal = '20';
-    let tokenUsdcPriceStr = '10';
     const admin = accounts[0];
     let unlimitLinksArr = [];
     let uniqueLinksArr = [];
@@ -147,15 +146,10 @@ contract('MasterFactory721', accounts => {
         let adminTokenBalanceAfter = await usdc.balanceOf(admin);
         assert.equal(adminTokenBalanceAfter.toString(), tokensToMint.toString(), 'admins token balance after mint');
         console.log('tokensToMint: '+ tokensToMint);
-       // let tokenUsdcPriceStr = '10';
-        console.log('tokensUSDC price raw: ');
-        console.log(tokenUsdcPriceStr);
+        let tokenUsdcPriceStr = '10';
         let tokenUsdcPrice =  web3.utils.toWei(tokenUsdcPriceStr);
-        console.log("tokenUSDC price converted: ");
-        console.log(tokenUsdcPrice);
         // usdc enum type = 1
         // reference -- CurrenciesERC20
-      //  await debug(factory.createItemSale(tokenUsdcPrice, unlimit, 1, 1));      // 
         const receiptItemSale = await factory.createItemSale(tokenUsdcPrice, unlimit, 1, 1);
         console.log('receiptItemSale '+ receiptItemSale);
        // console.log("receipt: ");
