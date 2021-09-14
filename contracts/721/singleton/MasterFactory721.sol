@@ -2,12 +2,8 @@ pragma solidity ^0.8.0;
 //"SPDX-License-Identifier: UNLICENSED"
 //import './zeppeline/token/ERC20/ERC20Mintable.sol';
 
-
-
 import './MSNFT.sol';
 import './TokenSale721.sol';
-
-
 
 /**
  *  Master Factory
@@ -33,8 +29,6 @@ address public currencies_router;
 // event
 event SaleCreated(address indexed author, uint price, CurrenciesERC20.CurrencyERC20 indexed currency, uint256 indexed master_id);
 event SaleCreatedHuman(address author, uint price, CurrenciesERC20.CurrencyERC20 currency,uint256 master_id);
-
-
 /**
  * @param msnft_ address of Master token contract
  * @param currencies_router_ address of ERC20 currency router
@@ -45,7 +39,6 @@ constructor(address msnft_,address payable _treasure_fund, address currencies_ro
    currencies_router = currencies_router_;
 }
 
-
 /**
  *  @dev Create Item Sale for obtained master copy id
  */
@@ -53,7 +46,6 @@ function createItemSale721(address organizer, uint price, MSNFT token,uint sale_
     ticket_sale = address(new TokenSale721(organizer, token, sale_limit,treasure_fund, price, currency, _master_id,currencies_router));
     return ticket_sale;
 }
-
 
 /**
     @dev Creates Master copy of item, store its meta in blockchain
@@ -72,6 +64,7 @@ function createMasterItem(string memory link, string memory _description, uint25
     master_id = master.createMasterCopy(link, _author, _description, _supplyType);
     return master_id;
 }
+
 /**
  @dev deploy new tokensale contract, for specific master_id and plug this sale to Master contract
  @param price in wei or least decimal (check this twice for USDT!)
@@ -102,6 +95,5 @@ function createItemSale(uint price, uint sale_limit, CurrenciesERC20.CurrencyERC
 function getMasterTemplateAddress() public view returns(address) {
     return master_template;
 }
-
 
 }
