@@ -168,8 +168,9 @@ contract('MasterFactory721', accounts => {
         assert(userTokenBalanceAfter >= receiptItemSale.receipt.logs[0].args.price);
 
         const contractAddress = receiptItemSale.receipt.logs[0].address;
+        console.log(contractAddress);
         tokenSale721 = await TokenSale721.at(contractAddress);
-        const buyToken = await tokenSale721.buyTokens(user, 1, USDT);
+        const buyToken = await debug(tokenSale721.buyTokens(user, 1, USDT));
         
         console.log('buyToken '+ Object.keys(buyToken));
         
