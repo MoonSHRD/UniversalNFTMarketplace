@@ -27,6 +27,7 @@
   "homepage": "https://github.com/MoonSHRD/UniversalNFTMarketplace#readme",
   "dependencies": {
     "@openzeppelin/contracts": "^4.1.0",
+    "truffle": "^5.4.10",
     "web3": "^1.5.2"
   },
   "devDependencies": {
