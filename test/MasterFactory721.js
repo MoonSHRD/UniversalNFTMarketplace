@@ -167,11 +167,11 @@ contract('MasterFactory721', accounts => {
 		assert.equal(receiptItemSale.receipt.logs[1].event, 'SaleCreatedHuman', 'should be the SaleCreatedHuman event');
         assert(userTokenBalanceAfter >= receiptItemSale.receipt.logs[0].args.price);
 
-        const contractAddress = receiptItemSale.receipt.logs[0].args.it_sale;    // wrong address (it should be tokensale address, not factory)
+        const contractAddress = receiptItemSale.receipt.logs[0].args.it_sale;
         console.log(contractAddress);
         tokenSale721 = await TokenSale721.at(contractAddress);
-        await debug(tokenSale721.buyTokens(user, 1, USDT));
-      //  const buyToken = await tokenSale721.buyTokens(user, 1, USDT);
+       // await debug(tokenSale721.buyTokens(user, 1, USDT));
+        const buyToken = await tokenSale721.buyTokens(user, 1, USDT);
         
         console.log('buyToken '+ Object.keys(buyToken));
         
