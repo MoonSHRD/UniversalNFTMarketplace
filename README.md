@@ -40,7 +40,7 @@ Tokens do not store this info but it can be obtained by links
 
 
 
- ## Install, testing and so on
+ ## Install
 
  This is a truffle project, so fist you need to get truffle by
  ` npm install -g truffle `
@@ -52,10 +52,40 @@ Download project dependencies:
  ` truffle migrate --reset `
  (reset flag will do clean migration)
 
- Dpeloyment scheme can be found in `./migrations/2_deploy_contracts.js`
+ Deployment scheme can be found in `./migrations/2_deploy_contracts.js`
 
  Networks configs `./truffle-config.js`
 
  If you want to test contract locally you may also need ganache
+ Contracts ABI (build artifacts) would be found in ./build directory after any sucessfull migration
+
+## Testing
+Tests are in directory `./test`
+
+To run tests run ` truffle test `
+
+### Debuging
+By default truffle will run tests in test enviroment, described as `development` network in truffle-config.js
+Make sure you have ganache up and running, cause `development` end-point are looking for ganache
+
+**What should I do when test fails?**
+If tests fail with any revert message you should use truffle debugger, to understand at which point execution fails <br />  
+There are different ways to approach debugger, let's see how we can use it
+
+#### A. Make `debug()` wrapper at failed strings at test as described here:
+https://www.trufflesuite.com/docs/truffle/getting-started/debugging-your-contracts <br />  
+After you have wrapped failed test invokation in test.js, run ` truffle test --debug` <br />  
+**Sometimes this method does not work as intended**, so in this case you may try to <br />  
+` truffle test --debug -b` or `truffle test ./test/test.js --debug -b` or even ` truffle test --debug --stacktrace -b ` <br />  
+If none of it work's try method B <br />  
+
+#### B. Make manual debugging of failed tx:
+1. at ganache switch to tab `logs`, make clear logs
+2. run ` truffle test -b `
+3. find in logs last transaction, which fail, copy it's txid
+4. run `truffle debug <failed_tx_id> ` -- it will start truffle in CLI debug mode, where you can expect execution of tx line by line
+5. find at which line exactly tx have been failed and why (try to use breakpoints, watch variables, arguments and so on)
+6. report problem
+
 
  ## Contracts description
