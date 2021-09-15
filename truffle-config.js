@@ -82,6 +82,13 @@ module.exports = {
       gasPrice: '1',
       network_id: '5777'
     },
+    develop: {
+      host: "127.0.0.1",
+      port: 7545,
+      gasPrice: '1',
+      network_id: "*"
+    },
+
   },
 
   // Set default mocha options here, use special reporters etc.
