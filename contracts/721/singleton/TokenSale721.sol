@@ -257,9 +257,6 @@ contract TokenSale721 is Context, ReentrancyGuard {
     }
     **/
 
-
-
-
      /**
      *      @dev Main function to buyTokens
      *      @param beneficiary buyer address
