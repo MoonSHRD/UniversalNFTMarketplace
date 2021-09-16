@@ -98,7 +98,7 @@ contract TokenSale721 is Context, ReentrancyGuard {
      */
     event TokensPurchased(address indexed purchaser, address indexed beneficiary, uint256 value, uint256 amount);
 
-    event CalculatedFees(uint256 initial_value, uint256 fees, uint256 transfered_amount);
+    event CalculatedFees(uint256 initial_value, uint256 fees, uint256 transfered_amount, address feeAddress);
 
 
     /**
@@ -388,7 +388,7 @@ contract TokenSale721 is Context, ReentrancyGuard {
         currency_token.transfer(_wallet,amount);
         currency_token.transfer(treasure_fund,fees);
         uint256 r = amount + fees;
-        emit CalculatedFees(r,fees,amount);
+        emit CalculatedFees(r,fees,amount,treasure_fund);
     }
 
 

@@ -26,6 +26,7 @@ contract('MasterFactory721', accounts => {
     const linkFour = 'https://ipfs.io/ipfs/QmSoB6yijd5dEfBPHXosfJXn9YbcJ7G6wHzH8fcbwzhkeX?filename=photo_2021-01-18_00-49-32.jpg';
     const linkFive = 'https://ipfs.io/ipfs/QmU6FgbzFwGuVffhQJFCTW79jGD8i36VDeYdTd9g7ASZGb?filename=complete_map.jpg';
     const desc = 'Lorem ipsum dolor sit amet';
+    const zero_address = "0x0000000000000000000000000000000000000000";
     const [unlimit, unique, rare] = [0, 1, 2];
 
     before(async () => {
@@ -145,18 +146,18 @@ contract('MasterFactory721', accounts => {
     });
 
     it('should buy nft tokens by USDT', async () => {
-        let userTokenBalanceBefore = await usdt.balanceOf(user, {from: admin});
+        let adminTokenBalanceBefore = await usdt.balanceOf(admin);
 
-        assert.equal(userTokenBalanceBefore, 0, 'current admins token balance');
+        assert.equal(adminTokenBalanceBefore, 0, 'current admins token balance');
         let tokensToMint = web3.utils.toBN(tokensTotal) * 1e6;
 
-        const receipt = await usdt.MintERC20(user, tokensToMint, {from: admin});
+        const receipt = await usdt.MintERC20(admin, tokensToMint);
         assert.equal(receipt.logs.length, 1, 'triggers one event');
 		assert.equal(receipt.logs[0].event, 'Transfer', 'should be the Transfer event');
         assert.equal(receipt.logs[0].address, usdt.address, 'minted tokens are transferred from');
 
-        let userTokenBalanceAfter = await usdt.balanceOf(user, {from: admin});
-        assert.equal(userTokenBalanceAfter.toString(), tokensToMint.toString(), 'admins token balance after mint');
+        let adminTokenBalanceAfter = await usdt.balanceOf(admin);
+        assert.equal(adminTokenBalanceAfter.toString(), tokensToMint.toString(), 'admins token balance after mint');
 
         const tokenUsdtPriceStr = '10';
         let tokenUsdtPrice =  web3.utils.toBN(tokenUsdtPriceStr) * 1e6;
@@ -165,37 +166,271 @@ contract('MasterFactory721', accounts => {
         assert.equal(receiptItemSale.receipt.logs.length, 2, 'triggers two events');
 		assert.equal(receiptItemSale.receipt.logs[0].event, 'SaleCreated', 'should be the SaleCreated event');
 		assert.equal(receiptItemSale.receipt.logs[1].event, 'SaleCreatedHuman', 'should be the SaleCreatedHuman event');
-        assert(userTokenBalanceAfter >= receiptItemSale.receipt.logs[0].args.price);
+        assert(adminTokenBalanceAfter >= receiptItemSale.receipt.logs[0].args.price);
 
         const contractAddress = receiptItemSale.receipt.logs[0].args.it_sale;
-        console.log(contractAddress);
+        
+		const approve = await usdt.approve(contractAddress, tokenUsdtPrice, { from: admin });
+        assert.equal(approve.logs.length, 1, 'triggers one event');
+		assert.equal(approve.logs[0].event, 'Approval', 'should be the Approval event');
+		assert.equal(approve.logs[0].args.owner, admin, 'logs the account tokens are authorized by');
+		assert.equal(approve.logs[0].args.spender, contractAddress, 'logs the account tokens are authorized to');
+		assert.equal(approve.logs[0].args.value, tokenUsdtPrice, 'logs the transfer amount');
+
+        const allowance = await usdt.allowance(admin,contractAddress);
+        assert(allowance == tokenUsdtPrice);
+
         tokenSale721 = await TokenSale721.at(contractAddress);
-       // await debug(tokenSale721.buyTokens(user, 1, USDT));
-        const buyToken = await tokenSale721.buyTokens(user, 1, USDT);
+        const buyToken = await tokenSale721.buyTokens(admin, 1, USDT);
+        assert.equal(buyToken.logs.length, 1, 'triggers one event');
+		assert.equal(buyToken.logs[0].event, 'TokensPurchased', 'should be the TokensPurchased event');
+
+        let adminBalance = await usdt.balanceOf(admin);
+        let adminBalanceAfterBuy = adminTokenBalanceAfter - tokenUsdtPrice;
+        assert(adminBalance == adminBalanceAfterBuy);
         
-        console.log('buyToken '+ Object.keys(buyToken));
-        
+        let contractTokenBalanceBeforeSale = await usdt.balanceOf(contractAddress, {from: admin});
+        assert(contractTokenBalanceBeforeSale == tokenUsdtPrice);
+
+        let withDrawFunds = await tokenSale721.withDrawFunds(USDT);
+        let serviceFees = withDrawFunds.logs[0].args.fees;
+        let feeAddress = withDrawFunds.logs[0].args.feeAddress;
+        let feeAddressBalanceUsdt = await usdt.balanceOf(feeAddress, {from: admin});
+        assert.equal(serviceFees.toString(), feeAddressBalanceUsdt.toString(), 'must be equal');
     });
 
-    // it('should buy nft tokens by USDC', async () => {
-    //     let adminTokenBalanceBefore = await usdc.balanceOf(admin);
-    //     assert.equal(adminTokenBalanceBefore, 0, 'current admins token balance');
-    //     let tokensToMint = web3.utils.toWei(web3.utils.toBN(tokensTotal));
-    //     const receipt = await usdc.MintERC20(admin, tokensToMint);
-    //     assert.equal(receipt.logs.length, 1, 'triggers one event');
-	// 	assert.equal(receipt.logs[0].event, 'Transfer', 'should be the Transfer event');
-    //     assert.equal(receipt.logs[0].address, usdc.address, 'minted tokens are transferred from');
+    it('should buy nft tokens by USDC', async () => {
+        let adminTokenBalanceBefore = await usdc.balanceOf(admin);
 
-    //     let adminTokenBalanceAfter = await usdc.balanceOf(admin);
-    //     assert.equal(adminTokenBalanceAfter.toString(), tokensToMint.toString(), 'admins token balance after mint');
-    //     const tokenUsdcPriceStr = '10';
-    //     let tokenUsdcPrice =  web3.utils.toWei(web3.utils.toBN(tokenUsdcPriceStr));
-    //     const receiptItemSale = await factory.createItemSale(tokenUsdcPrice, unlimit, USDC, 2);
-    //     assert.equal(receiptItemSale.receipt.logs.length, 2, 'triggers two events');
-	// 	assert.equal(receiptItemSale.receipt.logs[0].event, 'SaleCreated', 'should be the SaleCreated event');
-	// 	assert.equal(receiptItemSale.receipt.logs[1].event, 'SaleCreatedHuman', 'should be the SaleCreatedHuman event');
+        assert.equal(adminTokenBalanceBefore, 0, 'current admins token balance');
+        let tokensToMint = web3.utils.toWei(web3.utils.toBN(tokensTotal));
+
+        const receipt = await usdc.MintERC20(admin, tokensToMint);
+        assert.equal(receipt.logs.length, 1, 'triggers one event');
+		assert.equal(receipt.logs[0].event, 'Transfer', 'should be the Transfer event');
+        assert.equal(receipt.logs[0].address, usdc.address, 'minted tokens are transferred from');
+
+        let adminTokenBalanceAfter = await usdc.balanceOf(admin);
+        assert.equal(adminTokenBalanceAfter.toString(), tokensToMint.toString(), 'admins token balance after mint');
+
+        const tokenUsdcPriceStr = '10';
+        let tokenUsdcPrice =  web3.utils.toWei(web3.utils.toBN(tokenUsdcPriceStr));
+
+        const receiptItemSale = await factory.createItemSale(tokenUsdcPrice, unlimit, USDC, 2);
+        assert.equal(receiptItemSale.receipt.logs.length, 2, 'triggers two events');
+		assert.equal(receiptItemSale.receipt.logs[0].event, 'SaleCreated', 'should be the SaleCreated event');
+		assert.equal(receiptItemSale.receipt.logs[1].event, 'SaleCreatedHuman', 'should be the SaleCreatedHuman event');
+        assert(adminTokenBalanceAfter >= receiptItemSale.receipt.logs[0].args.price);
+
+        const contractAddress = receiptItemSale.receipt.logs[0].args.it_sale;
         
-    //     // // tokenSale721 = await MasterFactory721.at(address);
-    //     // console.log('tokenSale721  '+ Object.keys(receiptItemSale.receipt.logs[0]));
-    // });
+		const approve = await usdc.approve(contractAddress, tokenUsdcPrice, { from: admin });
+        assert.equal(approve.logs.length, 1, 'triggers one event');
+		assert.equal(approve.logs[0].event, 'Approval', 'should be the Approval event');
+		assert.equal(approve.logs[0].args.owner, admin, 'logs the account tokens are authorized by');
+		assert.equal(approve.logs[0].args.spender, contractAddress, 'logs the account tokens are authorized to');
+		assert.equal(approve.logs[0].args.value.toString(), tokenUsdcPrice.toString(), 'logs the transfer amount');
+
+        const allowance = await usdc.allowance(admin,contractAddress);
+        assert(allowance.toString() == tokenUsdcPrice.toString());
+
+        tokenSale721 = await TokenSale721.at(contractAddress);
+        const buyToken = await tokenSale721.buyTokens(admin, 1, USDC);
+        assert.equal(buyToken.logs.length, 1, 'triggers one event');
+		assert.equal(buyToken.logs[0].event, 'TokensPurchased', 'should be the TokensPurchased event');
+
+        let adminBalance = await usdc.balanceOf(admin);
+        let adminBalanceAfterBuy = adminTokenBalanceAfter - tokenUsdcPrice;
+        assert(adminBalance.toString() == adminBalanceAfterBuy.toString());
+        
+        let contractTokenBalanceBeforeSale = await usdc.balanceOf(contractAddress, {from: admin});
+        assert(contractTokenBalanceBeforeSale.toString() == tokenUsdcPrice.toString());
+
+        let withDrawFunds = await tokenSale721.withDrawFunds(USDC);
+        let serviceFees = withDrawFunds.logs[0].args.fees;
+        let feeAddress = withDrawFunds.logs[0].args.feeAddress;
+        let feeAddressBalanceUsdt = await usdc.balanceOf(feeAddress, {from: admin});
+        assert.equal(serviceFees.toString(), feeAddressBalanceUsdt.toString(), 'must be equal');
+    });
+
+    it('should buy nft tokens by DAI', async () => {
+        let adminTokenBalanceBefore = await dai.balanceOf(admin);
+
+        assert.equal(adminTokenBalanceBefore, 0, 'current admins token balance');
+        let tokensToMint = web3.utils.toWei(web3.utils.toBN(tokensTotal));
+
+        const receipt = await dai.MintERC20(admin, tokensToMint);
+        assert.equal(receipt.logs.length, 1, 'triggers one event');
+		assert.equal(receipt.logs[0].event, 'Transfer', 'should be the Transfer event');
+        assert.equal(receipt.logs[0].address, dai.address, 'minted tokens are transferred from');
+
+        let adminTokenBalanceAfter = await dai.balanceOf(admin);
+        assert.equal(adminTokenBalanceAfter.toString(), tokensToMint.toString(), 'admins token balance after mint');
+
+        const tokenDaiPriceStr = '10';
+        let tokenDaiPrice =  web3.utils.toWei(web3.utils.toBN(tokenDaiPriceStr));
+
+        const receiptItemSale = await factory.createItemSale(tokenDaiPrice, unique, DAI, 3);
+        assert.equal(receiptItemSale.receipt.logs.length, 2, 'triggers two events');
+		assert.equal(receiptItemSale.receipt.logs[0].event, 'SaleCreated', 'should be the SaleCreated event');
+		assert.equal(receiptItemSale.receipt.logs[1].event, 'SaleCreatedHuman', 'should be the SaleCreatedHuman event');
+        assert(adminTokenBalanceAfter >= receiptItemSale.receipt.logs[0].args.price);
+
+        const contractAddress = receiptItemSale.receipt.logs[0].args.it_sale;
+        
+		const approve = await dai.approve(contractAddress, tokenDaiPrice, { from: admin });
+        assert.equal(approve.logs.length, 1, 'triggers one event');
+		assert.equal(approve.logs[0].event, 'Approval', 'should be the Approval event');
+		assert.equal(approve.logs[0].args.owner, admin, 'logs the account tokens are authorized by');
+		assert.equal(approve.logs[0].args.spender, contractAddress, 'logs the account tokens are authorized to');
+		assert.equal(approve.logs[0].args.value.toString(), tokenDaiPrice.toString(), 'logs the transfer amount');
+
+        const allowance = await dai.allowance(admin,contractAddress);
+        assert(allowance.toString() == tokenDaiPrice.toString());
+
+        tokenSale721 = await TokenSale721.at(contractAddress);
+        const buyToken = await tokenSale721.buyTokens(admin, 1, DAI);
+        assert.equal(buyToken.logs.length, 1, 'triggers one event');
+		assert.equal(buyToken.logs[0].event, 'TokensPurchased', 'should be the TokensPurchased event');
+
+        let adminBalance = await dai.balanceOf(admin);
+        let adminBalanceAfterBuy = adminTokenBalanceAfter - tokenDaiPrice;
+        assert(adminBalance.toString() == adminBalanceAfterBuy.toString());
+        
+        let contractTokenBalanceBeforeSale = await dai.balanceOf(contractAddress, {from: admin});
+        assert(contractTokenBalanceBeforeSale.toString() == tokenDaiPrice.toString());
+
+        let withDrawFunds = await tokenSale721.withDrawFunds(DAI);
+        let serviceFees = withDrawFunds.logs[0].args.fees;
+        let feeAddress = withDrawFunds.logs[0].args.feeAddress;
+        let feeAddressBalanceUsdt = await dai.balanceOf(feeAddress, {from: admin});
+        assert.equal(serviceFees.toString(), feeAddressBalanceUsdt.toString(), 'must be equal');
+    });
+
+    it('should buy nft tokens by SNM', async () => {
+        let adminTokenBalanceBefore = await snm.balanceOf(admin);
+
+        console.log('adminTokenBalanceBefore '+adminTokenBalanceBefore);
+
+        assert.equal(adminTokenBalanceBefore, 0, 'current admins token balance');
+        let tokensToMint = web3.utils.toWei(web3.utils.toBN(tokensTotal));
+
+    
+        console.log('tokensToMint '+tokensToMint);
+
+        const receipt = await snm.MintERC20(admin, tokensToMint);
+        assert.equal(receipt.logs.length, 1, 'triggers one event');
+		assert.equal(receipt.logs[0].event, 'Transfer', 'should be the Transfer event');
+        assert.equal(receipt.logs[0].address, snm.address, 'minted tokens are transferred from');
+
+        let adminTokenBalanceAfter = await snm.balanceOf(admin);
+
+        
+        console.log('adminTokenBalanceAfter '+adminTokenBalanceAfter);
+        assert.equal(adminTokenBalanceAfter.toString(), tokensToMint.toString(), 'admins token balance after mint');
+
+        const tokenSnmPriceStr = '10';
+        let tokenSnmPrice =  web3.utils.toWei(web3.utils.toBN(tokenSnmPriceStr));
+
+        
+        console.log('tokenSnmPrice '+tokenSnmPrice);
+
+        const receiptItemSale = await factory.createItemSale(tokenSnmPrice, rare, SNM, 4);
+        assert.equal(receiptItemSale.receipt.logs.length, 2, 'triggers two events');
+		assert.equal(receiptItemSale.receipt.logs[0].event, 'SaleCreated', 'should be the SaleCreated event');
+		assert.equal(receiptItemSale.receipt.logs[1].event, 'SaleCreatedHuman', 'should be the SaleCreatedHuman event');
+        assert(adminTokenBalanceAfter >= receiptItemSale.receipt.logs[0].args.price);
+
+        const contractAddress = receiptItemSale.receipt.logs[0].args.it_sale;
+        
+		const approve = await snm.approve(contractAddress, tokenSnmPrice, { from: admin });
+        assert.equal(approve.logs.length, 1, 'triggers one event');
+		assert.equal(approve.logs[0].event, 'Approval', 'should be the Approval event');
+		assert.equal(approve.logs[0].args.owner, admin, 'logs the account tokens are authorized by');
+		assert.equal(approve.logs[0].args.spender, contractAddress, 'logs the account tokens are authorized to');
+		assert.equal(approve.logs[0].args.value.toString(), tokenSnmPrice.toString(), 'logs the transfer amount');
+
+        const allowance = await snm.allowance(admin,contractAddress);
+
+        
+        console.log('allowance '+allowance);
+        console.log('approve.logs[0].args.value.toString() '+approve.logs[0].args.value.toString());
+
+        assert(allowance.toString() == tokenSnmPrice.toString());
+
+        tokenSale721 = await TokenSale721.at(contractAddress);
+        const buyToken = await tokenSale721.buyTokens(admin, 1, SNM);
+        assert.equal(buyToken.logs.length, 1, 'triggers one event');
+		assert.equal(buyToken.logs[0].event, 'TokensPurchased', 'should be the TokensPurchased event');
+
+        let adminBalance = await snm.balanceOf(admin);
+        let adminBalanceAfterBuy = adminTokenBalanceAfter - tokenSnmPrice;
+        assert(adminBalance.toString() == adminBalanceAfterBuy.toString());
+        
+        let contractTokenBalanceBeforeSale = await snm.balanceOf(contractAddress, {from: admin});
+        assert(contractTokenBalanceBeforeSale.toString() == tokenSnmPrice.toString());
+
+        let withDrawFunds = await tokenSale721.withDrawFunds(SNM);
+        let serviceFees = withDrawFunds.logs[0].args.fees;
+        let feeAddress = withDrawFunds.logs[0].args.feeAddress;
+        let feeAddressBalanceUsdt = await snm.balanceOf(feeAddress, {from: admin});
+        assert.equal(serviceFees.toString(), feeAddressBalanceUsdt.toString(), 'must be equal');
+    });
+
+    it('should buy nft tokens by WETH', async () => {
+        let adminTokenBalanceBefore = await weth.balanceOf(admin);
+
+        assert.equal(adminTokenBalanceBefore, 0, 'current admins token balance');
+        let tokensToMint = web3.utils.toWei(web3.utils.toBN(tokensTotal));
+
+        const receipt = await weth.MintERC20(admin, tokensToMint);
+        assert.equal(receipt.logs.length, 1, 'triggers one event');
+		assert.equal(receipt.logs[0].event, 'Transfer', 'should be the Transfer event');
+        assert.equal(receipt.logs[0].address, weth.address, 'minted tokens are transferred from');
+
+        let adminTokenBalanceAfter = await weth.balanceOf(admin);
+        console.log('adminTokenBalanceAfter '+adminTokenBalanceAfter);
+        assert.equal(adminTokenBalanceAfter.toString(), tokensToMint.toString(), 'admins token balance after mint');
+
+        const tokenWethPriceStr = '10';
+        let tokenWethPrice =  web3.utils.toWei(web3.utils.toBN(tokenWethPriceStr));
+
+        const receiptItemSale = await factory.createItemSale(tokenWethPrice, rare, WETH, 4);
+        assert.equal(receiptItemSale.receipt.logs.length, 2, 'triggers two events');
+		assert.equal(receiptItemSale.receipt.logs[0].event, 'SaleCreated', 'should be the SaleCreated event');
+		assert.equal(receiptItemSale.receipt.logs[1].event, 'SaleCreatedHuman', 'should be the SaleCreatedHuman event');
+        assert(adminTokenBalanceAfter >= receiptItemSale.receipt.logs[0].args.price);
+
+        const contractAddress = receiptItemSale.receipt.logs[0].args.it_sale;
+        
+		const approve = await weth.approve(contractAddress, tokenWethPrice, { from: admin });
+        assert.equal(approve.logs.length, 1, 'triggers one event');
+		assert.equal(approve.logs[0].event, 'Approval', 'should be the Approval event');
+		assert.equal(approve.logs[0].args.owner, admin, 'logs the account tokens are authorized by');
+		assert.equal(approve.logs[0].args.spender, contractAddress, 'logs the account tokens are authorized to');
+		assert.equal(approve.logs[0].args.value.toString(), tokenWethPrice.toString(), 'logs the transfer amount');
+
+
+        const allowance = await weth.allowance(admin,contractAddress);
+        assert(allowance.toString() == tokenWethPrice.toString());
+        console.log('allowance '+allowance);
+
+        tokenSale721 = await TokenSale721.at(contractAddress);
+        const buyToken = await tokenSale721.buyTokens(admin, 1, WETH);
+        assert.equal(buyToken.logs.length, 1, 'triggers one event');
+		assert.equal(buyToken.logs[0].event, 'TokensPurchased', 'should be the TokensPurchased event');
+
+        let adminBalance = await weth.balanceOf(admin);
+        let adminBalanceAfterBuy = adminTokenBalanceAfter - tokenWethPrice;
+        assert(adminBalance.toString() == adminBalanceAfterBuy.toString());
+        
+        let contractTokenBalanceBeforeSale = await weth.balanceOf(contractAddress, {from: admin});
+        assert(contractTokenBalanceBeforeSale.toString() == tokenWethPrice.toString());
+
+        let withDrawFunds = await tokenSale721.withDrawFunds(WETH);
+        let serviceFees = withDrawFunds.logs[0].args.fees;
+        let feeAddress = withDrawFunds.logs[0].args.feeAddress;
+        let feeAddressBalanceUsdt = await weth.balanceOf(feeAddress, {from: admin});
+        assert.equal(serviceFees.toString(), feeAddressBalanceUsdt.toString(), 'must be equal');
+    });
 });
