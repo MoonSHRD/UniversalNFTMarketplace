@@ -325,7 +325,6 @@ contract('MasterFactory721', accounts => {
 
         let adminTokenBalanceAfter = await snm.balanceOf(admin);
 
-        
         console.log('adminTokenBalanceAfter '+adminTokenBalanceAfter);
         assert.equal(adminTokenBalanceAfter.toString(), tokensToMint.toString(), 'admins token balance after mint');
 
@@ -395,7 +394,7 @@ contract('MasterFactory721', accounts => {
         const tokenWethPriceStr = '10';
         let tokenWethPrice =  web3.utils.toWei(web3.utils.toBN(tokenWethPriceStr));
 
-        const receiptItemSale = await factory.createItemSale(tokenWethPrice, rare, WETH, 4);
+        const receiptItemSale = await factory.createItemSale(tokenWethPrice, rare, WETH, 5);
         assert.equal(receiptItemSale.receipt.logs.length, 2, 'triggers two events');
 		assert.equal(receiptItemSale.receipt.logs[0].event, 'SaleCreated', 'should be the SaleCreated event');
 		assert.equal(receiptItemSale.receipt.logs[1].event, 'SaleCreatedHuman', 'should be the SaleCreatedHuman event');
@@ -422,12 +421,13 @@ contract('MasterFactory721', accounts => {
 
         let adminBalance = await weth.balanceOf(admin);
         let adminBalanceAfterBuy = adminTokenBalanceAfter - tokenWethPrice;
+        
         assert(adminBalance.toString() == adminBalanceAfterBuy.toString());
         
         let contractTokenBalanceBeforeSale = await weth.balanceOf(contractAddress, {from: admin});
         assert(contractTokenBalanceBeforeSale.toString() == tokenWethPrice.toString());
 
-        let withDrawFunds = await tokenSale721.withDrawFunds(WETH);
+        let withDrawFunds = await tokenSale721.withDrawFunds(WETH, {from: admin});
         let serviceFees = withDrawFunds.logs[0].args.fees;
         let feeAddress = withDrawFunds.logs[0].args.feeAddress;
         let feeAddressBalanceUsdt = await weth.balanceOf(feeAddress, {from: admin});
