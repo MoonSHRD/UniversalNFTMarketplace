@@ -7,6 +7,8 @@ const SNMcontract = artifacts.require('SNM');
 const WETHcontract = artifacts.require('WETH');
 const TokenSale721 = artifacts.require('TokenSale721');
 
+const IERC20Metadata = artifacts.require("../../../node_modules/@openzeppelin/contracts/token/ERC20/extensions/IERC20Metadata.sol");
+
 const {BN,expectEvent} = require('@openzeppelin/test-helpers');
 
 contract('MasterFactory721', accounts => {
@@ -35,8 +37,8 @@ contract('MasterFactory721', accounts => {
         usdt = await USDTcontract.deployed();
         usdc = await USDCcontract.deployed();
         dai = await DAIcontract.deployed();
-        snm = await SNMcontract.deployed();
         weth = await WETHcontract.deployed();
+        snm = await SNMcontract.deployed();
     });
 
     it('should create master copy with no limit supply type', async () => {
@@ -310,13 +312,8 @@ contract('MasterFactory721', accounts => {
     it('should buy nft tokens by SNM', async () => {
         let adminTokenBalanceBefore = await snm.balanceOf(admin);
 
-        console.log('adminTokenBalanceBefore '+adminTokenBalanceBefore);
-
         assert.equal(adminTokenBalanceBefore, 0, 'current admins token balance');
         let tokensToMint = web3.utils.toWei(web3.utils.toBN(tokensTotal));
-
-    
-        console.log('tokensToMint '+tokensToMint);
 
         const receipt = await snm.MintERC20(admin, tokensToMint);
         assert.equal(receipt.logs.length, 1, 'triggers one event');
@@ -325,14 +322,10 @@ contract('MasterFactory721', accounts => {
 
         let adminTokenBalanceAfter = await snm.balanceOf(admin);
 
-        console.log('adminTokenBalanceAfter '+adminTokenBalanceAfter);
         assert.equal(adminTokenBalanceAfter.toString(), tokensToMint.toString(), 'admins token balance after mint');
 
         const tokenSnmPriceStr = '10';
         let tokenSnmPrice =  web3.utils.toWei(web3.utils.toBN(tokenSnmPriceStr));
-
-        
-        console.log('tokenSnmPrice '+tokenSnmPrice);
 
         const receiptItemSale = await factory.createItemSale(tokenSnmPrice, rare, SNM, 4);
         assert.equal(receiptItemSale.receipt.logs.length, 2, 'triggers two events');
@@ -342,7 +335,10 @@ contract('MasterFactory721', accounts => {
 
         const contractAddress = receiptItemSale.receipt.logs[0].args.it_sale;
         
+        await snm.approve(contractAddress, 0, { from: admin });
+
 		const approve = await snm.approve(contractAddress, tokenSnmPrice, { from: admin });
+        
         assert.equal(approve.logs.length, 1, 'triggers one event');
 		assert.equal(approve.logs[0].event, 'Approval', 'should be the Approval event');
 		assert.equal(approve.logs[0].args.owner, admin, 'logs the account tokens are authorized by');
@@ -350,10 +346,6 @@ contract('MasterFactory721', accounts => {
 		assert.equal(approve.logs[0].args.value.toString(), tokenSnmPrice.toString(), 'logs the transfer amount');
 
         const allowance = await snm.allowance(admin,contractAddress);
-
-        
-        console.log('allowance '+allowance);
-        console.log('approve.logs[0].args.value.toString() '+approve.logs[0].args.value.toString());
 
         assert(allowance.toString() == tokenSnmPrice.toString());
 
@@ -388,7 +380,6 @@ contract('MasterFactory721', accounts => {
         assert.equal(receipt.logs[0].address, weth.address, 'minted tokens are transferred from');
 
         let adminTokenBalanceAfter = await weth.balanceOf(admin);
-        console.log('adminTokenBalanceAfter '+adminTokenBalanceAfter);
         assert.equal(adminTokenBalanceAfter.toString(), tokensToMint.toString(), 'admins token balance after mint');
 
         const tokenWethPriceStr = '10';
@@ -402,6 +393,7 @@ contract('MasterFactory721', accounts => {
 
         const contractAddress = receiptItemSale.receipt.logs[0].args.it_sale;
         
+        await weth.approve(contractAddress, 0, { from: admin });
 		const approve = await weth.approve(contractAddress, tokenWethPrice, { from: admin });
         assert.equal(approve.logs.length, 1, 'triggers one event');
 		assert.equal(approve.logs[0].event, 'Approval', 'should be the Approval event');
@@ -412,7 +404,6 @@ contract('MasterFactory721', accounts => {
 
         const allowance = await weth.allowance(admin,contractAddress);
         assert(allowance.toString() == tokenWethPrice.toString());
-        console.log('allowance '+allowance);
 
         tokenSale721 = await TokenSale721.at(contractAddress);
         const buyToken = await tokenSale721.buyTokens(admin, 1, WETH);

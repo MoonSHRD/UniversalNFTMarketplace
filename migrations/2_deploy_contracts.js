@@ -14,8 +14,8 @@ var Currencies = artifacts.require("./721/singleton/CurrenciesERC20.sol");
 var USDT = artifacts.require("./test_erc20_tokens/TestUSDT.sol");
 var USDC = artifacts.require("./test_erc20_tokens/USDC.sol");
 var DAI = artifacts.require("./test_erc20_tokens/DAI.sol");
-var WETH = artifacts.require("./test_erc20_tokens/SNM.sol");
-var SNM = artifacts.require("./test_erc20_tokens/WETH.sol");
+var WETH = artifacts.require("./test_erc20_tokens/WETH.sol");
+var SNM = artifacts.require("./test_erc20_tokens/SNM.sol");
 
 //var deposit_value = '50000';  // deposit INITIAL exchange market cup (turn capital)
 //var deposit_value_wei = web3.utils.toWei(deposit_value,'ether');

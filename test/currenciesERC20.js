@@ -12,7 +12,7 @@ contract('CurrenciesERC20', () => {
             let addr = await curERC20.get_hardcoded_currency(i);
             console.log(addr);
             let name = await IERC20Metadata.at(addr);
-            let currTitle = await name.name()
+            let currTitle = await name.name();
             console.log('currTitle '+ currTitle);
         }
     });
