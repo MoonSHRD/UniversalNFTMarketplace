@@ -77,7 +77,7 @@ contract TokenSale721 is Context, ReentrancyGuard {
     mapping (CurrenciesERC20.CurrencyERC20 => uint256) internal currency_balances; 
 
     // service comission fee
-    uint public percent_fee = 25;
+    uint public promille_fee = 25;
 
     // Creation date
     uint public crDate = block.timestamp;
@@ -438,10 +438,20 @@ contract TokenSale721 is Context, ReentrancyGuard {
     *   @param scale scale for rounding. 100 is 1/100 (percent). we can encreace scale if we want better division (like we need to take 0.5% instead of 5%, then scale = 1000)
     */
     function calculateFee(uint256 amount, uint256 scale) internal view returns (uint256) {
-        uint256 a = SafeMath.div(amount, scale);
-        uint256 b = SafeMath.mod(amount, scale);
-        uint256 c = SafeMath.div(percent_fee, scale);
-        uint256 d = SafeMath.mod(percent_fee, scale);
+      //  uint256 a = SafeMath.div(amount, scale);
+      //  uint256 b = SafeMath.mod(amount, scale);
+      //  uint256 c = SafeMath.div(promille_fee, scale);
+      //  uint256 d = SafeMath.mod(promille_fee, scale);
+
+        uint a = amount / scale;
+        uint b = amount % scale;
+        uint c = promille_fee / scale;
+        uint d = promille_fee % scale;
+
+
+
+
+
 
         // Calculate fee with ROUND DOWN
        // return a * c * scale + a * d + b * c + b * d / scale;
@@ -451,6 +461,10 @@ contract TokenSale721 is Context, ReentrancyGuard {
 
      //calculate fee with CLOSESTS INTEGER
        // return a * c * scale + a * d + b * c + (b * d + scale / 2) / scale;
+       
+       
+       
+       /*
         uint256 m1 = SafeMath.mul(SafeMath.mul(a,c), scale);
         uint256 m2 = SafeMath.mul(a,d);
         uint256 m3 = SafeMath.mul(b,c);
@@ -464,6 +478,12 @@ contract TokenSale721 is Context, ReentrancyGuard {
         uint256 a3 = SafeMath.add(a2,m3);
         uint256 a4 = SafeMath.add(a3,d2);
         return a4;
+
+        */
+
+
+       // return a * c * scale + a * d + b * c + (b * d + scale / 2) / scale;
+       return a * c * scale + a * d + b * c + (b * d + scale - 1) / scale;
     }
 
 
