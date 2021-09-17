@@ -27,8 +27,8 @@ address payable treasure_fund;
 address public currencies_router;
 
 // event
-event SaleCreated(address indexed author, uint price, CurrenciesERC20.CurrencyERC20 indexed currency, uint256 indexed master_id);
-event SaleCreatedHuman(address author, uint price, CurrenciesERC20.CurrencyERC20 currency,uint256 master_id);
+event SaleCreated(address indexed author, uint price, CurrenciesERC20.CurrencyERC20 indexed currency, uint256 indexed master_id, address it_sale);
+event SaleCreatedHuman(address author, uint price, CurrenciesERC20.CurrencyERC20 currency,uint256 master_id, address it_sale);
 /**
  * @param msnft_ address of Master token contract
  * @param currencies_router_ address of ERC20 currency router
@@ -83,10 +83,9 @@ function createItemSale(uint price, uint sale_limit, CurrenciesERC20.CurrencyERC
    
    // Plug itemsale address to mastersale map
     item.PlugCrowdSale(organizer, master_id, item_sale_adr);
-    emit SaleCreated(msg.sender, price, currency, master_id);
-    emit SaleCreatedHuman(msg.sender, price, currency, master_id);
+    emit SaleCreated(msg.sender, price, currency, master_id, item_sale_adr);
+    emit SaleCreatedHuman(msg.sender, price, currency, master_id, item_sale_adr);
     return item_sale_adr;
-
 }
 
 /**

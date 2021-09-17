@@ -14,15 +14,15 @@ var Currencies = artifacts.require("./721/singleton/CurrenciesERC20.sol");
 var USDT = artifacts.require("./test_erc20_tokens/TestUSDT.sol");
 var USDC = artifacts.require("./test_erc20_tokens/USDC.sol");
 var DAI = artifacts.require("./test_erc20_tokens/DAI.sol");
-var WETH = artifacts.require("./test_erc20_tokens/SNM.sol");
-var SNM = artifacts.require("./test_erc20_tokens/WETH.sol");
+var WETH = artifacts.require("./test_erc20_tokens/WETH.sol");
+var SNM = artifacts.require("./test_erc20_tokens/SNM.sol");
 
 //var deposit_value = '50000';  // deposit INITIAL exchange market cup (turn capital)
 //var deposit_value_wei = web3.utils.toWei(deposit_value,'ether');
 //var custom_gas_price = 
 
 
-var custom_gas_price = '150';
+var custom_gas_price = '1';
 var wei_gas_price = web3.utils.toWei(custom_gas_price, 'gwei');
 //var string_gas_price = wei_gas_price.toString;
 
