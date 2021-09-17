@@ -409,62 +409,41 @@ contract TokenSale721 is Context, ReentrancyGuard {
         _forwardFunds(currency);
     }
 
-    /*
-    *   EXAMPLE OF TAKING FEE (BASIC OPERATORS)
-    *
-    // calculate percent -- amount * percent / 100
+
+    /**
+    *   Calculate fee (UnSafeMath) -- use it only if it ^0.8.0
+    *   @param amount number from whom we take fee
+    *   @param scale scale for rounding. 100 is 1/100 (percent). we can encreace scale if we want better division (like we need to take 0.5% instead of 5%, then scale = 1000)
+    */
     function calculateFee(uint256 amount, uint256 scale) internal view returns (uint256) {
         uint a = amount / scale;
         uint b = amount % scale;
-        uint c = percent_fee / scale;
-        uint d = percent_fee % scale;
+        uint c = promille_fee / scale;
+        uint d = promille_fee % scale;
 
         // Calculate fee with ROUND DOWN
-       // return a * c * scale + a * d + b * c + b * d / scale;
+        // return a * c * scale + a * d + b * c + b * d / scale;
 
-       // calculate fee with ROUND UP
-     //   return a * c * scale + a * d + b * c + (b * d + scale - 1) / scale;
+        // calculate fee with ROUND UP
+        // return a * c * scale + a * d + b * c + (b * d + scale - 1) / scale;   // I guess we use this
 
-     //calculate fee with CLOSESTS INTEGER
-        return a * c * scale + a * d + b * c + (b * d + scale / 2) / scale;
+        //calculate fee with CLOSESTS INTEGER
+        // return a * c * scale + a * d + b * c + (b * d + scale / 2) / scale;
 
+       return a * c * scale + a * d + b * c + (b * d + scale - 1) / scale;
     }
-    */
 
 
     /**
     *   Calculate fee (SafeMath)
     *   @param amount number from whom we take fee
     *   @param scale scale for rounding. 100 is 1/100 (percent). we can encreace scale if we want better division (like we need to take 0.5% instead of 5%, then scale = 1000)
-    */
-    function calculateFee(uint256 amount, uint256 scale) internal view returns (uint256) {
-      //  uint256 a = SafeMath.div(amount, scale);
-      //  uint256 b = SafeMath.mod(amount, scale);
-      //  uint256 c = SafeMath.div(promille_fee, scale);
-      //  uint256 d = SafeMath.mod(promille_fee, scale);
+    function calculateFeeSafeMath(uint256 amount, uint256 scale) internal view returns (uint256) {
+        uint256 a = SafeMath.div(amount, scale);
+        uint256 b = SafeMath.mod(amount, scale);
+        uint256 c = SafeMath.div(promille_fee, scale);
+        uint256 d = SafeMath.mod(promille_fee, scale);
 
-        uint a = amount / scale;
-        uint b = amount % scale;
-        uint c = promille_fee / scale;
-        uint d = promille_fee % scale;
-
-
-
-
-
-
-        // Calculate fee with ROUND DOWN
-       // return a * c * scale + a * d + b * c + b * d / scale;
-
-       // calculate fee with ROUND UP
-     //   return a * c * scale + a * d + b * c + (b * d + scale - 1) / scale;
-
-     //calculate fee with CLOSESTS INTEGER
-       // return a * c * scale + a * d + b * c + (b * d + scale / 2) / scale;
-       
-       
-       
-       /*
         uint256 m1 = SafeMath.mul(SafeMath.mul(a,c), scale);
         uint256 m2 = SafeMath.mul(a,d);
         uint256 m3 = SafeMath.mul(b,c);
@@ -478,15 +457,7 @@ contract TokenSale721 is Context, ReentrancyGuard {
         uint256 a3 = SafeMath.add(a2,m3);
         uint256 a4 = SafeMath.add(a3,d2);
         return a4;
-
-        */
-
-
-       // return a * c * scale + a * d + b * c + (b * d + scale / 2) / scale;
-       return a * c * scale + a * d + b * c + (b * d + scale - 1) / scale;
     }
-
-
-
+    */
 
 }
