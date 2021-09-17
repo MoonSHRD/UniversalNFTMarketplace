@@ -4,7 +4,6 @@ pragma solidity ^0.8.0;
 
 import "../../../node_modules/@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import "../../../node_modules/@openzeppelin/contracts/security/ReentrancyGuard.sol";
-import "../../../node_modules/@openzeppelin/contracts/utils/math/SafeMath.sol";
 import "../../../node_modules/@openzeppelin/contracts/utils/Context.sol";
 import "../../../node_modules/@openzeppelin/contracts/token/ERC721/extensions/IERC721Enumerable.sol";
 import "../../../node_modules/@openzeppelin/contracts/token/ERC20/extensions/IERC20Metadata.sol";
@@ -26,8 +25,6 @@ import './CurrenciesERC20.sol';
 */
 contract TokenSale721 is Context, ReentrancyGuard {
 
-
-    using SafeMath for uint256;
     using SafeERC20 for IERC20Metadata;
   //  using Counters for Counters.Counter;
 
@@ -66,12 +63,6 @@ contract TokenSale721 is Context, ReentrancyGuard {
 
     // Map from currency to price
     mapping (CurrenciesERC20.CurrencyERC20 => uint256) public _price;
-
-    // FIXME: rework this part to have separate contract with ability to modify currency list 
-    // map from currency to contract addresses
-   // mapping (CurrenciesERC20.CurrencyERC20 => IERC20) internal _currencies; // setting up currency list
-    // CurrenciesERC20._currencies_hardcoded
-
    
     // balances of this sale contract in those currencies
     mapping (CurrenciesERC20.CurrencyERC20 => uint256) internal currency_balances; 
@@ -272,9 +263,9 @@ contract TokenSale721 is Context, ReentrancyGuard {
         _preValidatePurchase(beneficiary, weiAmount, tokens, currency);
 
         // update state
-        currency_balances[currency] = currency_balances[currency].add(weiAmount);
+        currency_balances[currency] = currency_balances[currency] + (weiAmount);
        // If it is unlimited sale then _sale_limit should be always 0   
-        _sold_count = _sold_count.add(tokens);
+        _sold_count = _sold_count + tokens;
     
         _processPurchase(beneficiary, tokens,currency, weiAmount);
         emit TokensPurchased(_msgSender(), beneficiary, weiAmount, tokens);
