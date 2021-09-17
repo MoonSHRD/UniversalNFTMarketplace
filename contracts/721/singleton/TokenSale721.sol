@@ -77,7 +77,7 @@ contract TokenSale721 is Context, ReentrancyGuard {
     mapping (CurrenciesERC20.CurrencyERC20 => uint256) internal currency_balances; 
 
     // service comission fee
-    uint public percent_fee = 5;
+    uint public percent_fee = 25;
 
     // Creation date
     uint public crDate = block.timestamp;
@@ -382,7 +382,7 @@ contract TokenSale721 is Context, ReentrancyGuard {
     function _forwardFunds(CurrenciesERC20.CurrencyERC20 currency) internal {
         IERC20Metadata currency_token =  get_currency(currency);
         uint256 amount = currency_token.balanceOf(address(this));
-        uint256 scale = 100;
+        uint256 scale = 1000;
         uint256 fees = calculateFee(amount,scale);
         amount = amount - fees;
         currency_token.transfer(_wallet,amount);
