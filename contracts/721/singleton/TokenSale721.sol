@@ -308,7 +308,6 @@ contract TokenSale721 is Context, ReentrancyGuard {
      // Check sale_limit (including rarity check)
         require(check_sale_limit(limit) == true, "tokens amount should not exceed sale_limit");
 
-
      // Check allowance of currency balance
         IERC20Metadata currency_token = get_currency(currency);
         uint256 approved_balance = currency_token.allowance(beneficiary, address(this));
