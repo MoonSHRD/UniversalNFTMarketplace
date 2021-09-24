@@ -58,7 +58,7 @@ function createItemSale721(address organizer, uint price, MSNFT token,uint sale_
     @param _supplyType see above
     @return master_id id of a mastercopy
  */
-function createMasterItem(string memory link, string memory _description, uint256 _supplyType) public returns (uint256 master_id) {
+function createMasterItem(string memory link, string memory _description, uint256 _supplyType) public payable returns (uint256 master_id) {
     address master_adr = master_template;
     address _author = msg.sender;
     MSNFT master = MSNFT(master_adr);

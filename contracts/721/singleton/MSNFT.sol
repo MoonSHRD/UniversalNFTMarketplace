@@ -307,7 +307,6 @@ contract MSNFT is ERC721Enumerable, Ownable {
         Mint(to, m_master_id, item_id);
     }
 
-
     // @todo -- make external instead of public?
     /**
      *  @dev external function for buying items, should be invoked from tokensale contract
