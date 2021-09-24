@@ -77,14 +77,14 @@ module.exports = {
 
     ganache: {            // truffle migrate --reset --network ganache
       host: "127.0.0.1",
-      port: 8545,
+      port: 7545,
       gasLimit: '6721975',
       gasPrice: '20000000000',
-      network_id: '1337'
+      network_id: '*'
     },
     development: {
       host: "127.0.0.1",
-      port: 8545,
+      port: 7545,
       gasPrice: '20000000000',
       network_id: "*"
     },
