@@ -24,13 +24,9 @@ contract MSNFT is ERC721Enumerable, Ownable {
    using SafeMath for uint256;
    using Counters for Counters.Counter;
 
-
-
     // Master -- Mastercopy, abstraction
     // Item -- originate from mastercopy (nft-token)
-
-
-
+    
     //events
     /**
      * @dev Events about buying item. events named *Human stands for human readability
@@ -40,6 +36,9 @@ contract MSNFT is ERC721Enumerable, Ownable {
      */
     event ItemBought(address indexed buyer,uint256 indexed master_id, uint256 indexed item_id);
     event ItemBoughtHuman(address buyer,uint256 master_id, uint256 item_id);
+
+    //Mint new token
+    event MintNewToken(address to, uint m_master_id, uint item_id);
 
 
     // Service event for debug
@@ -118,7 +117,6 @@ contract MSNFT is ERC721Enumerable, Ownable {
     // map from MasterCopyId to Meta info
     mapping(uint256 => ItemInfo) public MetaInfo;
 
-
     /**
    *                                                            Item information
    *    @dev ItemInfo contains meta information about Master/Item. 
@@ -145,9 +143,6 @@ contract MSNFT is ERC721Enumerable, Ownable {
 
     }
 
-
-
-    
     constructor(string memory name_, string memory smbl_) ERC721(name_,smbl_) ERC721Enumerable() {}
 
     // @todo should be changed visibility to external?
@@ -293,6 +288,7 @@ contract MSNFT is ERC721Enumerable, Ownable {
         */
         itemIndex[item_id] = itemIds[m_master_id].length;   // this item_id will be stored at itemIds[m_master_id] at this *position order*.  
         itemIds[m_master_id].push(item_id);                 // this item is stored at itemIds and tethered to master_id
+        emit MintNewToken(to, m_master_id, item_id);
     }
 
 
@@ -311,7 +307,6 @@ contract MSNFT is ERC721Enumerable, Ownable {
         Mint(to, m_master_id, item_id);
     }
 
-
     // @todo -- make external instead of public?
     /**
      *  @dev external function for buying items, should be invoked from tokensale contract
@@ -320,7 +315,7 @@ contract MSNFT is ERC721Enumerable, Ownable {
      *  @param master_id Master copy id 
      */
     function buyItem(address buyer, uint256 itemAmount, uint256 master_id) public{
-       address _sale = mastersales[master_id];
+        address _sale = mastersales[master_id];
         require(_sale == msg.sender, "MSNFT: you should call buyItem from itemsale contract");
 
         for (uint256 i = 0; i < itemAmount; i++ ){
