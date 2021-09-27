@@ -111,6 +111,9 @@ contract MSNFT is ERC721Enumerable, Ownable {
     // map from masterId to author address
     mapping(uint256 => address) public authors;
 
+    
+    mapping(address => uint[]) public masterids;
+
     // map from from link to master_id
     mapping(string => uint256) public links;
 
@@ -209,12 +212,15 @@ contract MSNFT is ERC721Enumerable, Ownable {
         MetaInfo[mid] = ItemInfo(link, _description,_author,_rarity, m_totalSupply);
         authors[mid] = _author;
         links[link] = mid;
-        
+        masterids[_author].push(mid);
         emit MaterCopyCreated(_author, mid, _description, link);
         emit MasterCopyCreatedHuman(_author,mid,_description,link);
-
         // return mastercopy id
         return mid;
+    }
+
+    function getMasterIdByAddress(address _creator) public view returns (uint[] memory) {
+        return masterids[_creator];
     }
 
 

@@ -498,6 +498,13 @@ contract('MasterFactory721', accounts => {
         
         const balance = await nft.totalSupply();
         assert.equal(balance, 5, 'balance has been replenished');
+
+        const userNfts =  await nft.getMasterIdByAddress(admin);
+        console.log('userNfts ');
+
+        for (let index = 0; index < userNfts.length; index++) { 
+            console.log(userNfts[index]);
+        }
         
     });
 });
