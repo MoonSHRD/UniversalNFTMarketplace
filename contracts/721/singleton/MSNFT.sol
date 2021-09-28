@@ -112,7 +112,7 @@ contract MSNFT is ERC721Enumerable, Ownable {
     mapping(uint256 => address) public authors;
 
     // map from author address to masterIds array
-    mapping(address => uint[]) public masterids;
+    mapping(address => uint[]) public author_masterids; // can be used to get all objects created by one author
 
     // map from itemId to masterId
     mapping(uint256 => uint256) public ItemToMaster;
@@ -215,7 +215,7 @@ contract MSNFT is ERC721Enumerable, Ownable {
         MetaInfo[mid] = ItemInfo(link, _description,_author,_rarity, m_totalSupply);
         authors[mid] = _author;
         links[link] = mid;
-        masterids[_author].push(mid);
+        author_masterids[_author].push(mid);
         emit MaterCopyCreated(_author, mid, _description, link);
         emit MasterCopyCreatedHuman(_author,mid,_description,link);
         // return mastercopy id
@@ -223,10 +223,10 @@ contract MSNFT is ERC721Enumerable, Ownable {
     }
 
     /**
-     *  @dev get masterIds array of author address
+     *  @dev get masterIds array for specific author address
      */
-    function getMasterIdByAddress(address _creator) public view returns (uint[] memory) {
-        return masterids[_creator];
+    function getMasterIdByAuthor(address _creator) public view returns (uint[] memory) {
+        return author_masterids[_creator];
     }
 
      /**
