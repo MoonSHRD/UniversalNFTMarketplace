@@ -1,4 +1,4 @@
-//"SPDX-License-Identifier: UNLICENSED"
+//SPDX-License-Identifier: UNLICENSED
 pragma solidity ^0.8.0;
 
 import "../../../node_modules/@openzeppelin/contracts/token/ERC721/extensions/ERC721Enumerable.sol";
@@ -222,12 +222,7 @@ contract MSNFT is ERC721Enumerable, Ownable {
         return mid;
     }
 
-    /**
-     *  @dev get masterIds array for specific author address
-     */
-    function getMasterIdByAuthor(address _creator) public view returns (uint[] memory) {
-        return author_masterids[_creator];
-    }
+    
 
      /**
      * @dev setting rarity for token
@@ -299,19 +294,8 @@ contract MSNFT is ERC721Enumerable, Ownable {
         */
         itemIndex[item_id] = itemIds[m_master_id].length;   // this item_id will be stored at itemIds[m_master_id] at this *position order*.  
         itemIds[m_master_id].push(item_id);               // this item is stored at itemIds and tethered to master_id
-        ItemToMaster[item_id] = m_master_id;
+        ItemToMaster[item_id] = m_master_id;            // here we can store and obtain what mid is tethered to specific token id, so we can get MetaInfo for specific token fast
         emit MintNewToken(to, m_master_id, item_id);
-    }
-
-
-/**
-     *  @dev get ItemInfo by item id
-     *  @param item_id item id 
-     */
-    function getInfobyItemId(uint item_id) public view returns (ItemInfo memory){
-        uint master_id = ItemToMaster[item_id];
-        ItemInfo memory _itemInfo = MetaInfo[master_id];
-        return _itemInfo;
     }
 
 
@@ -429,6 +413,23 @@ contract MSNFT is ERC721Enumerable, Ownable {
         uint256 _masterId = get_master_id_by_link(link_);
         author_ = authors[_masterId];
         return author_;
+    }
+
+    /**
+     *  @dev get masterIds array for specific author address
+     */
+    function getMasterIdByAuthor(address _creator) public view returns (uint[] memory) {
+        return author_masterids[_creator];
+    }
+
+    /**
+     *  @dev get ItemInfo by item id
+     *  @param item_id item id (equal to tokenid)
+     */
+    function getInfobyItemId(uint item_id) public view returns (ItemInfo memory){
+        uint master_id = ItemToMaster[item_id];
+        ItemInfo memory _itemInfo = MetaInfo[master_id];
+        return _itemInfo;
     }
 
 
