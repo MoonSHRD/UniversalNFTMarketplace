@@ -1,5 +1,5 @@
+// SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
-//"SPDX-License-Identifier: UNLICENSED"
 
 import "../../../node_modules/@openzeppelin/contracts/token/ERC721/extensions/ERC721Enumerable.sol";
 import "../../../node_modules/@openzeppelin/contracts/token/ERC721/ERC721.sol";
@@ -308,9 +308,9 @@ contract MSNFT is ERC721Enumerable, Ownable {
      *  @dev get ItemInfo by item id
      *  @param item_id item id 
      */
-    function getInfobyItemId(uint item_id) public returns (ItemInfo){
+    function getInfobyItemId(uint item_id) public view returns (ItemInfo memory){
         uint master_id = ItemToMaster[item_id];
-        ItemInfo _itemInfo = MetaInfo[master_id];
+        ItemInfo memory _itemInfo = MetaInfo[master_id];
         return _itemInfo;
     }
 
