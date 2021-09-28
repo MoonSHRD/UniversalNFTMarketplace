@@ -111,8 +111,11 @@ contract MSNFT is ERC721Enumerable, Ownable {
     // map from masterId to author address
     mapping(uint256 => address) public authors;
 
-    
+    // map from author address to masterIds array
     mapping(address => uint[]) public masterids;
+
+    // map from itemId to masterId
+    mapping(uint256 => uint256) public ItemToMaster;
 
     // map from from link to master_id
     mapping(string => uint256) public links;
@@ -219,10 +222,12 @@ contract MSNFT is ERC721Enumerable, Ownable {
         return mid;
     }
 
+    /**
+     *  @dev get masterIds array of author address
+     */
     function getMasterIdByAddress(address _creator) public view returns (uint[] memory) {
         return masterids[_creator];
     }
-
 
      /**
      * @dev setting rarity for token
@@ -293,8 +298,20 @@ contract MSNFT is ERC721Enumerable, Ownable {
 
         */
         itemIndex[item_id] = itemIds[m_master_id].length;   // this item_id will be stored at itemIds[m_master_id] at this *position order*.  
-        itemIds[m_master_id].push(item_id);                 // this item is stored at itemIds and tethered to master_id
+        itemIds[m_master_id].push(item_id);               // this item is stored at itemIds and tethered to master_id
+        ItemToMaster[item_id] = m_master_id;
         emit MintNewToken(to, m_master_id, item_id);
+    }
+
+
+/**
+     *  @dev get ItemInfo by item id
+     *  @param item_id item id 
+     */
+    function getInfobyItemId(uint item_id) public returns (ItemInfo){
+        uint master_id = ItemToMaster[item_id];
+        ItemInfo _itemInfo = MetaInfo[master_id];
+        return _itemInfo;
     }
 
 
