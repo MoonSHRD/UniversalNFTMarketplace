@@ -1,5 +1,5 @@
+//SPDX-License-Identifier: UNLICENSED
 pragma solidity ^0.8.0;
-//"SPDX-License-Identifier: UNLICENSED"
 
 import "../../../node_modules/@openzeppelin/contracts/token/ERC721/extensions/ERC721Enumerable.sol";
 import "../../../node_modules/@openzeppelin/contracts/token/ERC721/ERC721.sol";
@@ -111,6 +111,12 @@ contract MSNFT is ERC721Enumerable, Ownable {
     // map from masterId to author address
     mapping(uint256 => address) public authors;
 
+    // map from author address to masterIds array
+    mapping(address => uint[]) public author_masterids; // can be used to get all objects created by one author
+
+    // map from itemId to masterId
+    mapping(uint256 => uint256) public ItemToMaster;
+
     // map from from link to master_id
     mapping(string => uint256) public links;
 
@@ -209,14 +215,14 @@ contract MSNFT is ERC721Enumerable, Ownable {
         MetaInfo[mid] = ItemInfo(link, _description,_author,_rarity, m_totalSupply);
         authors[mid] = _author;
         links[link] = mid;
-        
+        author_masterids[_author].push(mid);
         emit MaterCopyCreated(_author, mid, _description, link);
         emit MasterCopyCreatedHuman(_author,mid,_description,link);
-
         // return mastercopy id
         return mid;
     }
 
+    
 
      /**
      * @dev setting rarity for token
@@ -287,7 +293,8 @@ contract MSNFT is ERC721Enumerable, Ownable {
 
         */
         itemIndex[item_id] = itemIds[m_master_id].length;   // this item_id will be stored at itemIds[m_master_id] at this *position order*.  
-        itemIds[m_master_id].push(item_id);                 // this item is stored at itemIds and tethered to master_id
+        itemIds[m_master_id].push(item_id);               // this item is stored at itemIds and tethered to master_id
+        ItemToMaster[item_id] = m_master_id;            // here we can store and obtain what mid is tethered to specific token id, so we can get MetaInfo for specific token fast
         emit MintNewToken(to, m_master_id, item_id);
     }
 
@@ -406,6 +413,23 @@ contract MSNFT is ERC721Enumerable, Ownable {
         uint256 _masterId = get_master_id_by_link(link_);
         author_ = authors[_masterId];
         return author_;
+    }
+
+    /**
+     *  @dev get masterIds array for specific author address
+     */
+    function getMasterIdByAuthor(address _creator) public view returns (uint[] memory) {
+        return author_masterids[_creator];
+    }
+
+    /**
+     *  @dev get ItemInfo by item id
+     *  @param item_id item id (equal to tokenid)
+     */
+    function getInfobyItemId(uint item_id) public view returns (ItemInfo memory){
+        uint master_id = ItemToMaster[item_id];
+        ItemInfo memory _itemInfo = MetaInfo[master_id];
+        return _itemInfo;
     }
 
 
