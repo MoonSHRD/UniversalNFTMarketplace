@@ -499,12 +499,14 @@ contract('MasterFactory721', accounts => {
         const balance = await nft.totalSupply();
         assert.equal(balance, 5, 'balance has been replenished');
 
+        /* this test get info about nft's created by author, we need to test getting boughted items by user, we need to rework this test
         const userNfts =  await nft.getMasterIdByAddress(admin);
         console.log('userNfts ');
 
         for (let index = 0; index < userNfts.length; index++) { 
             console.log(userNfts[index]);
         }
+        */
         
     });
 });
