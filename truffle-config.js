@@ -25,7 +25,8 @@
 // const mnemonic = fs.readFileSync(".secret").toString().trim();
 
 const path = require("path");
-
+const { projectId, mnemonic } = require('./secret.json');
+const HDWalletProvider = require('@truffle/hdwallet-provider');
 module.exports = {
   /**
    * Networks define how you connect to your ethereum client and let you set the
@@ -77,16 +78,25 @@ module.exports = {
 
     ganache: {            // truffle migrate --reset --network ganache
       host: "127.0.0.1",
-      port: 7545,
+      port: 8545,
       gasLimit: '6721975',
       gasPrice: '20000000000',
       network_id: '*'
     },
     development: {
       host: "127.0.0.1",
-      port: 7545,
+      port: 8545,
       gasPrice: '20000000000',
       network_id: "*"
+    },
+    rinkeby: {
+      provider: () => new HDWalletProvider(mnemonic, `https://rinkeby.infura.io/v3/${projectId}`),
+      network_id: 4,       // Ropsten's id
+      gas: 7900000,        // Ropsten has a lower block limit than mainnet
+      gasLimit: '7999999',
+      confirmations: 2,    // # of confs to wait between deployments. (default: 0)
+      timeoutBlocks: 200,  // # of blocks before a deployment times out  (minimum/default: 50)
+      skipDryRun: true    // Skip dry run before migrations? (default: false for public nets )
     },
 
   },
