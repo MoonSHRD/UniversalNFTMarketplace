@@ -17,10 +17,10 @@ var SNM = artifacts.require("./test_erc20_tokens/SNM.sol");
 
 
 //  Ropsten addresses
-const usdt_address = "0x3b00ef435fa4fcff5c209a37d1f3dcff37c705ad";
-const usdc_address = "0xeb8f08a975ab53e34d8a0330e0d34de942c95926";
-const dai_address = "0x95b58a6bff3d14b7db2f5cb5f0ad413dc2940658";
-const weth_address = "0xc778417e063141139fce010982780140aa0cd5ab";
+var usdt_address = web3.utils.toChecksumAddress('0x3b00ef435fa4fcff5c209a37d1f3dcff37c705ad');
+var usdc_address = web3.utils.toChecksumAddress('0xeb8f08a975ab53e34d8a0330e0d34de942c95926');
+var dai_address = web3.utils.toChecksumAddress('0x95b58a6bff3d14b7db2f5cb5f0ad413dc2940658');
+var weth_address = web3.utils.toChecksumAddress('0xc778417e063141139fce010982780140aa0cd5ab'); 
 const snm_address = "0x98201f86F578154e01ec683E1962578855d8320C";
 
 //var deposit_value = '50000';  // deposit INITIAL exchange market cup (turn capital)
@@ -55,9 +55,14 @@ deployer.then(async () => {
   */
   await deployer.deploy(SNM,"SONM","SNM");
   SNM = await SNM.deployed();
+  console.log("snm dummy address:");
+  console.log(SNM.address);
   //...
 }).then(function() {
-
+  console.log("usdt address:");
+  console.log(usdt_address);
+  console.log("weth address:");
+  console.log(weth_address);
   return deployer.deploy(Currencies,usdt_address,usdc_address,dai_address,weth_address,SNM.address, {gasPrice: wei_gas_price, from:accounts[0]});
 
 }).then(function(){
