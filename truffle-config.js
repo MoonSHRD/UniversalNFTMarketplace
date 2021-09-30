@@ -89,14 +89,15 @@ module.exports = {
       gasPrice: '20000000000',
       network_id: "*"
     },
-    rinkeby: {
-      provider: () => new HDWalletProvider(mnemonic, `https://rinkeby.infura.io/v3/${projectId}`),
-      network_id: 4,       // Ropsten's id
-      gas: 7900000,        // Ropsten has a lower block limit than mainnet
-      gasLimit: '7999999',
+    ropsten: {
+      provider: () => new HDWalletProvider(mnemonic, `https://ropsten.infura.io/v3/${projectId}`),
+      network_id: 3,       // Ropsten's id
+     // gas: 7900000,        // Ropsten has a lower block limit than mainnet
+     // gasLimit: '7999999',
+      gasPrice: '10000000000',
       confirmations: 2,    // # of confs to wait between deployments. (default: 0)
       timeoutBlocks: 200,  // # of blocks before a deployment times out  (minimum/default: 50)
-      skipDryRun: true    // Skip dry run before migrations? (default: false for public nets )
+      skipDryRun: false    // Skip dry run before migrations? (default: false for public nets )
     },
 
   },
