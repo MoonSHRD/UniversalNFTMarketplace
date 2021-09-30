@@ -1,8 +1,5 @@
+// SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
-//"SPDX-License-Identifier: MIT"
-
-
-
 
 import "./TestTokenERC20.sol";
 
@@ -10,9 +7,6 @@ import "./TestTokenERC20.sol";
  contract DAI is TestTokenERC20 {
 
     constructor(string memory name_, string memory symbol_) TestTokenERC20(name_,symbol_) {}
-
-   
-
 
 }
 

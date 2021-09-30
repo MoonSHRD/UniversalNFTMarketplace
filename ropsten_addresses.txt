@@ -1,0 +1,38 @@
+Ropsten stablecoins
+
+USDT
+0x3b00ef435fa4fcff5c209a37d1f3dcff37c705ad
+
+USDC
+0xeb8f08a975ab53e34d8a0330e0d34de942c95926
+
+DAI
+0x95b58a6bff3d14b7db2f5cb5f0ad413dc2940658
+
+SNM
+0xc778417e063141139fce010982780140aa0cd5ab
+
+WETH
+0x98201f86F578154e01ec683E1962578855d8320C
+
+
+Ropsten contracts (check your version!)
+
+v0.0.1
+
+SNM(dummy)  -- this is DUMMY contract, we own this contract and we can use it for mint, buy, transfer and other tests
+0x14c04531B1267aaFC6731f63c5Fb5D378A0D30E2
+
+WETH    -- this is wrapped ethereum contract. You can use this contract to wrap your test ether to test weth erc20 tokens. those tokens can be used to testing buy, transfer and other tests
+0x98201f86F578154e01ec683E1962578855d8320C
+
+CurrenciesERC20
+0x0d0798f633B7B0E4548e7Cc4808c28f87311Ee54
+
+MSNFT
+0x7d3B58B3A4e668f4BfEC4AE52c0451A27Ee4890e
+
+MasterFactory721
+0x55Aa3C41B2392Af7Ea3914248648eeF1B91B1F64
+
+After deploying (and releasing) new version do not forget to upd this doc and to create release with tag and attach ./build directory to it!

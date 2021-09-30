@@ -81,6 +81,12 @@ contract('MasterFactory721', accounts => {
         // const balance = await nft.totalSupply();
         // assert.equal(balance, 2, 'balance has been replenished');
 
+        
+
+        const getMaster = await nft.get_master_id_by_link(linkTwo);
+        console.log('getMaster ');
+        console.log(getMaster);
+
     });
 
     it('should NOT create master copy with no limit supply type', async () => {
