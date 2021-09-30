@@ -3,7 +3,6 @@ pragma solidity ^0.8.0;
 
 import "../../../node_modules/@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import "../../../node_modules/@openzeppelin/contracts/security/ReentrancyGuard.sol";
-import "../../../node_modules/@openzeppelin/contracts/utils/math/SafeMath.sol";
 import "../../../node_modules/@openzeppelin/contracts/utils/Context.sol";
 import "../../../node_modules/@openzeppelin/contracts/token/ERC721/extensions/IERC721Enumerable.sol";
 import "../../../node_modules/@openzeppelin/contracts/token/ERC20/extensions/IERC20Metadata.sol";
@@ -25,8 +24,6 @@ import './CurrenciesERC20.sol';
 */
 contract TokenSale721 is Context, ReentrancyGuard {
 
-
-    using SafeMath for uint256;
     using SafeERC20 for IERC20Metadata;
   //  using Counters for Counters.Counter;
 
@@ -65,18 +62,12 @@ contract TokenSale721 is Context, ReentrancyGuard {
 
     // Map from currency to price
     mapping (CurrenciesERC20.CurrencyERC20 => uint256) public _price;
-
-    // FIXME: rework this part to have separate contract with ability to modify currency list 
-    // map from currency to contract addresses
-   // mapping (CurrenciesERC20.CurrencyERC20 => IERC20) internal _currencies; // setting up currency list
-    // CurrenciesERC20._currencies_hardcoded
-
    
     // balances of this sale contract in those currencies
     mapping (CurrenciesERC20.CurrencyERC20 => uint256) internal currency_balances; 
 
     // service comission fee
-    uint public percent_fee = 5;
+    uint public promille_fee = 25;
 
     // Creation date
     uint public crDate = block.timestamp;
@@ -271,9 +262,9 @@ contract TokenSale721 is Context, ReentrancyGuard {
         _preValidatePurchase(beneficiary, weiAmount, tokens, currency);
 
         // update state
-        currency_balances[currency] = currency_balances[currency].add(weiAmount);
+        currency_balances[currency] = currency_balances[currency] + (weiAmount);
        // If it is unlimited sale then _sale_limit should be always 0   
-        _sold_count = _sold_count.add(tokens);
+        _sold_count = _sold_count + tokens;
     
         _processPurchase(beneficiary, tokens,currency, weiAmount);
         emit TokensPurchased(_msgSender(), beneficiary, weiAmount, tokens);
@@ -380,7 +371,7 @@ contract TokenSale721 is Context, ReentrancyGuard {
     function _forwardFunds(CurrenciesERC20.CurrencyERC20 currency) internal {
         IERC20Metadata currency_token =  get_currency(currency);
         uint256 amount = currency_token.balanceOf(address(this));
-        uint256 scale = 100;
+        uint256 scale = 1000;
         uint256 fees = calculateFee(amount,scale);
         amount = amount - fees;
         currency_token.transfer(_wallet,amount);
@@ -407,48 +398,41 @@ contract TokenSale721 is Context, ReentrancyGuard {
         _forwardFunds(currency);
     }
 
-    /*
-    *   EXAMPLE OF TAKING FEE (BASIC OPERATORS)
-    *
-    // calculate percent -- amount * percent / 100
+
+    /**
+    *   Calculate fee (UnSafeMath) -- use it only if it ^0.8.0
+    *   @param amount number from whom we take fee
+    *   @param scale scale for rounding. 100 is 1/100 (percent). we can encreace scale if we want better division (like we need to take 0.5% instead of 5%, then scale = 1000)
+    */
     function calculateFee(uint256 amount, uint256 scale) internal view returns (uint256) {
         uint a = amount / scale;
         uint b = amount % scale;
-        uint c = percent_fee / scale;
-        uint d = percent_fee % scale;
+        uint c = promille_fee / scale;
+        uint d = promille_fee % scale;
 
         // Calculate fee with ROUND DOWN
-       // return a * c * scale + a * d + b * c + b * d / scale;
+        // return a * c * scale + a * d + b * c + b * d / scale;
 
-       // calculate fee with ROUND UP
-     //   return a * c * scale + a * d + b * c + (b * d + scale - 1) / scale;
+        // calculate fee with ROUND UP
+        // return a * c * scale + a * d + b * c + (b * d + scale - 1) / scale;   // I guess we use this
 
-     //calculate fee with CLOSESTS INTEGER
-        return a * c * scale + a * d + b * c + (b * d + scale / 2) / scale;
+        //calculate fee with CLOSESTS INTEGER
+        // return a * c * scale + a * d + b * c + (b * d + scale / 2) / scale;
 
+       return a * c * scale + a * d + b * c + (b * d + scale - 1) / scale;
     }
-    */
 
 
     /**
     *   Calculate fee (SafeMath)
     *   @param amount number from whom we take fee
     *   @param scale scale for rounding. 100 is 1/100 (percent). we can encreace scale if we want better division (like we need to take 0.5% instead of 5%, then scale = 1000)
-    */
-    function calculateFee(uint256 amount, uint256 scale) internal view returns (uint256) {
+    function calculateFeeSafeMath(uint256 amount, uint256 scale) internal view returns (uint256) {
         uint256 a = SafeMath.div(amount, scale);
         uint256 b = SafeMath.mod(amount, scale);
-        uint256 c = SafeMath.div(percent_fee, scale);
-        uint256 d = SafeMath.mod(percent_fee, scale);
+        uint256 c = SafeMath.div(promille_fee, scale);
+        uint256 d = SafeMath.mod(promille_fee, scale);
 
-        // Calculate fee with ROUND DOWN
-       // return a * c * scale + a * d + b * c + b * d / scale;
-
-       // calculate fee with ROUND UP
-     //   return a * c * scale + a * d + b * c + (b * d + scale - 1) / scale;
-
-     //calculate fee with CLOSESTS INTEGER
-       // return a * c * scale + a * d + b * c + (b * d + scale / 2) / scale;
         uint256 m1 = SafeMath.mul(SafeMath.mul(a,c), scale);
         uint256 m2 = SafeMath.mul(a,d);
         uint256 m3 = SafeMath.mul(b,c);
@@ -463,8 +447,6 @@ contract TokenSale721 is Context, ReentrancyGuard {
         uint256 a4 = SafeMath.add(a3,d2);
         return a4;
     }
-
-
-
+    */
 
 }
