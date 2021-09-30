@@ -88,6 +88,7 @@ contract CurrenciesERC20 is ReentrancyGuard, Ownable {
        
        
         _currencies_hardcoded[CurrencyERC20.USDT] = IERC20Metadata(US_Tether);
+        require(_currencies_hardcoded[CurrencyERC20.USDT] == IERC20Metadata(US_Tether), "can't wrap USDT to IERC20Metadata");
         _currencies_hardcoded[CurrencyERC20.USDC] = IERC20Metadata(US_Circle);
         _currencies_hardcoded[CurrencyERC20.DAI] = IERC20Metadata(DAI);
         _currencies_hardcoded[CurrencyERC20.WETH] = IERC20Metadata(W_Ethereum);
@@ -95,10 +96,10 @@ contract CurrenciesERC20 is ReentrancyGuard, Ownable {
 
 
 
-        AddCustomCurrency(US_Tether);
-        AddCustomCurrency(US_Circle);
-        AddCustomCurrency(DAI);
-        AddCustomCurrency(W_Ethereum);
+       // AddCustomCurrency(US_Tether);
+       // AddCustomCurrency(US_Circle);
+       // AddCustomCurrency(DAI);
+       // AddCustomCurrency(W_Ethereum);
         AddCustomCurrency(SONM);
 
           
