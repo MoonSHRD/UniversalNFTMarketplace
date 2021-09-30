@@ -50,14 +50,18 @@ contract CurrenciesERC20 is ReentrancyGuard, Ownable {
     mapping (string => CurrencyERC20_Custom) public _currencies_custom_user;
 
 
+    // @TODO: Investigate how to add different types of ERC20.  Old type have name as public string and no getter, new type have name as private sting and getter for it.
     function AddCustomCurrency(address _token_contract) public {
 
-        IERC20Metadata _currency_contract = IERC20Metadata(_token_contract);
-     //   ERC20 _currency_contract = ERC20(_token_contract);      // @todo: is it possible to use IERC20Metadata instead?
+      IERC20Metadata _currency_contract = IERC20Metadata(_token_contract);
+    
+       // if (_currency_contract.name != '0x0')
 
-        string memory _name_c = _currency_contract.name();
+
+        string memory _name_c = _currency_contract.name();  // @note -- some contracts just have name as public string, but do not have name() function!!! see difference between 0.4.0 and 0.8.0 OZ standarts need future consideration
       //  uint8 _dec = _currency_contract.decimals();
         
+
 
         address _owner_c = owner();
         if(msg.sender == _owner_c) {
@@ -88,7 +92,7 @@ contract CurrenciesERC20 is ReentrancyGuard, Ownable {
        
        
         _currencies_hardcoded[CurrencyERC20.USDT] = IERC20Metadata(US_Tether);
-        require(_currencies_hardcoded[CurrencyERC20.USDT] == IERC20Metadata(US_Tether), "can't wrap USDT to IERC20Metadata");
+        _currencies_hardcoded[CurrencyERC20.USDT] == IERC20Metadata(US_Tether);
         _currencies_hardcoded[CurrencyERC20.USDC] = IERC20Metadata(US_Circle);
         _currencies_hardcoded[CurrencyERC20.DAI] = IERC20Metadata(DAI);
         _currencies_hardcoded[CurrencyERC20.WETH] = IERC20Metadata(W_Ethereum);
