@@ -168,7 +168,6 @@ contract MSNFT is ERC721Enumerable, Ownable {
         require(author == organizer, "you don't own to this master id");
         require(mastersales[_masterId] == address(0), "MSNFT: you already have plugged sale ");
         mastersales[_masterId] = _sale;
-
     }
 
     /**
@@ -221,8 +220,6 @@ contract MSNFT is ERC721Enumerable, Ownable {
         // return mastercopy id
         return mid;
     }
-
-    
 
      /**
      * @dev setting rarity for token
@@ -430,6 +427,22 @@ contract MSNFT is ERC721Enumerable, Ownable {
         uint master_id = ItemToMaster[item_id];
         ItemInfo memory _itemInfo = MetaInfo[master_id];
         return _itemInfo;
+    }
+
+    /**
+     *  @dev get MetaInfo by master id
+     *  @param master_id master id
+     */
+    function getInfoByMasterId(uint master_id) public view returns (ItemInfo memory){
+        return MetaInfo[master_id];
+    }
+
+    /**
+     *  @dev get Master sale address by master id
+     *  @param master_id master id
+     */
+    function getSaleAddress(uint master_id) public view returns (address) {
+        return mastersales[master_id];
     }
 
 

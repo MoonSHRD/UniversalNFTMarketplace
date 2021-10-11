@@ -184,7 +184,6 @@ contract TokenSale721 is Context, ReentrancyGuard {
         return _sale_limit;
     }
 
-
     function sold_count() public view returns (uint) {
         return _sold_count;
     }

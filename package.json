@@ -33,6 +33,7 @@
   "devDependencies": {
     "@openzeppelin/test-helpers": "^0.5.13",
     "@truffle/hdwallet-provider": "^1.5.0",
-    "solc-0.8": "npm:solc@^0.8.6"
+    "solc-0.8": "npm:solc@^0.8.6",
+    "truffle-plugin-verify": "^0.5.15"
   }
 }

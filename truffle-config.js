@@ -122,4 +122,10 @@ module.exports = {
        }
     },
   },
+  plugins: [
+    'truffle-plugin-verify'
+  ],
+  api_keys: {
+    etherscan: 'CV3EECG18KPRIIQFSJRDYXSMXVAI4E339X'
+  }
 };
