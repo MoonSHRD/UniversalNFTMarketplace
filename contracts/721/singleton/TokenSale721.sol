@@ -52,7 +52,7 @@ contract TokenSale721 is Context, ReentrancyGuard {
     address public _wallet;
 
     // Address where we collect comission
-    address payable public treasure_fund;
+    address public treasure_fund;
 
     
     // Supported erc20 currencies: .. to be extended
@@ -183,7 +183,6 @@ contract TokenSale721 is Context, ReentrancyGuard {
     function sale_limit() public view returns (uint) {
         return _sale_limit;
     }
-
 
     function sold_count() public view returns (uint) {
         return _sold_count;

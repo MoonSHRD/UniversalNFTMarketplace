@@ -22,9 +22,11 @@ contract MasterFactory721 {
 // constant
 address public master_template;
 
-address payable treasure_fund;
+address payable public treasure_fund;
 
 address public currencies_router;
+
+
 
 // event
 event SaleCreated(address indexed author, uint price, CurrenciesERC20.CurrencyERC20 indexed currency, uint256 indexed master_id, address it_sale);
@@ -44,7 +46,7 @@ constructor(address msnft_,address payable _treasure_fund, address currencies_ro
  *  @dev Create Item Sale for obtained master copy id
  */
 function createItemSale721(address organizer, uint price, MSNFT token,uint sale_limit, CurrenciesERC20.CurrencyERC20 currency, uint _master_id) internal returns(address ticket_sale) {
-    ticket_sale = address(new TokenSale721(organizer, token, sale_limit,treasure_fund, price, currency, _master_id,currencies_router));
+    ticket_sale = address(new TokenSale721(organizer, token, sale_limit, treasure_fund, price, currency, _master_id, currencies_router));
     return ticket_sale;
 }
 
