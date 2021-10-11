@@ -41,18 +41,18 @@ After deploying (and releasing) new version do not forget to upd this doc and to
 v0.0.2
 
 MST(dummy)  -- this is DUMMY contract, we own this contract and we can use it for mint, buy, transfer and other tests
-0x5A7cbe6De8cde592bAc66A216E7e4877D39c2d44
+0x9bB0f9D78cdbB41f4BCA149e033e282a2834c806
 
 WETH    -- this is wrapped ethereum contract. You can use this contract to wrap your test ether to test weth erc20 tokens. those tokens can be used to testing buy, transfer and other tests
 0x98201f86F578154e01ec683E1962578855d8320C
 
 CurrenciesERC20
-0x8aaD10c646feb5a67D72f1f25d71e849B77c139B
+0x8Faa5d721794299b7df6eb8AcB75B8c622Cbce82
 
 MSNFT
-0xBC999c761BC35FDd2642F997219c3889839E3755
+0x9c1A4C70a478012976D9760B3603E241c034006f
 
 MasterFactory721
-0xE04eC9040c4ed10f67CD845E928c46D06260595D
+0x50112D712A5A96D9aEeD0583198417Bccdb9F8bC
 
 After deploying (and releasing) new version do not forget to upd this doc and to create release with tag and attach ./build directory to it!
