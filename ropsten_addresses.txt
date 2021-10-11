@@ -20,7 +20,7 @@ Ropsten contracts (check your version!)
 
 v0.0.1
 
-SNM(dummy)  -- this is DUMMY contract, we own this contract and we can use it for mint, buy, transfer and other tests
+MST(dummy)  -- this is DUMMY contract, we own this contract and we can use it for mint, buy, transfer and other tests
 0x14c04531B1267aaFC6731f63c5Fb5D378A0D30E2
 
 WETH    -- this is wrapped ethereum contract. You can use this contract to wrap your test ether to test weth erc20 tokens. those tokens can be used to testing buy, transfer and other tests
@@ -34,5 +34,25 @@ MSNFT
 
 MasterFactory721
 0x55Aa3C41B2392Af7Ea3914248648eeF1B91B1F64
+
+After deploying (and releasing) new version do not forget to upd this doc and to create release with tag and attach ./build directory to it!
+
+
+v0.0.2
+
+MST(dummy)  -- this is DUMMY contract, we own this contract and we can use it for mint, buy, transfer and other tests
+0xfbCb8A281049828e82D45a5e291BA3f3dE60DCa6
+
+WETH    -- this is wrapped ethereum contract. You can use this contract to wrap your test ether to test weth erc20 tokens. those tokens can be used to testing buy, transfer and other tests
+0x98201f86F578154e01ec683E1962578855d8320C
+
+CurrenciesERC20
+0xc6220989F6ad055ad9F33aedff0a5902C2b913eB
+
+MSNFT
+0x7e4c93aa914b4D7Ca9A0db7732Aa5167862F401D
+
+MasterFactory721
+0x236CB2E1c9f46B4E076529255fF4a600b1B4d11F
 
 After deploying (and releasing) new version do not forget to upd this doc and to create release with tag and attach ./build directory to it!

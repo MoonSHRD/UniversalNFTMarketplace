@@ -21,9 +21,7 @@ contract MasterFactory721 {
 
 // constant
 address public master_template;
-
 address payable public treasure_fund;
-
 address public currencies_router;
 
 
