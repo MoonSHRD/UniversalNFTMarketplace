@@ -56,7 +56,7 @@ contract TokenSale721 is Context, ReentrancyGuard {
 
     
     // Supported erc20 currencies: .. to be extended
-    //enum CurrencyERC20 {USDT, USDC, DAI, SNM, WETH} 
+    //enum CurrencyERC20 {USDT, USDC, DAI, MST, WETH} 
     // CurrenciesERC20.CurrencyERC20 -- enum from above
     // Alternativly use CurrenciesERC20.
 

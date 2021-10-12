@@ -20,8 +20,7 @@ var MST = artifacts.require("./test_erc20_tokens/MST.sol");
 var usdt_address = web3.utils.toChecksumAddress('0x3b00ef435fa4fcff5c209a37d1f3dcff37c705ad');
 var usdc_address = web3.utils.toChecksumAddress('0xeb8f08a975ab53e34d8a0330e0d34de942c95926');
 var dai_address = web3.utils.toChecksumAddress('0x95b58a6bff3d14b7db2f5cb5f0ad413dc2940658');
-var weth_address = web3.utils.toChecksumAddress('0xc778417e063141139fce010982780140aa0cd5ab'); 
-const snm_address = "0x98201f86F578154e01ec683E1962578855d8320C";
+var weth_address = web3.utils.toChecksumAddress('0xc778417e063141139fce010982780140aa0cd5ab');
 
 //var deposit_value = '50000';  // deposit INITIAL exchange market cup (turn capital)
 //var deposit_value_wei = web3.utils.toWei(deposit_value,'ether');

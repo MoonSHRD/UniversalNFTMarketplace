@@ -3,7 +3,7 @@ const MSNFT = artifacts.require('MSNFT');
 const USDTcontract = artifacts.require('TestUSDT');
 const USDCcontract = artifacts.require('USDC');
 const DAIcontract = artifacts.require('DAI');
-const SNMcontract = artifacts.require('SNM');
+const MSTcontract = artifacts.require('MST');
 const WETHcontract = artifacts.require('WETH');
 const TokenSale721 = artifacts.require('TokenSale721');
 
@@ -13,9 +13,9 @@ const {BN,expectEvent} = require('@openzeppelin/test-helpers');
 
 contract('MasterFactory721', accounts => {
     let factory;
-    let usdc;
+    let usdc, mst;
     let tokenSale721;
-    const [USDT, USDC, DAI, SNM, WETH] = [0, 1, 2, 3, 4];
+    const [USDT, USDC, DAI, MST, WETH] = [0, 1, 2, 3, 4];
     let tokensTotal = '50';
     const admin = accounts[0];
     const user = accounts[2];
@@ -36,7 +36,7 @@ contract('MasterFactory721', accounts => {
         // usdc = await USDCcontract.deployed();
         // dai = await DAIcontract.deployed();
         // weth = await WETHcontract.deployed();
-        snm = await SNMcontract.deployed();
+        mst = await MSTcontract.deployed();
     });
 
     // it('should create master copy with no limit supply type', async () => {
@@ -364,20 +364,20 @@ contract('MasterFactory721', accounts => {
         
     // });
 
-    it('should buy nft tokens by SNM', async () => {
-        let userTokenBalanceBefore = await snm.balanceOf('0x1b7C81DbAF6f34E878686CE6FA9463c48E2185C7', {from: '0xF87F1eaa6Fd9B65bF41F90afEdF8B64D6487F61E'});
-        assert.equal(userTokenBalanceBefore, 0, 'current admins token balance');
+    // it('should buy nft tokens by MST', async () => {
+    //     let userTokenBalanceBefore = await snm.balanceOf('0x1b7C81DbAF6f34E878686CE6FA9463c48E2185C7', {from: '0xF87F1eaa6Fd9B65bF41F90afEdF8B64D6487F61E'});
+    //     assert.equal(userTokenBalanceBefore, 0, 'current admins token balance');
         
-        let tokensToMint = web3.utils.toWei(web3.utils.toBN(tokensTotal));
+    //     let tokensToMint = web3.utils.toWei(web3.utils.toBN(tokensTotal));
 
-        const receipt = await snm.MintERC20('0x1b7C81DbAF6f34E878686CE6FA9463c48E2185C7', tokensToMint, {from: '0xF87F1eaa6Fd9B65bF41F90afEdF8B64D6487F61E'});
-        assert.equal(receipt.logs.length, 1, 'triggers one event');
-		assert.equal(receipt.logs[0].event, 'Transfer', 'should be the Transfer event');
-        assert.equal(receipt.logs[0].address, snm.address, 'minted tokens are transferred from');
+    //     const receipt = await snm.MintERC20('0x1b7C81DbAF6f34E878686CE6FA9463c48E2185C7', tokensToMint, {from: '0xF87F1eaa6Fd9B65bF41F90afEdF8B64D6487F61E'});
+    //     assert.equal(receipt.logs.length, 1, 'triggers one event');
+	// 	assert.equal(receipt.logs[0].event, 'Transfer', 'should be the Transfer event');
+    //     assert.equal(receipt.logs[0].address, snm.address, 'minted tokens are transferred from');
 
-        let userTokenBalanceAfter = await snm.balanceOf('0x1b7C81DbAF6f34E878686CE6FA9463c48E2185C7', {from: '0xF87F1eaa6Fd9B65bF41F90afEdF8B64D6487F61E'});
-        console.log('userTokenBalanceAfter');
-        console.log(userTokenBalanceAfter);
+    //     let userTokenBalanceAfter = await snm.balanceOf('0x1b7C81DbAF6f34E878686CE6FA9463c48E2185C7', {from: '0xF87F1eaa6Fd9B65bF41F90afEdF8B64D6487F61E'});
+    //     console.log('userTokenBalanceAfter');
+    //     console.log(userTokenBalanceAfter);
         // assert.equal(userTokenBalanceAfter.toString(), tokensToMint.toString(), 'admins token balance after mint');
 
         // console.log(userTokenBalanceAfter.toString());
