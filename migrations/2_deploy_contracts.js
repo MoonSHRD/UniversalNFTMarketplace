@@ -31,118 +31,118 @@ var wei_gas_price = web3.utils.toWei(custom_gas_price, 'gwei');
 
 module.exports = function(deployer, network, accounts) {
   
-  if (network == "ropsten") {
-  console.log(accounts);
-  console.log(wei_gas_price);
+//   if (network == "ropsten") {
+//   console.log(accounts);
+//   console.log(wei_gas_price);
 
-  console.log("block gas price:");
-  var limitGas = web3.eth.getBlock("latest").gasLimit;
-  console.log(limitGas);
- // console.log(string_gas_price);
+//   console.log("block gas price:");
+//   var limitGas = web3.eth.getBlock("latest").gasLimit;
+//   console.log(limitGas);
+//  // console.log(string_gas_price);
 
  
 
-deployer.then(async () => {
-  /*
-  await deployer.deploy(USDT,"USDT","USDT");
-  await deployer.deploy(USDC,"USDC","USDC");
-  USDC = await USDC.deployed();
-  await deployer.deploy(DAI,"DAI","DAI");
-  DAI = await DAI.deployed();
-  await deployer.deploy(WETH,"WETH","WETH");
-  WETH = await WETH.deployed();
-  */
+// deployer.then(async () => {
+//   /*
+//   await deployer.deploy(USDT,"USDT","USDT");
+//   await deployer.deploy(USDC,"USDC","USDC");
+//   USDC = await USDC.deployed();
+//   await deployer.deploy(DAI,"DAI","DAI");
+//   DAI = await DAI.deployed();
+//   await deployer.deploy(WETH,"WETH","WETH");
+//   WETH = await WETH.deployed();
+//   */
 
 
-  await deployer.deploy(MST,"MST","MST");
-  MST = await MST.deployed();
-  console.log("MST dummy address:");
-  console.log(MST.address);
-  //...
-}).then(function() {
-  console.log("usdt address:");
-  console.log(usdt_address);
-  console.log("weth address:");
-  console.log(weth_address);
-  return deployer.deploy(Currencies,usdt_address,usdc_address,dai_address,weth_address,MST.address, {gasPrice: wei_gas_price, from:accounts[0]});
+//   await deployer.deploy(MST,"MST","MST");
+//   MST = await MST.deployed();
+//   console.log("MST dummy address:");
+//   console.log(MST.address);
+//   //...
+// }).then(function() {
+//   console.log("usdt address:");
+//   console.log(usdt_address);
+//   console.log("weth address:");
+//   console.log(weth_address);
+//   return deployer.deploy(Currencies,usdt_address,usdc_address,dai_address,weth_address,MST.address, {gasPrice: wei_gas_price, from:accounts[0]});
 
-}).then(function(){
-  return deployer.deploy(Master,"MoonShardNFT","MSNFT",{gasPrice: wei_gas_price, from:accounts[0]});
-}).then(function(){
-  console.log("Master token address:");
-  console.log(Master.address);
-return deployer.deploy(MasterFactory,Master.address,accounts[1],Currencies.address,{gasPrice: wei_gas_price, from:accounts[0]});
+// }).then(function(){
+//   return deployer.deploy(Master,"MoonShardNFT","MSNFT",{gasPrice: wei_gas_price, from:accounts[0]});
+// }).then(function(){
+//   console.log("Master token address:");
+//   console.log(Master.address);
+// return deployer.deploy(MasterFactory,Master.address,accounts[1],Currencies.address,{gasPrice: wei_gas_price, from:accounts[0]});
 
-}).then(async () =>{
-console.log ("MasterFactory address:");
-console.log(MasterFactory.address);
-MasterInstance = await Master.deployed();
-MasterFactoryInstance = await MasterFactory.deployed();
-await MasterInstance.updateFactoryAdress(MasterFactoryInstance.address);
-fa = await MasterInstance.getFactoryAddress();
-console.log("factory address");
-console.log(fa);
-return;
-}).then(async () => {
-return;
-});
+// }).then(async () =>{
+// console.log ("MasterFactory address:");
+// console.log(MasterFactory.address);
+// MasterInstance = await Master.deployed();
+// MasterFactoryInstance = await MasterFactory.deployed();
+// await MasterInstance.updateFactoryAdress(MasterFactoryInstance.address);
+// fa = await MasterInstance.getFactoryAddress();
+// console.log("factory address");
+// console.log(fa);
+// return;
+// }).then(async () => {
+// return;
+// });
 
-  } // end of ropsten deployment
+//   } // end of ropsten deployment
 
 
 
   
-  // if (network == "development") {
-  //   console.log(accounts);
-  //   console.log(wei_gas_price);
+  if (network == "development") {
+    console.log(accounts);
+    console.log(wei_gas_price);
   
-  //   console.log("block gas price:");
-  //   var limitGas = web3.eth.getBlock("latest").gasLimit;
-  //   console.log(limitGas);
-  //  // console.log(string_gas_price);
+    console.log("block gas price:");
+    var limitGas = web3.eth.getBlock("latest").gasLimit;
+    console.log(limitGas);
+   // console.log(string_gas_price);
   
    
   
-  // deployer.then(async () => {
+  deployer.then(async () => {
     
-  //   await deployer.deploy(USDT,"USDT","USDT");
-  //   await deployer.deploy(USDC,"USDC","USDC");
-  //   USDC = await USDC.deployed();
-  //   await deployer.deploy(DAI,"DAI","DAI");
-  //   DAI = await DAI.deployed();
-  //   await deployer.deploy(WETH,"WETH","WETH");
-  //   WETH = await WETH.deployed();
+    await deployer.deploy(USDT,"USDT","USDT");
+    await deployer.deploy(USDC,"USDC","USDC");
+    USDC = await USDC.deployed();
+    await deployer.deploy(DAI,"DAI","DAI");
+    DAI = await DAI.deployed();
+    await deployer.deploy(WETH,"WETH","WETH");
+    WETH = await WETH.deployed();
     
-  //   await deployer.deploy(MST,"MST","MST");
-  //   MST = await MST.deployed();
-  //   //...
-  // }).then(function() {
+    await deployer.deploy(MST,"MST","MST");
+    MST = await MST.deployed();
+    //...
+  }).then(function() {
   
-  //   return deployer.deploy(Currencies,USDT.address,USDC.address,DAI.address,WETH.address,MST.address, {gasPrice: wei_gas_price, from:accounts[0]});
+    return deployer.deploy(Currencies,USDT.address,USDC.address,DAI.address,WETH.address,MST.address, {gasPrice: wei_gas_price, from:accounts[0]});
   
-  // }).then(function(){
-  //   return deployer.deploy(Master,"MoonShardNFT","MSNFT",{gasPrice: wei_gas_price, from:accounts[0]});
+  }).then(function(){
+    return deployer.deploy(Master,"MoonShardNFT","MSNFT",{gasPrice: wei_gas_price, from:accounts[0]});
    
-  // }).then(function(){
-  //   console.log("Master token address:");
-  //   console.log(Master.address);
-  // return deployer.deploy(MasterFactory,Master.address,accounts[1],Currencies.address,{gasPrice: wei_gas_price, from:accounts[0]});
+  }).then(function(){
+    console.log("Master token address:");
+    console.log(Master.address);
+  return deployer.deploy(MasterFactory,Master.address,accounts[1],Currencies.address,{gasPrice: wei_gas_price, from:accounts[0]});
   
-  // }).then(async () =>{
-  // console.log ("MasterFactory address:");
-  // console.log(MasterFactory.address);
-  // MasterInstance = await Master.deployed();
-  // MasterFactoryInstance = await MasterFactory.deployed();
-  // await MasterInstance.updateFactoryAdress(MasterFactoryInstance.address);
-  // fa = await MasterInstance.getFactoryAddress();
-  // console.log("factory address");
-  // console.log(fa);
-  // return;
-  // }).then(async () => {
-  // return;
-  // });
+  }).then(async () =>{
+  console.log ("MasterFactory address:");
+  console.log(MasterFactory.address);
+  MasterInstance = await Master.deployed();
+  MasterFactoryInstance = await MasterFactory.deployed();
+  await MasterInstance.updateFactoryAdress(MasterFactoryInstance.address);
+  fa = await MasterInstance.getFactoryAddress();
+  console.log("factory address");
+  console.log(fa);
+  return;
+  }).then(async () => {
+  return;
+  });
   
-  // } // end of development network migration
+  } // end of development network migration
   
 
 };

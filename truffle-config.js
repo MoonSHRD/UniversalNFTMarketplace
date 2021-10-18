@@ -27,6 +27,10 @@
 const path = require("path");
 const { projectId, mnemonic } = require('./secret.json');
 const HDWalletProvider = require('@truffle/hdwallet-provider');
+var privateKeys = [
+  "d7c28e31259035c18bf0f56e21d38ba0fe1b59285a2b475a2e6fe802acb6d63c",
+  "e6f7591468c9083055cea1dfa7fa18c6afd3a1ed5d481d523430fe5775f6a274",
+];
 module.exports = {
   /**
    * Networks define how you connect to your ethereum client and let you set the
@@ -90,14 +94,18 @@ module.exports = {
       network_id: "*"
     },
     ropsten: {
-      provider: () => new HDWalletProvider(mnemonic, `https://ropsten.infura.io/v3/${projectId}`),
+      provider: () => new HDWalletProvider(privateKeys, `wss://ropsten.infura.io/ws/v3/${projectId}`),
       network_id: 3,       // Ropsten's id
      // gas: 7900000,        // Ropsten has a lower block limit than mainnet
      // gasLimit: '7999999',
+      // networkCheckTimeout: 120000,
       gasPrice: '10000000000',
       confirmations: 2,    // # of confs to wait between deployments. (default: 0)
-      timeoutBlocks: 200,  // # of blocks before a deployment times out  (minimum/default: 50)
-      skipDryRun: false    // Skip dry run before migrations? (default: false for public nets )
+      // timeoutBlocks: 200,  // # of blocks before a deployment times out  (minimum/default: 50)
+      skipDryRun: false,    // Skip dry run before migrations? (default: false for public nets )
+      websocket: true,
+      timeoutBlocks: 50000,
+      networkCheckTimeout: 1000000
     },
 
   },
