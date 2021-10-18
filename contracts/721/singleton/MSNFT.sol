@@ -371,10 +371,7 @@ contract MSNFT is ERC721Enumerable, Ownable {
 
     //                  @FIXME: fix get items of owner
     /*
-  //  Gets the list of token IDs of the requested owner.
-     function _tokensOfOwner(address owner) internal view returns (uint256[] storage) {
-        return super._ownedTokens[owner];
-    }
+  //  
 
 
 
@@ -383,6 +380,11 @@ contract MSNFT is ERC721Enumerable, Ownable {
         return tickets;
     }
     */
+
+    // Gets the list of token IDs of the requested owner.
+    // function _tokensOfOwner(address owner) internal view override(ERC721Enumerable) returns (uint256[] storage) {
+    //     return super._ownedTokens[owner];
+    // }
 
 
 

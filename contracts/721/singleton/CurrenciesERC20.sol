@@ -31,7 +31,7 @@ contract CurrenciesERC20 is ReentrancyGuard, Ownable {
     /**
      * @dev Hardcoded (not-extetiable after deploy) erc20 currencies
      */
-    enum CurrencyERC20 {USDT, USDC, DAI, SNM, WETH} 
+    enum CurrencyERC20 {USDT, USDC, DAI, MST, WETH} 
 
     struct CurrencyERC20_Custom {
         address contract_address;
@@ -79,14 +79,14 @@ contract CurrenciesERC20 is ReentrancyGuard, Ownable {
     }
 
 
-    constructor(address US_Tether, address US_Circle, address DAI, address W_Ethereum, address SONM) {
+    constructor(address US_Tether, address US_Circle, address DAI, address W_Ethereum, address MST) {
 
        
        require(US_Tether != address(0), "USDT contract address is zero!");
        require(US_Circle != address(0), "US_Circle contract address is zero!");
        require(DAI != address(0), "DAI contract address is zero!");
        require(W_Ethereum != address(0), "W_Ethereum contract address is zero!");
-       require(SONM != address(0), "SONM contract address is zero!");
+       require(MST != address(0), "MST contract address is zero!");
        
        
        
@@ -96,7 +96,7 @@ contract CurrenciesERC20 is ReentrancyGuard, Ownable {
         _currencies_hardcoded[CurrencyERC20.USDC] = IERC20Metadata(US_Circle);
         _currencies_hardcoded[CurrencyERC20.DAI] = IERC20Metadata(DAI);
         _currencies_hardcoded[CurrencyERC20.WETH] = IERC20Metadata(W_Ethereum);
-        _currencies_hardcoded[CurrencyERC20.SNM] = IERC20Metadata(SONM);
+        _currencies_hardcoded[CurrencyERC20.MST] = IERC20Metadata(MST);
 
 
 
@@ -104,7 +104,7 @@ contract CurrenciesERC20 is ReentrancyGuard, Ownable {
        // AddCustomCurrency(US_Circle);
        // AddCustomCurrency(DAI);
        // AddCustomCurrency(W_Ethereum);
-        AddCustomCurrency(SONM);
+        AddCustomCurrency(MST);
 
           
 
