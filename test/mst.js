@@ -1,12 +1,12 @@
-const SNM = artifacts.require('SNM');
+const MST = artifacts.require('MST');
 
-contract('SNM', accounts => {
+contract('MST', accounts => {
     let token;
     let eth = '10';
     const admin = accounts[0];
     const user = accounts[1];
     before(async () => {
-        token = await SNM.deployed();
+        token = await MST.deployed();
     });
 
     it('should deploy smart contract', async () => {

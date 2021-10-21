@@ -25,12 +25,8 @@
 // const mnemonic = fs.readFileSync(".secret").toString().trim();
 
 const path = require("path");
-const { projectId, mnemonic } = require('./secret.json');
+const { projectId, privateKeys } = require('./secret.json');
 const HDWalletProvider = require('@truffle/hdwallet-provider');
-var privateKeys = [
-  "d7c28e31259035c18bf0f56e21d38ba0fe1b59285a2b475a2e6fe802acb6d63c",
-  "e6f7591468c9083055cea1dfa7fa18c6afd3a1ed5d481d523430fe5775f6a274",
-];
 module.exports = {
   /**
    * Networks define how you connect to your ethereum client and let you set the
@@ -80,19 +76,19 @@ module.exports = {
     // production: true    // Treats this network as if it was a public net. (default: false)
     // }
 
-    ganache: {            // truffle migrate --reset --network ganache
-      host: "127.0.0.1",
-      port: 7545,
-      gasLimit: '6721975',
-      gasPrice: '20000000000',
-      network_id: '*'
-    },
-    development: {
-      host: "127.0.0.1",
-      port: 7545,
-      gasPrice: '20000000000',
-      network_id: "*"
-    },
+    // ganache: {            // truffle migrate --reset --network ganache
+    //   host: "127.0.0.1",
+    //   port: 7545,
+    //   gasLimit: '6721975',
+    //   gasPrice: '20000000000',
+    //   network_id: '*'
+    // },
+    // development: {
+    //   host: "127.0.0.1",
+    //   port: 7545,
+    //   gasPrice: '20000000000',
+    //   network_id: "*"
+    // },
     ropsten: {
       provider: () => new HDWalletProvider(privateKeys, `wss://ropsten.infura.io/ws/v3/${projectId}`),
       network_id: 3,       // Ropsten's id
