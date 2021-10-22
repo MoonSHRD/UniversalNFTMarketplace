@@ -29,7 +29,7 @@ address public currencies_router;
 // event
 event SaleCreated(address indexed author, uint price, CurrenciesERC20.CurrencyERC20 indexed currency, uint256 indexed master_id, address it_sale);
 event SaleCreatedHuman(address author, uint price, CurrenciesERC20.CurrencyERC20 currency,uint256 master_id, address it_sale);
-event CreateMasterItem(string link, string _description, uint256 _supplyType, uint256 master_id);
+event CreateMasterItem(string link, string _description, uint256 _supplyType, uint256 master_id, address author);
 /**
  * @param msnft_ address of Master token contract
  * @param currencies_router_ address of ERC20 currency router
@@ -63,7 +63,7 @@ function createMasterItem(string memory link, string memory _description, uint25
     address _author = msg.sender;
     MSNFT master = MSNFT(master_adr);
     master_id = master.createMasterCopy(link, _author, _description, _supplyType);
-    emit CreateMasterItem(link, _description, _supplyType, master_id);
+    emit CreateMasterItem(link, _description, _supplyType, master_id, _author);
     return master_id;
 }
 
