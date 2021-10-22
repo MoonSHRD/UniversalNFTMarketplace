@@ -256,6 +256,9 @@ contract('MasterFactory721', accounts => {
 
         const contractAddress = receiptItemSale.receipt.logs[0].args.it_sale;
 
+        tokenSale721 = await TokenSale721.at(contractAddress);
+        console.log('tokenSale721 check sale limit before sale');
+        console.log(await tokenSale721.sold_count());
 		await usdc.approve(contractAddress, 0, { from: user });
         
 		const approve = await usdc.approve(contractAddress, tokenUsdcPrice, { from: user });
@@ -263,18 +266,19 @@ contract('MasterFactory721', accounts => {
 		assert.equal(approve.logs[0].event, 'Approval', 'should be the Approval event');
 		assert.equal(approve.logs[0].args.owner, user, 'logs the account tokens are authorized by');
 		assert.equal(approve.logs[0].args.spender, contractAddress, 'logs the account tokens are authorized to');
-
 		assert.equal(approve.logs[0].args.value, tokenUsdcPrice.toString(), 'logs the transfer amount');
 
         const allowance = await usdc.allowance(user,contractAddress);
         assert(allowance.toString() == tokenUsdcPrice.toString());
 
-        tokenSale721 = await TokenSale721.at(contractAddress);
+        // tokenSale721 = await TokenSale721.at(contractAddress);
         const buyToken = await tokenSale721.buyTokens(user, 1, USDC);
         console.log('buyToken usdc '+buyToken.receipt.gasUsed);
         assert.equal(buyToken.logs.length, 1, 'triggers one event');
 		assert.equal(buyToken.logs[0].event, 'TokensPurchased', 'should be the TokensPurchased event');
 
+        console.log('tokenSale721 check sale limit after sale');
+        console.log(await tokenSale721.sold_count());
         let userBalance = await usdc.balanceOf(user, {from: admin});
         let userBalanceAfterBuy = userTokenBalanceAfter - tokenUsdcPrice;
         assert(userBalance == userBalanceAfterBuy);
