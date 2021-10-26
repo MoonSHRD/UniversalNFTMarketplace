@@ -102,7 +102,6 @@ module.exports = function(deployer, network, accounts) {
    
   
   deployer.then(async () => {
-    
     await deployer.deploy(USDT,"USDT","USDT");
     await deployer.deploy(USDC,"USDC","USDC");
     USDC = await USDC.deployed();

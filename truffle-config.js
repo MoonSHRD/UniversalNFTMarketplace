@@ -85,7 +85,7 @@ module.exports = {
     },
     development: {
       host: "127.0.0.1",
-      port: 7545,
+      port: 8545,
       gasPrice: '20000000000',
       network_id: "*"
     },
@@ -104,6 +104,17 @@ module.exports = {
 
   // Set default mocha options here, use special reporters etc.
   mocha: {
+    reporter: 'eth-gas-reporter',
+    reporterOptions : {
+      currency: 'EUR',
+      url:'http://127.0.0.1:8545',
+      coinmarketcap: '510daf7e-6d46-40d2-8b65-3247263b7e4c',
+      stdout: 'D:\\webcrypt\\eattheblocks\\dapp30\\dao\\table.txt',
+      onlyCalledMethods: true,
+      showTimeSpent: true,
+      excludeContracts: ['Migrations'],
+      showMethodSig: true,
+    } // See options below
     // timeout: 100000
   },
 
