@@ -3,6 +3,7 @@ var MasterFactory = artifacts.require("./721/singleton/MasterFactory721.sol");
 // //var Deposit = artifacts.require("./Deposit.sol")
 var Master = artifacts.require("./721/singleton/MSNFT.sol");
 // var limitGas = web3.eth.getBlock("latest").gasLimit;
+var SVC = artifacts.require("./SVC.sol");
 
 
 // CurrencyERC20 contract
@@ -102,6 +103,7 @@ module.exports = function(deployer, network, accounts) {
    
   
   deployer.then(async () => {
+    await deployer.deploy(SVC, "v0.0.0");
     await deployer.deploy(USDT,"USDT","USDT");
     await deployer.deploy(USDC,"USDC","USDC");
     USDC = await USDC.deployed();

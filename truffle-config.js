@@ -109,7 +109,6 @@ module.exports = {
       currency: 'EUR',
       url:'http://127.0.0.1:8545',
       coinmarketcap: '510daf7e-6d46-40d2-8b65-3247263b7e4c',
-      stdout: 'D:\\webcrypt\\eattheblocks\\dapp30\\dao\\table.txt',
       onlyCalledMethods: true,
       showTimeSpent: true,
       excludeContracts: ['Migrations'],
