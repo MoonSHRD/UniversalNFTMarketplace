@@ -58,7 +58,7 @@ contract SVC is Ownable {
     }
 
     function GetCurrentVersionContractAddress(string memory contract_name) view public onlyOwner() isEmptyContractName(contract_name) returns (address) {
-        return versionToContractAddress[versionId-1][contract_name];
+        return versionToContractAddress[versionId][contract_name];
     }
 
     // Set new contract info to current version index

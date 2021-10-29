@@ -60,6 +60,13 @@ contract('SVC', accounts => {
 
     });
 
+    it('should get current version contract address', async () => {
+        const cAddressOne = await vc.GetCurrentVersionContractAddress('MemControl');
+        assert.equal(cAddressOne, '0xA4899c39481bFB56111475747B32eBAba9832780', 'must be the correct address of contract');
+        const cAddressTwo = await vc.GetCurrentVersionContractAddress('GagControl');
+        assert.equal(cAddressTwo, '0x6a91dA642656fEDD19c26a63C39c152138610328', 'must be the correct address of contract');
+    });
+
     it('should NOT make new migration being user', async () => {
         try {
             await vc.NewMigration('v0.0.3', {from: user});
@@ -122,13 +129,6 @@ contract('SVC', accounts => {
         } catch(e) {
             assert(e.message, 'error message must contain revert');
         }
-    });
-
-    it('should get current version contract address', async () => {
-        const cAddressOne = await vc.GetCurrentVersionContractAddress('MemControl');
-        assert.equal(cAddressOne, '0xA4899c39481bFB56111475747B32eBAba9832780', 'must be the correct address of contract');
-        const cAddressTwo = await vc.GetCurrentVersionContractAddress('GagControl');
-        assert.equal(cAddressTwo, '0x6a91dA642656fEDD19c26a63C39c152138610328', 'must be the correct address of contract');
     });
 
     it('should NOT get current version contract address with empty name', async () => {
