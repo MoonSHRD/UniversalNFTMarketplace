@@ -23,7 +23,7 @@ import './CurrenciesERC20.sol';
  *  This version of contract suppose to accept ERC20 tokens as a currency (instead of ethereum), and support work with stable-coins as a currency
  * 
 */
-contract TokenSale721 is Context, ReentrancyGuard {
+contract TokenSaleSingleton is Context, ReentrancyGuard {
 
     using SafeERC20 for IERC20Metadata;
   //  using Counters for Counters.Counter;
@@ -274,6 +274,11 @@ contract TokenSale721 is Context, ReentrancyGuard {
     function sold_count(uint master_id_) public view returns (uint) {
         SaleInfo storage metasale = MSaleInfo[master_id_];
         return metasale._sold_count;
+    }
+
+    function isInitialized(uint master_id_) public view returns (bool) {
+        SaleInfo storage metasale = MSaleInfo[master_id_];
+        return metasale.initialized;
     }
 
     function get_price(CurrenciesERC20.CurrencyERC20 currency, uint master_id_) public view returns (uint256) {

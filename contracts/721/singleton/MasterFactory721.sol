@@ -3,7 +3,8 @@ pragma solidity ^0.8.0;
 //import './zeppeline/token/ERC20/ERC20Mintable.sol';
 
 import './MSNFT.sol';
-import './TokenSale721.sol';
+//import './TokenSale721.sol';
+import './TokenSaleSingleton.sol';
 
 /**
  *  Master Factory
@@ -21,6 +22,7 @@ contract MasterFactory721 {
 
 // constant
 address public master_template;
+address public sale_template;
 
 address payable treasure_fund;
 
@@ -38,14 +40,28 @@ constructor(address msnft_,address payable _treasure_fund, address currencies_ro
    master_template = msnft_;
    treasure_fund = _treasure_fund;
    currencies_router = currencies_router_;
+   MSNFT token_ = MSNFT(master_template);
+   sale_template = deployItemSale721(token_);
 }
 
 /**
  *  @dev Create Item Sale for obtained master copy id
  */
-function createItemSale721(address payable organizer, uint price, MSNFT token,uint sale_limit, CurrenciesERC20.CurrencyERC20 currency, uint _master_id) internal returns(address ticket_sale) {
-    ticket_sale = address(new TokenSale721(organizer, token, sale_limit,treasure_fund, price, currency, _master_id,currencies_router));
-    return ticket_sale;
+function createItemSale721(address payable organizer, uint price, MSNFT token,uint sale_limit, CurrenciesERC20.CurrencyERC20 currency_, uint master_id_) internal returns(bool) {
+   // ticket_sale = address(new TokenSaleSingleton(token,treasure_fund,currencies_router));
+   // return ticket_sale;
+    TokenSaleSingleton sale = TokenSaleSingleton(sale_template);
+    sale.CreateNewSale(organizer, token, sale_limit, price, currency_, master_id_);
+    require(sale.isInitialized(master_id_) == true, "sale has not been initialized");
+    return true;
+}
+
+/* **
+*       @dev 
+*/
+function deployItemSale721(MSNFT token) internal returns(address item_sale_template) {
+    item_sale_template = address(new TokenSaleSingleton(token,treasure_fund,currencies_router));
+    return item_sale_template;
 }
 
 /**
@@ -79,12 +95,17 @@ function createItemSale(uint price, uint sale_limit, CurrenciesERC20.CurrencyERC
     address master_adr = master_template;
     address payable organizer = payable(msg.sender);
     MSNFT item = MSNFT(master_adr);
+    TokenSaleSingleton sale = TokenSaleSingleton(sale_template);
     uint256 master_id = f_master_id;
     require(organizer == item.get_author(master_id), "you are not own this master to start selling items");
-    item_sale_adr = createItemSale721(organizer, price, item,sale_limit, currency, master_id);
-   
+
+    // old way
+   // item_sale_adr = createItemSale721(organizer, price, item,sale_limit, currency, master_id);
+    require(sale.isInitialized(f_master_id) == false, "sale is already initialized");
+    require(createItemSale721(organizer, price, item,sale_limit, currency, master_id) == true, "can't initialize tokensale");
+
    // Plug itemsale address to mastersale map
-    item.PlugCrowdSale(organizer, master_id, item_sale_adr);
+    item.PlugCrowdSale(organizer, master_id, sale_template);
     emit SaleCreated(msg.sender, price, currency, master_id, item_sale_adr);
     emit SaleCreatedHuman(msg.sender, price, currency, master_id, item_sale_adr);
     return item_sale_adr;
