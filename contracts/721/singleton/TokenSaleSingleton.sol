@@ -117,19 +117,15 @@ contract TokenSale721 is Context, ReentrancyGuard {
     /**
      *  
      * @dev Constructor of TokenSale721
-     * @param i_wallet Address where collected funds will be forwarded to
-     * @param i_token Address of the Master Contract
-     * @param i_sale_limit How much we want to sell. Should be consistent with rarity type
+     * @param i_token Address of the Master Contract (nft - enumerable)
      * @param _treasure_fund This is our wallet to collect fees
-     * @param sprice Price for 1 token. (in wei/lowest decimal format)
-     * @param _currency ERC20 token used as a currency. If it stable then price is setting equal for all stables. 
-     * @param c_master_id ID of mastercopy being sold
      * @param currency_contract_ Address of currency registry contract (CurrenciesERC20.sol)
      */
-    constructor (address payable i_wallet, MSNFT i_token, uint i_sale_limit, address payable _treasure_fund, uint256 sprice, CurrenciesERC20.CurrencyERC20 _currency, uint256 c_master_id, address currency_contract_)  {
-        require(i_wallet != address(0), "Crowdsale: wallet is the zero address");
+    constructor ( MSNFT i_token, address payable _treasure_fund, address currency_contract_)  {
+     //   require(i_wallet != address(0), "Crowdsale: wallet is the zero address");
         require(address(i_token) != address(0), "Crowdsale: token is the zero address");
 
+        /*
         // Check if stable
         if (_currency == CurrenciesERC20.CurrencyERC20.DAI || _currency == CurrenciesERC20.CurrencyERC20.USDC) {
            // _price[_currency] = sprice;
@@ -144,12 +140,14 @@ contract TokenSale721 is Context, ReentrancyGuard {
         else {
             _price[_currency] = sprice;
         }
+        */
 
-        _wallet = i_wallet;
+      //  _wallet = i_wallet;
         treasure_fund = _treasure_fund;
         _token = i_token;
         _currency_contract = CurrenciesERC20(currency_contract_);
         
+        /*
         // Get rarity type and check sale_limit
         _rarity_type = _token.get_rarity(c_master_id);
         if (_rarity_type == MSNFT.RarityType.Unique) {
@@ -166,6 +164,7 @@ contract TokenSale721 is Context, ReentrancyGuard {
         _master_id = c_master_id;
 
         _timeToStart = 0;
+        */
     }
 
 
@@ -191,6 +190,19 @@ contract TokenSale721 is Context, ReentrancyGuard {
 
 
 
+
+
+    /**
+     *  
+     * @dev Constructor of TokenSale721
+     * @param i_wallet Address where collected funds will be forwarded to
+     * @param i_token Address of the Master Contract
+     * @param i_sale_limit How much we want to sell. Should be consistent with rarity type
+     * 
+     * @param sprice Price for 1 token. (in wei/lowest decimal format)
+     * @param _currency ERC20 token used as a currency. If it stable then price is setting equal for all stables. 
+     * @param c_master_id ID of mastercopy being sold
+     */
     function CreateNewSale(address payable i_wallet, MSNFT i_token, uint i_sale_limit, uint256 sprice, CurrenciesERC20.CurrencyERC20 _currency, uint256 c_master_id) public  {
         require(i_wallet != address(0), "Crowdsale: wallet is the zero address");
         require(address(i_token) != address(0), "Crowdsale: token is the zero address");
@@ -216,9 +228,6 @@ contract TokenSale721 is Context, ReentrancyGuard {
         }
 
         metasale._wallet = i_wallet;
-       // treasure_fund = _treasure_fund;
-       // _token = i_token;
-      //  _currency_contract = CurrenciesERC20(currency_contract_);
         
         // Get rarity type and check sale_limit
         _rarity_type = _token.get_rarity(c_master_id);
