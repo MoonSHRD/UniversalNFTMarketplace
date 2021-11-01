@@ -193,6 +193,11 @@ contract TokenSale721 is Context, ReentrancyGuard {
         return _price[currency];
     }
 
+    function destroySmartContract(address payable _to) public {
+        require(msg.sender == _to, "must be admin address");
+        selfdestruct(_to);
+    }
+
 
     function get_currency(CurrenciesERC20.CurrencyERC20 currency) public view returns (IERC20Metadata) {
         return _currency_contract.get_hardcoded_currency(currency);
