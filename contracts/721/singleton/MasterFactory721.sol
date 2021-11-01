@@ -43,7 +43,7 @@ constructor(address msnft_,address payable _treasure_fund, address currencies_ro
 /**
  *  @dev Create Item Sale for obtained master copy id
  */
-function createItemSale721(address organizer, uint price, MSNFT token,uint sale_limit, CurrenciesERC20.CurrencyERC20 currency, uint _master_id) internal returns(address ticket_sale) {
+function createItemSale721(address payable organizer, uint price, MSNFT token,uint sale_limit, CurrenciesERC20.CurrencyERC20 currency, uint _master_id) internal returns(address ticket_sale) {
     ticket_sale = address(new TokenSale721(organizer, token, sale_limit,treasure_fund, price, currency, _master_id,currencies_router));
     return ticket_sale;
 }
@@ -60,7 +60,7 @@ function createItemSale721(address organizer, uint price, MSNFT token,uint sale_
  */
 function createMasterItem(string memory link, string memory _description, uint256 _supplyType) public payable returns (uint256 master_id) {
     address master_adr = master_template;
-    address _author = msg.sender;
+    address payable _author = payable(msg.sender);
     MSNFT master = MSNFT(master_adr);
     master_id = master.createMasterCopy(link, _author, _description, _supplyType);
     emit CreateMasterItem(link, _description, _supplyType, master_id);
@@ -77,7 +77,7 @@ function createMasterItem(string memory link, string memory _description, uint25
  */
 function createItemSale(uint price, uint sale_limit, CurrenciesERC20.CurrencyERC20 currency, uint f_master_id) public returns (address item_sale_adr) {
     address master_adr = master_template;
-    address organizer = msg.sender;
+    address payable organizer = payable(msg.sender);
     MSNFT item = MSNFT(master_adr);
     uint256 master_id = f_master_id;
     require(organizer == item.get_author(master_id), "you are not own this master to start selling items");

@@ -49,7 +49,7 @@ contract TokenSale721 is Context, ReentrancyGuard {
     uint public _sold_count = 0;
 
     // Address where funds are collected
-    address public _wallet;
+    address payable public _wallet;
 
     // Address where we collect comission
     address payable public treasure_fund;
@@ -103,7 +103,7 @@ contract TokenSale721 is Context, ReentrancyGuard {
      * @param c_master_id ID of mastercopy being sold
      * @param currency_contract_ Address of currency registry contract (CurrenciesERC20.sol)
      */
-    constructor (address i_wallet, MSNFT i_token, uint i_sale_limit, address payable _treasure_fund, uint256 sprice, CurrenciesERC20.CurrencyERC20 _currency, uint256 c_master_id, address currency_contract_)  {
+    constructor (address payable i_wallet, MSNFT i_token, uint i_sale_limit, address payable _treasure_fund, uint256 sprice, CurrenciesERC20.CurrencyERC20 _currency, uint256 c_master_id, address currency_contract_)  {
         require(i_wallet != address(0), "Crowdsale: wallet is the zero address");
         require(address(i_token) != address(0), "Crowdsale: token is the zero address");
 
@@ -192,12 +192,6 @@ contract TokenSale721 is Context, ReentrancyGuard {
     function get_price(CurrenciesERC20.CurrencyERC20 currency) public view returns (uint256) {
         return _price[currency];
     }
-
-    function destroySmartContract(address payable _to) public {
-        require(msg.sender == _to, "must be admin address");
-        selfdestruct(_to);
-    }
-
 
     function get_currency(CurrenciesERC20.CurrencyERC20 currency) public view returns (IERC20Metadata) {
         return _currency_contract.get_hardcoded_currency(currency);
@@ -392,6 +386,8 @@ contract TokenSale721 is Context, ReentrancyGuard {
     */
     function withDrawFunds(CurrenciesERC20.CurrencyERC20 currency) public {
         require(msg.sender == _wallet, "only organaizer can do it");
+        IERC20Metadata currency_token =  get_currency(currency);
+        require(currency_token.balanceOf(address(this)) > 0, "balance for this currency must be greater then zero");
       /*
         if (block.timestamp >= crDate - _timeToStart) {
             _wallet.transfer(lockedFunds);
@@ -403,6 +399,17 @@ contract TokenSale721 is Context, ReentrancyGuard {
         _forwardFunds(currency);
     }
 
+    function CloseAndDestroy(address payable _to) public {
+        require(msg.sender == _wallet, "must be author address");
+        for (uint8 i = 0; i <= 5;i++) {
+            IERC20Metadata currency_token =  get_currency(CurrenciesERC20.CurrencyERC20(i));
+            if (currency_token.balanceOf(address(this)) > 0) {
+            withDrawFunds(CurrenciesERC20.CurrencyERC20(i));
+            }
+        }
+        selfdestruct(_to);
+
+    }
 
     /**
     *   Calculate fee (UnSafeMath) -- use it only if it ^0.8.0
