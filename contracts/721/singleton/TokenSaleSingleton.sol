@@ -37,20 +37,7 @@ contract TokenSaleSingleton is Context, ReentrancyGuard {
     // Currencies lib
     CurrenciesERC20 _currency_contract;
 
-    //master_id
-    uint256 public _master_id;
 
-    // rarity type
-    MSNFT.RarityType _rarity_type;
-
-    // maximum amount of tickets to sale
-   // Counters.Counter public _current_limit;
-    uint _sale_limit;
-    // how much have been already sold
-    uint public _sold_count = 0;
-
-    // Address where funds are collected
-    address payable public _wallet;
 
     // Address where we collect comission
     address payable public treasure_fund;
@@ -61,11 +48,8 @@ contract TokenSaleSingleton is Context, ReentrancyGuard {
     // CurrenciesERC20.CurrencyERC20 -- enum from above
     // Alternativly use CurrenciesERC20.
 
-    // Map from currency to price
-    mapping (CurrenciesERC20.CurrencyERC20 => uint256) public _price;
    
-    // balances of this sale contract in those currencies
-    mapping (CurrenciesERC20.CurrencyERC20 => uint256) internal currency_balances; 
+    
 
     // service comission fee
     uint public promille_fee = 25;
@@ -78,7 +62,7 @@ contract TokenSaleSingleton is Context, ReentrancyGuard {
     uint public _timeToStart;
 
     // Funds, that have been locked
-    uint256 public lockedFunds;
+   // uint256 public lockedFunds;
 
     /**
      * Event for token purchase logging
@@ -101,8 +85,9 @@ contract TokenSaleSingleton is Context, ReentrancyGuard {
         uint256  _master_id;            // master id of token being sold (possible duplicate)
         MSNFT.RarityType _rarity_type;  // rarity of token being sold
         mapping (CurrenciesERC20.CurrencyERC20 => uint256) _price;      // map from currency to price
+        
+        // balances of this sale contract in those currencies
         mapping (CurrenciesERC20.CurrencyERC20 => uint256) currency_balances;   // map from currency to balance
-
 
         uint _sale_limit;
         uint _sold_count;
@@ -122,49 +107,11 @@ contract TokenSaleSingleton is Context, ReentrancyGuard {
      * @param currency_contract_ Address of currency registry contract (CurrenciesERC20.sol)
      */
     constructor ( MSNFT i_token, address payable _treasure_fund, address currency_contract_)  {
-     //   require(i_wallet != address(0), "Crowdsale: wallet is the zero address");
+        require(_treasure_fund != address(0), "Crowdsale: wallet is the zero address");
         require(address(i_token) != address(0), "Crowdsale: token is the zero address");
-
-        /*
-        // Check if stable
-        if (_currency == CurrenciesERC20.CurrencyERC20.DAI || _currency == CurrenciesERC20.CurrencyERC20.USDC) {
-           // _price[_currency] = sprice;
-            _price[CurrenciesERC20.CurrencyERC20.DAI] = sprice;
-            _price[CurrenciesERC20.CurrencyERC20.USDC] = sprice;
-            _price[CurrenciesERC20.CurrencyERC20.USDT] = sprice / 1 ether * 1e6;    // USDT have 6 decimals, not 18
-        } else if(_currency == CurrenciesERC20.CurrencyERC20.USDT) {
-            _price[CurrenciesERC20.CurrencyERC20.USDT] = sprice;
-            _price[CurrenciesERC20.CurrencyERC20.USDC] = sprice / 1e6 * 1 ether;
-            _price[CurrenciesERC20.CurrencyERC20.DAI] = sprice / 1e6 * 1 ether;
-        } 
-        else {
-            _price[_currency] = sprice;
-        }
-        */
-
-      //  _wallet = i_wallet;
         treasure_fund = _treasure_fund;
         _token = i_token;
         _currency_contract = CurrenciesERC20(currency_contract_);
-        
-        /*
-        // Get rarity type and check sale_limit
-        _rarity_type = _token.get_rarity(c_master_id);
-        if (_rarity_type == MSNFT.RarityType.Unique) {
-            require(i_sale_limit == 1, "Tokensale: Attempt to create new Tokensale for unique NFT with wrong sale_limit");
-        }
-        if (_rarity_type == MSNFT.RarityType.Common) {  
-            _sale_limit = 0;
-        }
-        if (_rarity_type == MSNFT.RarityType.Rare) {
-            _sale_limit = i_sale_limit;
-        }
-
-
-        _master_id = c_master_id;
-
-        _timeToStart = 0;
-        */
     }
 
 
@@ -188,13 +135,9 @@ contract TokenSaleSingleton is Context, ReentrancyGuard {
         return _token;
     }
 
-
-
-
-
     /**
      *  
-     * @dev Constructor of TokenSale721
+     * @dev Create new Sale for given master_id
      * @param i_wallet Address where collected funds will be forwarded to
      * @param i_token Address of the Master Contract
      * @param i_sale_limit How much we want to sell. Should be consistent with rarity type
@@ -230,15 +173,15 @@ contract TokenSaleSingleton is Context, ReentrancyGuard {
         metasale._wallet = i_wallet;
         
         // Get rarity type and check sale_limit
-        _rarity_type = _token.get_rarity(c_master_id);
-        if (_rarity_type == MSNFT.RarityType.Unique) {
+        metasale._rarity_type = _token.get_rarity(c_master_id);
+        if (metasale._rarity_type == MSNFT.RarityType.Unique) {
             require(i_sale_limit == 1, "Tokensale: Attempt to create new Tokensale for unique NFT with wrong sale_limit");
             metasale._sale_limit = 1;
         }
-        if (_rarity_type == MSNFT.RarityType.Common) {  
+        if (metasale._rarity_type == MSNFT.RarityType.Common) {  
             metasale._sale_limit = 0;
         }
-        if (_rarity_type == MSNFT.RarityType.Rare) {
+        if (metasale._rarity_type == MSNFT.RarityType.Rare) {
             metasale._sale_limit = i_sale_limit;
         }
 
@@ -257,13 +200,16 @@ contract TokenSaleSingleton is Context, ReentrancyGuard {
         return metasale._wallet;
     }
 
-    function getBalances(CurrenciesERC20.CurrencyERC20 _currency) public view returns (uint) {
-        return currency_balances[_currency];
+    function getBalances(CurrenciesERC20.CurrencyERC20 _currency,uint master_id_) public view returns (uint) {
+        SaleInfo storage metasale = MSaleInfo[master_id_];
+        return metasale.currency_balances[_currency];
     }
 
+    /*
     function master_id() public view returns (uint256) {
         return _master_id;
     }
+    */
 
     function sale_limit(uint master_id_) public view returns (uint) {
         SaleInfo storage metasale = MSaleInfo[master_id_];
@@ -349,9 +295,7 @@ contract TokenSaleSingleton is Context, ReentrancyGuard {
         
         SaleInfo storage metasale = MSaleInfo[master_id_];
         
-        
         uint256 tokens = tokenAmountToBuy;
-
         // How much is needed to pay (perhaps we need to rework it to make only 1 token buy per one call) -- it will make logic simplier and cheaper
         uint256 weiAmount = getWeiAmount(tokens,currency,master_id_);  // can be zero if wrong currency set-up to pay. in this case tx will fail under pre-validate purchase check
 
@@ -362,12 +306,12 @@ contract TokenSaleSingleton is Context, ReentrancyGuard {
        // If it is unlimited sale then _sale_limit should be always 0   
         metasale._sold_count = metasale._sold_count + tokens;
     
-        _processPurchase(beneficiary, tokens,currency, weiAmount);
+        _processPurchase(beneficiary, tokens,currency, weiAmount,master_id_);
         emit TokensPurchased(_msgSender(), beneficiary, weiAmount, tokens);
 
      //   _updatePurchasingState(beneficiary, weiAmount); // can be silenced as well
 
-     //   _forwardFunds();
+    
     
        // _postValidatePurchase(beneficiary, weiAmount);
     }
@@ -422,8 +366,8 @@ contract TokenSaleSingleton is Context, ReentrancyGuard {
      * @param beneficiary Address performing the token purchase
      * @param tokenAmount Number of tokens to be emitted
      */
-    function _deliverTokens(address beneficiary, uint256 tokenAmount) internal {
-        _token.buyItem(beneficiary,tokenAmount, _master_id);
+    function _deliverTokens(address beneficiary, uint256 tokenAmount,uint master_id_) internal {
+        _token.buyItem(beneficiary,tokenAmount, master_id_);
     }
 
     /**
@@ -434,10 +378,10 @@ contract TokenSaleSingleton is Context, ReentrancyGuard {
      * @param currency ERC20 used as currency
      * @param weiAmount wei amount involved in transaction
      */
-    function _processPurchase(address beneficiary, uint256 tokenAmount, CurrenciesERC20.CurrencyERC20 currency, uint256 weiAmount) internal {
+    function _processPurchase(address beneficiary, uint256 tokenAmount, CurrenciesERC20.CurrencyERC20 currency, uint256 weiAmount,uint master_id_) internal {
         IERC20Metadata currency_token = get_currency(currency);
         require(currency_token.transferFrom(beneficiary, address(this), weiAmount), "TokenSale: ERC20: transferFrom buyer to itemsale contract failed ");
-        _deliverTokens(beneficiary, tokenAmount);
+        _deliverTokens(beneficiary, tokenAmount, master_id_);
     }
 
     /**
@@ -467,13 +411,13 @@ contract TokenSaleSingleton is Context, ReentrancyGuard {
      * @dev Determines how ERC20 is stored/forwarded on purchases. Here we take our fee. This function can be tethered to buy tx or can be separate from buy flow.
      * @param currency ERC20 currency. Seller should specify what exactly currency he/she want to out
      */
-    function _forwardFunds(CurrenciesERC20.CurrencyERC20 currency) internal {
+    function _forwardFunds(CurrenciesERC20.CurrencyERC20 currency,uint master_id_) internal {
         IERC20Metadata currency_token =  get_currency(currency);
         uint256 amount = currency_token.balanceOf(address(this));
         uint256 scale = 1000;
         uint256 fees = calculateFee(amount,scale);
         amount = amount - fees;
-        currency_token.transfer(_wallet,amount);
+        currency_token.transfer(wallet(master_id_),amount);
         currency_token.transfer(treasure_fund,fees);
         uint256 r = amount + fees;
         emit CalculatedFees(r,fees,amount,treasure_fund);
@@ -484,8 +428,8 @@ contract TokenSaleSingleton is Context, ReentrancyGuard {
     *   @dev determine how funds are collected by seller
     *   @param currency ERC20 currency
     */
-    function withDrawFunds(CurrenciesERC20.CurrencyERC20 currency) public {
-        require(msg.sender == _wallet, "only organaizer can do it");
+    function withDrawFunds(CurrenciesERC20.CurrencyERC20 currency,uint master_id_) public {
+        require(msg.sender == wallet(master_id_), "only organaizer can do it");
         IERC20Metadata currency_token =  get_currency(currency);
         require(currency_token.balanceOf(address(this)) > 0, "balance for this currency must be greater then zero");
       /*
@@ -496,7 +440,7 @@ contract TokenSaleSingleton is Context, ReentrancyGuard {
             revert("event is not started yet, funds are locked");
         }
         */
-        _forwardFunds(currency);
+        _forwardFunds(currency,master_id_);
     }
 
     /*

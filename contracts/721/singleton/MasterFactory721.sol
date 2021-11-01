@@ -48,8 +48,6 @@ constructor(address msnft_,address payable _treasure_fund, address currencies_ro
  *  @dev Create Item Sale for obtained master copy id
  */
 function createItemSale721(address payable organizer, uint price, MSNFT token,uint sale_limit, CurrenciesERC20.CurrencyERC20 currency_, uint master_id_) internal returns(bool) {
-   // ticket_sale = address(new TokenSaleSingleton(token,treasure_fund,currencies_router));
-   // return ticket_sale;
     TokenSaleSingleton sale = TokenSaleSingleton(sale_template);
     sale.CreateNewSale(organizer, token, sale_limit, price, currency_, master_id_);
     require(sale.isInitialized(master_id_) == true, "sale has not been initialized");
@@ -57,7 +55,7 @@ function createItemSale721(address payable organizer, uint price, MSNFT token,ui
 }
 
 /* **
-*       @dev 
+*       @dev deploy item sale contract, should be called only once
 */
 function deployItemSale721(MSNFT token) internal returns(address item_sale_template) {
     item_sale_template = address(new TokenSaleSingleton(token,treasure_fund,currencies_router));
