@@ -401,7 +401,7 @@ contract TokenSale721 is Context, ReentrancyGuard {
 
     function CloseAndDestroy(address payable _to) public {
         require(msg.sender == _wallet, "must be author address");
-        for (uint8 i = 0; i <= 5;i++) {
+        for (uint8 i = 0; i <= 4;i++) {
             IERC20Metadata currency_token =  get_currency(CurrenciesERC20.CurrencyERC20(i));
             if (currency_token.balanceOf(address(this)) > 0) {
             withDrawFunds(CurrenciesERC20.CurrencyERC20(i));

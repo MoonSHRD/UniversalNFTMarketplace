@@ -216,14 +216,9 @@ contract('MasterFactory721', accounts => {
         let contractTokenBalanceBeforeSale = await usdt.balanceOf(contractAddress, {from: admin});
         assert(contractTokenBalanceBeforeSale == tokenUsdtPrice);
 
-        let withDrawFunds = await tokenSale721.withDrawFunds(USDT);
-        let serviceFees = withDrawFunds.logs[0].args.fees;
-        feeAddress = withDrawFunds.logs[0].args.feeAddress;
-        let feeAddressBalanceUsdt = await usdt.balanceOf(feeAddress);
-        assert.equal(serviceFees.toString(), feeAddressBalanceUsdt.toString(), 'must be equal');
-
         const balance = await nft.totalSupply();
-        assert.equal(balance, 1, 'balance has been replenished');        
+        assert.equal(balance, 1, 'balance has been replenished');
+        
     });
 
     it('should buy nft tokens by USDC', async () => {
@@ -274,12 +269,6 @@ contract('MasterFactory721', accounts => {
         
         let contractTokenBalanceBeforeSale = await usdc.balanceOf(contractAddress, {from: admin});
         assert(contractTokenBalanceBeforeSale.toString() == tokenUsdcPrice.toString());
-
-        let withDrawFunds = await tokenSale721.withDrawFunds(USDC);
-        let serviceFees = withDrawFunds.logs[0].args.fees;
-        feeAddress = withDrawFunds.logs[0].args.feeAddress;
-        let feeAddressBalanceUsdc = await usdc.balanceOf(feeAddress);
-        assert.equal(serviceFees.toString(), feeAddressBalanceUsdc.toString(), 'must be equal');
         
         const balance = await nft.totalSupply();
         assert.equal(balance, 2, 'balance has been replenished');
@@ -338,26 +327,17 @@ contract('MasterFactory721', accounts => {
         let contractTokenBalanceBeforeSale = await dai.balanceOf(contractAddress, {from: admin});
         assert(contractTokenBalanceBeforeSale.toString() == tokenDaiPrice.toString());
 
-        let withDrawFunds = await tokenSale721.withDrawFunds(DAI);
-        let serviceFees = withDrawFunds.logs[0].args.fees;
-        feeAddress = withDrawFunds.logs[0].args.feeAddress;
-        let feeAddressBalanceDai = await dai.balanceOf(feeAddress);
-        assert.equal(serviceFees.toString(), feeAddressBalanceDai.toString(), 'must be equal');
-        
-        
-        let contractTokenBalanceAfterWithdrawal = await dai.balanceOf(contractAddress, {from: admin});
-        assert.equal(contractTokenBalanceAfterWithdrawal.toString(), 0, "should be zero balance");
-
-        const beneficiaryAddress = await tokenSale721.wallet();
-        assert.equal(beneficiaryAddress, admin, "should be equal");
-        
-        let beneficiaryBalanceAfterWithdrawal = await dai.balanceOf(beneficiaryAddress, {from: admin});
-        assert(beneficiaryBalanceAfterWithdrawal, tokenDaiPrice - feeAddressBalanceDai);
-
-        await tokenSale721.destroySmartContract(admin, {from: admin});
-
         const balance = await nft.totalSupply();
         assert.equal(balance, 3, 'balance has been replenished');
+
+        const destroyReceipt = await tokenSale721.CloseAndDestroy(admin);
+        const checkCreatorBalance = await dai.balanceOf(admin, {from: admin});
+        const contractAddressBalance = await dai.balanceOf(contractAddress, {from: admin});
+        const feeAddress = destroyReceipt.logs[0].args.feeAddress;
+        const feeAddressBalance = await dai.balanceOf(feeAddress, {from: admin});
+        assert(checkCreatorBalance.toString() == destroyReceipt.logs[0].args.transfered_amount.toString());
+        assert(feeAddressBalance.toString() == destroyReceipt.logs[0].args.fees.toString());
+        assert(contractAddressBalance.toString() == '0');
     });
 
     it('should buy nft tokens by MST', async () => {
@@ -431,27 +411,17 @@ contract('MasterFactory721', accounts => {
         let contractTokenBalanceBeforeSecondSale = await mst.balanceOf(contractAddress, {from: admin});
         assert(contractTokenBalanceBeforeSecondSale.toString() == (tokenMstPrice*2).toString());
 
-        let withDrawFunds = await tokenSale721.withDrawFunds(MST);
-        let serviceFees = withDrawFunds.logs[0].args.fees;
-        feeAddress = withDrawFunds.logs[0].args.feeAddress;
-        let feeAddressBalanceMst = await mst.balanceOf(feeAddress);
-        assert.equal(serviceFees.toString(), feeAddressBalanceMst.toString(), 'must be equal');
-
-
-
-        let contractTokenBalanceAfterWithdrawal = await mst.balanceOf(contractAddress, {from: admin});
-        assert.equal(contractTokenBalanceAfterWithdrawal.toString(), 0, "should be zero balance");
-
-        const beneficiaryAddress = await tokenSale721.wallet();
-        assert.equal(beneficiaryAddress, admin, "should be equal");
-        
-        let beneficiaryBalanceAfterWithdrawal = await mst.balanceOf(beneficiaryAddress, {from: admin});
-        assert(beneficiaryBalanceAfterWithdrawal, (tokenMstPrice*2) - feeAddressBalanceMst);
-
-        await tokenSale721.destroySmartContract(admin, {from: admin});
-
         const balance = await nft.totalSupply();
         assert.equal(balance, 5, 'balance has been replenished');
+
+        const destroyReceipt = await tokenSale721.CloseAndDestroy(admin);
+        const checkCreatorBalance = await mst.balanceOf(admin, {from: admin});
+        const contractAddressBalance = await mst.balanceOf(contractAddress, {from: admin});
+        const feeAddress = destroyReceipt.logs[0].args.feeAddress;
+        const feeAddressBalance = await mst.balanceOf(feeAddress, {from: admin});
+        assert(checkCreatorBalance.toString() == destroyReceipt.logs[0].args.transfered_amount.toString());
+        assert(feeAddressBalance.toString() == destroyReceipt.logs[0].args.fees.toString());
+        assert(contractAddressBalance.toString() == '0');
         
     });
 
@@ -506,27 +476,18 @@ contract('MasterFactory721', accounts => {
         
         let contractTokenBalanceBeforeSale = await weth.balanceOf(contractAddress, {from: admin});
         assert(contractTokenBalanceBeforeSale.toString() == priceForBoth.toString());
-
-        let withDrawFunds = await tokenSale721.withDrawFunds(WETH);
-        let serviceFees = withDrawFunds.logs[0].args.fees;
-        feeAddress = withDrawFunds.logs[0].args.feeAddress;
-        let feeAddressBalanceWeth = await weth.balanceOf(feeAddress);
-        assert.equal(serviceFees.toString(), feeAddressBalanceWeth.toString(), 'must be equal');
-
-        
-        let contractTokenBalanceAfterWithdrawal = await weth.balanceOf(contractAddress, {from: admin});
-        assert.equal(contractTokenBalanceAfterWithdrawal.toString(), 0, "should be zero balance");
-
-        const beneficiaryAddress = await tokenSale721.wallet();
-        assert.equal(beneficiaryAddress, admin, "should be equal");
-        
-        let beneficiaryBalanceAfterWithdrawal = await weth.balanceOf(beneficiaryAddress, {from: admin});
-        assert(beneficiaryBalanceAfterWithdrawal, priceForBoth - feeAddressBalanceWeth);
-
-        await tokenSale721.destroySmartContract(admin, {from: admin});
         
         const balance = await nft.totalSupply();
         assert.equal(balance, 7, 'balance has been replenished');
+
+        const destroyReceipt = await tokenSale721.CloseAndDestroy(admin);
+        const checkCreatorBalance = await weth.balanceOf(admin, {from: admin});
+        const contractAddressBalance = await weth.balanceOf(contractAddress, {from: admin});
+        const feeAddress = destroyReceipt.logs[0].args.feeAddress;
+        const feeAddressBalance = await weth.balanceOf(feeAddress, {from: admin});
+        assert(checkCreatorBalance.toString() == destroyReceipt.logs[0].args.transfered_amount.toString());
+        assert(feeAddressBalance.toString() == destroyReceipt.logs[0].args.fees.toString());
+        assert(contractAddressBalance.toString() == '0');
         // let contractTokenBalanceAfterWithdrawal = await weth.balanceOf(contractAddress, {from: admin});
 
         // console.log(contractTokenBalanceAfterWithdrawal.toString());
