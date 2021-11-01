@@ -109,7 +109,7 @@ contract MSNFT is ERC721Enumerable, Ownable {
     mapping(address => address) retailers;
     
     // map from masterId to author address
-    mapping(uint256 => address) public authors;
+    mapping(uint256 => address payable) public authors;
 
     // map from author address to masterIds array
     mapping(address => uint[]) public author_masterids; // can be used to get all objects created by one author
@@ -196,7 +196,7 @@ contract MSNFT is ERC721Enumerable, Ownable {
      * @param _supplyType -- type of supply, where 1 is for unique nft, 0 for common nft, anything else is rare. Used to check inside mint func
      * @return c_master_id reserved mastercopy id
      */
-    function createMasterCopy(string memory link, address _author ,string memory _description, uint256 _supplyType) public returns(uint256 c_master_id){
+    function createMasterCopy(string memory link, address payable _author ,string memory _description, uint256 _supplyType) public returns(uint256 c_master_id){
 
         require(msg.sender == factory_address, "MSNFT: only factory contract can create mastercopy");
 
@@ -401,7 +401,7 @@ contract MSNFT is ERC721Enumerable, Ownable {
      /**
      *  @dev get author of master
      */
-    function get_author(uint256 _masterId) public view returns (address _author) {
+    function get_author(uint256 _masterId) public view returns (address payable _author) {
         _author = authors[_masterId];
         return _author;
     }
