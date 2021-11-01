@@ -17,6 +17,7 @@ import './CurrenciesERC20.sol';
 /**
  *                  TOKENSALE721
  *  @title TokenSale721
+ *  @author JackBekket (Sergey Ponomarev)
  *  @dev TokenSale721 is a reworked OZ Crowdsale contract (see Crowdsale.sol). Originall contract was designed to sell ERC20 tokens
  *  This contract is defining rules of token (ERC721Enumerable) sell.
  *  This version of contract suppose to accept ERC20 tokens as a currency (instead of ethereum), and support work with stable-coins as a currency
