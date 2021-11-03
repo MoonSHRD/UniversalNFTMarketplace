@@ -5,7 +5,7 @@ import "../../../node_modules/@openzeppelin/contracts/token/ERC721/extensions/ER
 import "../../../node_modules/@openzeppelin/contracts/token/ERC721/ERC721.sol";
 //import "../../../node_modules/@openzeppelin/contracts/token/ERC721/presets/ERC721PresetMinterPauserAutoId.sol";
 import "../../../node_modules/@openzeppelin/contracts/utils/Counters.sol";
-import "../../../node_modules/@openzeppelin/contracts/utils/math/SafeMath.sol";
+//import "../../../node_modules/@openzeppelin/contracts/utils/math/SafeMath.sol";
 import "../../../node_modules/@openzeppelin/contracts/access/Ownable.sol";
 
 
@@ -21,7 +21,7 @@ import "../../../node_modules/@openzeppelin/contracts/access/Ownable.sol";
  * createMasterCopy, plugSale, buyItem -- external intefaces to be called from factory contract 
 */
 contract MSNFT is ERC721Enumerable, Ownable {
-   using SafeMath for uint256;
+  // using SafeMath for uint256;
    using Counters for Counters.Counter;
 
     // Master -- Mastercopy, abstraction
@@ -105,8 +105,6 @@ contract MSNFT is ERC721Enumerable, Ownable {
     mapping (uint256 => uint256) itemIndex;         // -- each token have a position in itemIds array. itemIndex is help to track where exactly stored itemId in itemIds array. 
 
     
-    // map from sale address to organizer -- TODO: this can be double info from factory
-    mapping(address => address) retailers;
     
     // map from masterId to author address
     mapping(uint256 => address payable) public authors;
@@ -126,7 +124,7 @@ contract MSNFT is ERC721Enumerable, Ownable {
     /**
    *                                                            Item information
    *    @dev ItemInfo contains meta information about Master/Item. 
-   *    @param magnet_link -- unique link to a torrent
+   *    @param ipfs_link -- unique link to a ipfs
    *    @param author -- address of author
    *    @param rarity -- rarity of an item, see RarityType
    *    @param i_totalSupply -- it is not a total supply. total supply of a token is itemIds[mater_id].lenght
@@ -134,9 +132,9 @@ contract MSNFT is ERC721Enumerable, Ownable {
     struct ItemInfo 
     {
     // TODO: is this really nececcary to write it as string?
-    // this is link to torrent 
+    // this is link to IPFS 
     // @todo: *WARNING -- should be unique!!*
-    string magnet_link;
+    string ipfs_link;
 
     // TODO: rework this for searching functionality (case when user seacrh nft item at marketplace by name (or ticker?))
     string description;
@@ -167,6 +165,8 @@ contract MSNFT is ERC721Enumerable, Ownable {
         address author = meta.author;
         require(author == organizer, "you don't own to this master id");
         require(mastersales[_masterId] == address(0), "MSNFT: you already have plugged sale ");
+
+        // we set address just for ocasion if we deploy new version of tokensale in future
         mastersales[_masterId] = _sale;
 
     }
@@ -369,17 +369,7 @@ contract MSNFT is ERC721Enumerable, Ownable {
 
 
 
-    //                  @FIXME: fix get items of owner
-    /*
-  //  
-
-
-
-    function getTicketByOwner(address _owner) public view returns(uint256[] memory) {
-        uint256[] storage tickets = _tokensOfOwner(_owner);
-        return tickets;
-    }
-    */
+   
 
     // Gets the list of token IDs of the requested owner.
     // function _tokensOfOwner(address owner) internal view override(ERC721Enumerable) returns (uint256[] storage) {
@@ -389,7 +379,7 @@ contract MSNFT is ERC721Enumerable, Ownable {
 
 
     /**
-     * @dev get itemSale contract address tethered to this master_id
+     * @dev get itemSale contract address template
      */
     function getItemSale(uint256 master_id) public view returns(address) {
         address sale = mastersales[master_id];

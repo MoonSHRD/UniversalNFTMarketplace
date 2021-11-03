@@ -30,9 +30,9 @@ contract SVC is Ownable {
         _;
     }
 
-    constructor (string memory version) {
-        versionsIndex[version] = versionId;
-        versionsName.push(version);
+    constructor (string memory version_) {
+        versionsIndex[version_] = versionId;
+        versionsName.push(version_);
     }
 
     // Create new migration
