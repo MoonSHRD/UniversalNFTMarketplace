@@ -66,7 +66,7 @@ contract MetaMarketplace {
     //Hardcode interface_id's
     bytes4 private constant _INTERFACE_ID_MSNFT;
     bytes4 private constant _INTERFACE_ID_ERC721ENUMERABLE;
-    bytes4 private constant _INTERFACE_ID_ERC721METADATA;
+    bytes4 private constant _INTERFACE_ID_ERC721METADATA = 0x5b5e139f;
     bytes4 private constant _INTERFACE_ID_ERC721;
     
 
