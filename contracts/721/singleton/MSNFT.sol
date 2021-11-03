@@ -447,6 +447,15 @@ contract MSNFT is ERC721Enumerable, Ownable {
     }
 
 
+     ///  Informs callers that this contract supports ERC2981
+    function supportsInterface(bytes4 interfaceId)
+    public view override(ERC721Enumerable)
+    returns (bool) {
+       // return interfaceId == type(IERC2981).interfaceId ||
+        return super.supportsInterface(interfaceId);
+    }
+
+
     /*
     Usefull tips:
     // Mapping from owner to list of owned token IDs
