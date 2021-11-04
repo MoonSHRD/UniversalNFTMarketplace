@@ -1,6 +1,6 @@
 pragma solidity ^0.8.0;
 
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: UNLICENSED
 
 
 import './CurrenciesERC20.sol';
@@ -15,6 +15,7 @@ import "../../../node_modules/@openzeppelin/contracts/token/ERC20/extensions/IER
 
 /**
  * @title NFT Marketplace with ERC-2981 support
+ * @author JackBekket
  * --------------------------------------------------------ORIGINALLY FORKED FROM https://github.com/benber86/nft_royalties_market
  * @notice Defines a marketplace to bid on and sell NFTs.
  *         Sends royalties to rightsholder on each sale if applicable.
@@ -25,13 +26,16 @@ contract MetaMarketplace {
 
     struct SellOffer {
         address seller;
-        uint256 minPrice;
+        mapping(CurrenciesERC20.CurrencyERC20 => uint256) minPrice;
+       // CurrenciesERC20.CurrencyERC20 _currency;
     }
 
     struct BuyOffer {
         address buyer;
-        uint256 price;
+        mapping(CurrenciesERC20.CurrencyERC20 => uint256) price; 
+        //uint256 price;
         uint256 createTime;
+       // CurrenciesERC20.CurrencyERC20 _currency;
     }
 
     // MSNFT, 721Enumerable, URIStorage, 721Metadata, erc721(common)
@@ -93,7 +97,7 @@ contract MetaMarketplace {
     event SellOfferWithdrawn(address nft_contract_, uint256 tokenId, address seller);
     event BuyOfferWithdrawn(uint256 tokenId, address buyer);
    // event RoyaltiesPaid(uint256 tokenId, uint value);
-    event Sale(uint256 tokenId, address seller, address buyer, uint256 value);
+    event Sale(address nft_contract_, uint256 tokenId, address seller, address buyer, uint256 value);
     
 
     constructor(address currency_contract_, address msnft_token_) {
@@ -138,7 +142,6 @@ contract MetaMarketplace {
         _;
     }
 
-
     function SetUpMarketplace(address nft_token_, NftType standard_) public {
        
         require(Marketplaces[nft_token_].initialized == false, "Marketplace is already setted up");
@@ -177,25 +180,24 @@ contract MetaMarketplace {
     
 
 
-
-
-     
     /** 
     * @notice Puts a token on sale at a given price
     * @param tokenId - id of the token to sell
     * @param minPrice - minimum price at which the token can be sold
     */
-    function makeSellOffer(uint256 tokenId, uint256 minPrice, address token_contract_)
+    function makeSellOffer(uint256 tokenId, uint256 minPrice, address token_contract_, CurrenciesERC20.CurrencyERC20 currency_)
     external marketplaceSetted(token_contract_) isMarketable(tokenId,token_contract_) tokenOwnerOnly(tokenId,token_contract_) 
     {
         Marketplace storage metainfo = Marketplaces[token_contract_];
         // Create sell offer
-        metainfo.activeSellOffers[tokenId] = SellOffer({seller : msg.sender,
-                                               minPrice : minPrice});
+       // metainfo.activeSellOffers[tokenId] = SellOffer({seller : msg.sender,
+       //                                        minPrice : minPrice });
+        metainfo.activeSellOffers[tokenId].minPrice[currency_] = minPrice;
+        metainfo.activeSellOffers[tokenId].seller = msg.sender;
+
         // Broadcast sell offer
         emit NewSellOffer(token_contract_,tokenId, msg.sender, minPrice);
     }
-
 
 
     /**
@@ -243,7 +245,7 @@ contract MetaMarketplace {
 
     /// @notice Purchases a token and transfers royalties if applicable
     /// @param tokenId - id of the token to sell
-    function purchase(address token_contract_,uint256 tokenId)
+    function purchase(address token_contract_,uint256 tokenId,CurrenciesERC20.CurrencyERC20 currency_, uint256 weiPrice_)
     external marketplaceSetted(token_contract_) tokenOwnerForbidden(tokenId,token_contract_) payable {
        
         Marketplace storage metainfo = Marketplaces[token_contract_];
@@ -259,15 +261,17 @@ contract MetaMarketplace {
         if (token.getApproved(tokenId) != address(this)) {
             delete (metainfo.activeSellOffers[tokenId]);
             // Broadcast offer withdrawal
-            emit SellOfferWithdrawn(tokenId, seller);
+            emit SellOfferWithdrawn(token_contract_,tokenId, seller);
             // Revert
             revert("Invalid sell offer");
         }
 
-        // TODO: change work from ETH to currencyERC20
-        require(msg.value >= metainfo.activeSellOffers[tokenId].minPrice,
+        IERC20 _currency_token = _currency_contract.get_hardcoded_currency(currency_); // get currency token
+        uint256 approved_balance = _currency_token.allowance(msg.sender, address(this));
+        require(weiPrice_ >= metainfo.activeSellOffers[tokenId].minPrice[currency_],     // TODO: idk if it will work properly with USDT however. need to implement price calculation algo from tokensale_singleton contract
             "Amount sent too low");
-        uint256 saleValue = msg.value;
+        require(approved_balance >= weiPrice_, "Approved amount is lesser then weiPrice");
+        uint256 saleValue = weiPrice_;
         // Pay royalties if applicable
         /*
         if (_checkRoyalties(_tokenContractAddress)) {
@@ -275,10 +279,11 @@ contract MetaMarketplace {
         }
         */
 
-        // Transfer funds to the seller
-        // TODO: change work from ETH to currencyERC20
-        metainfo.activeSellOffers[tokenId].seller.call{value: saleValue}('');
-        // And token to the buyer
+        // Transfer funds (ERC20) to the seller
+        address seller_address = metainfo.activeSellOffers[tokenId].seller;
+        require(_currency_token.transferFrom(msg.sender, address(this), saleValue), "MetaMarketplace: ERC20: transferFrom buyer to metamarketplace contract failed ");  // TODO: probably we need to send payment directly to a seller + comission fee
+
+        // And nft_token to the buyer
         token.safeTransferFrom(
             seller,
             msg.sender,
@@ -288,11 +293,14 @@ contract MetaMarketplace {
         delete (metainfo.activeSellOffers[tokenId]);
         delete (metainfo.activeBuyOffers[tokenId]);
         // Broadcast the sale
-        emit Sale(tokenId,
+        emit Sale( token_contract_,
+            tokenId,
             seller,
             msg.sender,
             msg.value);
     }
+
+
 
     /*
     /// @notice Makes a buy offer for a token. The token does not need to have
