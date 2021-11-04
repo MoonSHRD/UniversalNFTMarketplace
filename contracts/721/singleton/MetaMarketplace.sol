@@ -124,13 +124,19 @@ contract MetaMarketplace {
     }
 
     // TODO: check this and probably add marketplaceSetted check
-    modifier tokenOwnerOnly(uint256 tokenId, address token_contract) {
-       IERC721 token = IERC721(token_contract);
+    modifier tokenOwnerOnly(uint256 tokenId, address token_contract_) {
+       IERC721 token = IERC721(token_contract_);
         require(token.ownerOf(tokenId) == msg.sender,
             "Not token owner");
         _;
     }
 
+    modifier tokenOwnerForbidden(uint256 tokenId,address token_contract_) {
+        IERC721 token = IERC721(token_contract_);
+        require(token.ownerOf(tokenId) != msg.sender,
+            "Token owner not allowed");
+        _;
+    }
 
 
     function SetUpMarketplace(address nft_token_, NftType standard_) public {
@@ -233,12 +239,15 @@ contract MetaMarketplace {
         emit RoyaltiesPaid(tokenId, royaltiesAmount);
         return netSaleValue;
     }
+    */
 
     /// @notice Purchases a token and transfers royalties if applicable
     /// @param tokenId - id of the token to sell
-    function purchase(uint256 tokenId)
-    external tokenOwnerForbidden(tokenId) payable {
-        address seller = activeSellOffers[tokenId].seller;
+    function purchase(address token_contract_,uint256 tokenId)
+    external marketplaceSetted(token_contract_) tokenOwnerForbidden(tokenId,token_contract_) payable {
+       
+        Marketplace storage metainfo = Marketplaces[token_contract_];
+        address seller = metainfo.activeSellOffers[tokenId].seller;
 
         require(seller != address(0),
             "No active sell offer");
@@ -246,23 +255,29 @@ contract MetaMarketplace {
         // If, for some reason, the token is not approved anymore (transfer or
         // sale on another market place for instance), we remove the sell order
         // and throw
+        IERC721 token = IERC721(token_contract_);
         if (token.getApproved(tokenId) != address(this)) {
-            delete (activeSellOffers[tokenId]);
+            delete (metainfo.activeSellOffers[tokenId]);
             // Broadcast offer withdrawal
             emit SellOfferWithdrawn(tokenId, seller);
             // Revert
             revert("Invalid sell offer");
         }
 
-        require(msg.value >= activeSellOffers[tokenId].minPrice,
+        // TODO: change work from ETH to currencyERC20
+        require(msg.value >= metainfo.activeSellOffers[tokenId].minPrice,
             "Amount sent too low");
         uint256 saleValue = msg.value;
         // Pay royalties if applicable
+        /*
         if (_checkRoyalties(_tokenContractAddress)) {
             saleValue = _deduceRoyalties(tokenId, saleValue);
         }
+        */
+
         // Transfer funds to the seller
-        activeSellOffers[tokenId].seller.call{value: saleValue}('');
+        // TODO: change work from ETH to currencyERC20
+        metainfo.activeSellOffers[tokenId].seller.call{value: saleValue}('');
         // And token to the buyer
         token.safeTransferFrom(
             seller,
@@ -270,8 +285,8 @@ contract MetaMarketplace {
             tokenId
         );
         // Remove all sell and buy offers
-        delete (activeSellOffers[tokenId]);
-        delete (activeBuyOffers[tokenId]);
+        delete (metainfo.activeSellOffers[tokenId]);
+        delete (metainfo.activeBuyOffers[tokenId]);
         // Broadcast the sale
         emit Sale(tokenId,
             seller,
@@ -279,7 +294,7 @@ contract MetaMarketplace {
             msg.value);
     }
 
-
+    /*
     /// @notice Makes a buy offer for a token. The token does not need to have
     ///         been put up for sale. A buy offer can not be withdrawn or
     ///         replaced for 24 hours. Amount of the offer is put in escrow
@@ -374,11 +389,7 @@ contract MetaMarketplace {
     }
 
   
-    modifier tokenOwnerForbidden(uint256 tokenId) {
-        require(token.ownerOf(tokenId) != msg.sender,
-            "Token owner not allowed");
-        _;
-    }
+
 
  
 
