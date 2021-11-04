@@ -27,7 +27,6 @@ contract MetaMarketplace {
     struct SellOffer {
         address seller;
         mapping(CurrenciesERC20.CurrencyERC20 => uint256) minPrice;
-       // CurrenciesERC20.CurrencyERC20 _currency;
     }
 
     struct BuyOffer {
@@ -35,7 +34,6 @@ contract MetaMarketplace {
         mapping(CurrenciesERC20.CurrencyERC20 => uint256) price; 
         //uint256 price;
         uint256 createTime;
-       // CurrenciesERC20.CurrencyERC20 _currency;
     }
 
     // MSNFT, 721Enumerable, URIStorage, 721Metadata, erc721(common)
@@ -46,8 +44,6 @@ contract MetaMarketplace {
         mapping(uint256 => SellOffer) activeSellOffers;
         // Store all active buy offers and maps them to their respective token ids
         mapping(uint256 => BuyOffer) activeBuyOffers;
-        // Token contract
-        // Token token;
         // Escrow for buy offers
         mapping(address => mapping(uint256 => uint256)) buyOffersEscrow;
        
@@ -246,7 +242,7 @@ contract MetaMarketplace {
     /// @notice Purchases a token and transfers royalties if applicable
     /// @param tokenId - id of the token to sell
     function purchase(address token_contract_,uint256 tokenId,CurrenciesERC20.CurrencyERC20 currency_, uint256 weiPrice_)
-    external marketplaceSetted(token_contract_) tokenOwnerForbidden(tokenId,token_contract_) payable {
+    external marketplaceSetted(token_contract_) tokenOwnerForbidden(tokenId,token_contract_) {
        
         Marketplace storage metainfo = Marketplaces[token_contract_];
         address seller = metainfo.activeSellOffers[tokenId].seller;
@@ -297,17 +293,18 @@ contract MetaMarketplace {
             tokenId,
             seller,
             msg.sender,
-            msg.value);
+            saleValue);
     }
 
 
 
-    /*
-    /// @notice Makes a buy offer for a token. The token does not need to have
-    ///         been put up for sale. A buy offer can not be withdrawn or
-    ///         replaced for 24 hours. Amount of the offer is put in escrow
-    ///         until the offer is withdrawn or superceded
-    /// @param tokenId - id of the token to buy
+    /**
+    * @notice Makes a buy offer for a token. The token does not need to have
+    *         been put up for sale. A buy offer can not be withdrawn or
+    *         replaced for 24 hours. Amount of the offer is put in escrow
+    *         until the offer is withdrawn or superceded
+    * @param tokenId - id of the token to buy
+    */
     function makeBuyOffer(uint256 tokenId)
     external tokenOwnerForbidden(tokenId)
     payable {
@@ -341,6 +338,7 @@ contract MetaMarketplace {
         emit NewBuyOffer(tokenId, msg.sender, msg.value);
     }
 
+    /*
     /// @notice Withdraws a buy offer. Can only be withdrawn a day after being
     ///         posted
     /// @param tokenId - id of the token whose buy order to remove
