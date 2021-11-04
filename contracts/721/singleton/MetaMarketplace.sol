@@ -90,7 +90,7 @@ contract MetaMarketplace {
     // Events
     event NewSellOffer(address nft_contract_, uint256 tokenId, address seller, uint256 value);
     event NewBuyOffer(uint256 tokenId, address buyer, uint256 value);
-    event SellOfferWithdrawn(uint256 tokenId, address seller);
+    event SellOfferWithdrawn(address nft_contract_, uint256 tokenId, address seller);
     event BuyOfferWithdrawn(uint256 tokenId, address buyer);
    // event RoyaltiesPaid(uint256 tokenId, uint value);
     event Sale(uint256 tokenId, address seller, address buyer, uint256 value);
@@ -192,22 +192,27 @@ contract MetaMarketplace {
 
 
 
-    /*
-    /// @notice Withdraw a sell offer
-    /// @param tokenId - id of the token whose sell order needs to be cancelled
-    function withdrawSellOffer(uint256 tokenId)
-    external isMarketable(tokenId)
+    /**
+    * @notice Withdraw a sell offer
+    * @param tokenId - id of the token whose sell order needs to be cancelled
+    * @param token_contract_ - address of nft contract
+    */
+    function withdrawSellOffer(address token_contract_,uint256 tokenId)
+    external marketplaceSetted(token_contract_) isMarketable(tokenId, token_contract_)
     {
-        require(activeSellOffers[tokenId].seller != address(0),
+        Marketplace storage metainfo = Marketplaces[token_contract_];
+        require(metainfo.activeSellOffers[tokenId].seller != address(0),
             "No sale offer");
-        require(activeSellOffers[tokenId].seller == msg.sender,
+        require(metainfo.activeSellOffers[tokenId].seller == msg.sender,
             "Not seller");
         // Removes the current sell offer
-        delete (activeSellOffers[tokenId]);
+        delete (metainfo.activeSellOffers[tokenId]);
         // Broadcast offer withdrawal
-        emit SellOfferWithdrawn(tokenId, msg.sender);
+        emit SellOfferWithdrawn(token_contract_,tokenId, msg.sender);
     }
 
+
+    /*
     /// @notice Transfers royalties to the rightsowner if applicable
     /// @param tokenId - the NFT assed queried for royalties
     /// @param grossSaleValue - the price at which the asset will be sold
