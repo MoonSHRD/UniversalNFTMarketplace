@@ -64,10 +64,10 @@ contract MetaMarketplace {
 
 
     //Hardcode interface_id's
-    bytes4 private constant _INTERFACE_ID_MSNFT;
-    bytes4 private constant _INTERFACE_ID_ERC721ENUMERABLE;
-    bytes4 private constant _INTERFACE_ID_ERC721METADATA = 0x5b5e139f;
-    bytes4 private constant _INTERFACE_ID_ERC721;
+  //  bytes4 private constant _INTERFACE_ID_MSNFT;
+  //  bytes4 private constant _INTERFACE_ID_ERC721ENUMERABLE;
+  //  bytes4 private constant _INTERFACE_ID_ERC721METADATA = 0x5b5e139f;
+  //  bytes4 private constant _INTERFACE_ID_ERC721;
     
 
 
@@ -112,21 +112,21 @@ contract MetaMarketplace {
         metainfo.initialized = true;
     }
 
-
+    /*
     function _checkStandard(address contract_, NftType standard_) internal returns (bool) {
 
         
         if(standard_ == NftType.MoonShard) {
            // MSNFT token = MSNFT(contract_);
            // if(token.symbol() == "MSNFT") {}
-           /*
-            (bool success) = MSNFT(contract_).
-            supportsInterface(IERC721Enumerable);
-            return success;
-            */
+           
+           // (bool success) = MSNFT(contract_).
+           // supportsInterface(IERC721Enumerable);
+           // return success;
+            
 
-            MSNFT token = MSNFT(contract_);
-            require(token.supportsInterface(interfaceId));
+          //  MSNFT token = MSNFT(contract_);
+          //  require(token.supportsInterface(interfaceId));
             
 
 
@@ -138,22 +138,19 @@ contract MetaMarketplace {
            // MSNFT token = MSNFT(contract_);
            // if(token.symbol() == "MSNFT") {}
 
-            /*  TODO: check if contract address support interface
-            (bool success) = MSNFT(contract_).
-            supportsInterface(IERC721Enumerable);
-            return success;
-            */
+            //  TODO: check if contract address support interface
+          //  (bool success) = MSNFT(contract_).
+          //  supportsInterface(IERC721Enumerable);
+          //  return success;
+            
             
 
             
 
 
         }
-
-
-
-
     }
+    */
 
 
 

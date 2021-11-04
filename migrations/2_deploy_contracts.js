@@ -5,6 +5,7 @@ var Master = artifacts.require("./721/singleton/MSNFT.sol");
 // var limitGas = web3.eth.getBlock("latest").gasLimit;
 var SVC = artifacts.require("./SVC.sol");
 
+var InterfaceR = artifacts.require("./721/singleton/InterfaceRegister.sol");
 
 // CurrencyERC20 contract
 var Currencies = artifacts.require("./721/singleton/CurrenciesERC20.sol");
@@ -15,6 +16,10 @@ var USDC = artifacts.require("./test_erc20_tokens/USDC.sol");
 var DAI = artifacts.require("./test_erc20_tokens/DAI.sol");
 var WETH = artifacts.require("./test_erc20_tokens/WETH.sol");
 var MST = artifacts.require("./test_erc20_tokens/MST.sol");
+
+
+
+
 
 
 //  Ropsten addresses
@@ -138,8 +143,18 @@ module.exports = function(deployer, network, accounts) {
   console.log(fa);
   return;
   }).then(async () => {
-  return;
-  });
+  
+  return deployer.deploy(InterfaceR, {gasPrice: wei_gas_price, from:accounts[0]});
+  }).then(async () => {
+    InterfaceInstance = await InterfaceR.deployed();
+    intId = await InterfaceInstance.getInterfaceMetadata();
+    console.log("Interface Id for ERC721 Metadata: ");
+    console.log(intId);
+    intID_calc = await InterfaceInstance.calculateIERC721Metadata();
+    console.log("Interface If for ERC721 metadata calculated:");
+    console.log(intID_calc);
+    return;
+    });
   
   } // end of development network migration
   
