@@ -392,13 +392,16 @@ contract MetaMarketplace {
 
 
     
+
     /** @notice Lets a token owner accept the current buy offer
     *         (even without a sell offer)
     * @param tokenId - id of the token whose buy order to accept
     */
-    function acceptBuyOffer(uint256 tokenId)
-    external isMarketable(tokenId) tokenOwnerOnly(tokenId) {
-        address currentBuyer = activeBuyOffers[tokenId].buyer;
+    /*
+    function acceptBuyOffer(address token_contract_, uint256 tokenId)
+    external marketplaceSetted(token_contract_)  isMarketable(tokenId) tokenOwnerOnly(tokenId) {
+        Marketplace storage metainfo = Marketplaces[token_contract_];
+        address currentBuyer = metainfo.activeBuyOffers[tokenId].buyer;
         require(currentBuyer != address(0),
             "No buy offer");
         uint256 saleValue = activeBuyOffers[tokenId].price;
@@ -427,8 +430,8 @@ contract MetaMarketplace {
             currentBuyer,
             saleValue);
     }
-
-  
+    */
+    
 
 
  
