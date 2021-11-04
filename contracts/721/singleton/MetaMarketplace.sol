@@ -31,8 +31,7 @@ contract MetaMarketplace {
 
     struct BuyOffer {
         address buyer;
-        mapping(CurrenciesERC20.CurrencyERC20 => uint256) price; 
-        //uint256 price;
+        uint256 price; 
         uint256 createTime;
     }
 
@@ -43,7 +42,7 @@ contract MetaMarketplace {
         // Store all active sell offers  and maps them to their respective token ids
         mapping(uint256 => SellOffer) activeSellOffers;
         // Store all active buy offers and maps them to their respective token ids
-        mapping(uint256 => BuyOffer) activeBuyOffers;
+        mapping(uint256 => mapping(CurrenciesERC20.CurrencyERC20 => BuyOffer)) activeBuyOffers;
         // Escrow for buy offers
         mapping(address => mapping(uint256 => mapping(CurrenciesERC20.CurrencyERC20=>uint256))) buyOffersEscrow;
        
@@ -139,10 +138,10 @@ contract MetaMarketplace {
     }
 
 
-    modifier lastBuyOfferExpired(uint256 tokenId,address token_contract_) {
+    modifier lastBuyOfferExpired(uint256 tokenId,address token_contract_,CurrenciesERC20.CurrencyERC20 currency_) {
        Marketplace storage metainfo = Marketplaces[token_contract_];
         require(
-            metainfo.activeBuyOffers[tokenId].createTime < (block.timestamp - 1 days),
+            metainfo.activeBuyOffers[tokenId][currency_].createTime < (block.timestamp - 1 days),
             "Buy offer not expired");
         _;
     }
@@ -214,7 +213,7 @@ contract MetaMarketplace {
     * @param token_contract_ - address of nft contract
     * TODO: are we want to withdraw offer at all, or we want to withdraw offer in specific currency (?)
     */
-    function withdrawSellOffer(address token_contract_,uint256 tokenId)
+    function withdrawSellOffer(address token_contract_,uint256 tokenId,CurrenciesERC20.CurrencyERC20 currency_)
     external marketplaceSetted(token_contract_) isMarketable(tokenId, token_contract_)
     {
         Marketplace storage metainfo = Marketplaces[token_contract_];
@@ -302,7 +301,7 @@ contract MetaMarketplace {
         );
         // Remove all sell and buy offers
         delete (metainfo.activeSellOffers[tokenId]);
-        delete (metainfo.activeBuyOffers[tokenId]);
+        delete (metainfo.activeBuyOffers[tokenId][currency_]);
         // Broadcast the sale
         emit Sale( token_contract_,
             tokenId,
@@ -338,9 +337,9 @@ contract MetaMarketplace {
         }
         // Only process the offer if it is higher than the previous one or the
         // previous one has expired
-        require(metainfo.activeBuyOffers[tokenId].createTime <
+        require(metainfo.activeBuyOffers[tokenId][currency_].createTime <
                 (block.timestamp - 1 days) || weiPrice_ >
-                metainfo.activeBuyOffers[tokenId].price[currency_],
+                metainfo.activeBuyOffers[tokenId][currency_].price,
                 "Previous buy offer higher or not expired");
 
                 // TODO: we don't lock funds, we only check approve, so there are no need to escrow funds, transferFrom, refund, etc.. We can remove all of next 
@@ -356,9 +355,9 @@ contract MetaMarketplace {
 
         
         // Create a new buy offer
-        metainfo.activeBuyOffers[tokenId].buyer = msg.sender;
-        metainfo.activeBuyOffers[tokenId].price[currency_] = weiPrice_;
-        metainfo.activeBuyOffers[tokenId].createTime = block.timestamp;
+        metainfo.activeBuyOffers[tokenId][currency_].buyer = msg.sender;
+        metainfo.activeBuyOffers[tokenId][currency_].price = weiPrice_;
+        metainfo.activeBuyOffers[tokenId][currency_].createTime = block.timestamp;
 
 
         // Create record of funds deposited for this offer
@@ -372,16 +371,16 @@ contract MetaMarketplace {
     * @param tokenId - id of the token whose buy order to remove
     */
     function withdrawBuyOffer(address token_contract_,uint256 tokenId,CurrenciesERC20.CurrencyERC20 currency_)
-    external marketplaceSetted(token_contract_) lastBuyOfferExpired(tokenId,token_contract_) {
+    external marketplaceSetted(token_contract_) lastBuyOfferExpired(tokenId,token_contract_,currency_) {
         
         Marketplace storage metainfo = Marketplaces[token_contract_];
-        require(metainfo.activeBuyOffers[tokenId].buyer == msg.sender,
+        require(metainfo.activeBuyOffers[tokenId][currency_].buyer == msg.sender,
             "Not buyer");
       //  uint256 refundBuyOfferAmount = metainfo.buyOffersEscrow[msg.sender][tokenId][currency_];
         // Set the buyer balance to 0 before refund
       //  metainfo.buyOffersEscrow[msg.sender][tokenId][currency_] = 0;
         // Remove the current buy offer
-        delete(metainfo.activeBuyOffers[tokenId]);
+        delete(metainfo.activeBuyOffers[tokenId][currency_]);
         // Refund the current buy offer if it is non-zero
      //   if (refundBuyOfferAmount > 0) {
      //       msg.sender.call{value: refundBuyOfferAmount}('');
