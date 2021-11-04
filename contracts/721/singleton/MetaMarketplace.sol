@@ -396,46 +396,56 @@ contract MetaMarketplace {
     *         (even without a sell offer)
     * @param tokenId - id of the token whose buy order to accept
     */
-    /*
-    function acceptBuyOffer(address token_contract_, uint256 tokenId)
-    external marketplaceSetted(token_contract_)  isMarketable(tokenId) tokenOwnerOnly(tokenId) {
+    function acceptBuyOffer(address token_contract_, uint256 tokenId,CurrenciesERC20.CurrencyERC20 currency_ )
+    external marketplaceSetted(token_contract_)  isMarketable(tokenId,token_contract_) tokenOwnerOnly(tokenId,token_contract_) {
         Marketplace storage metainfo = Marketplaces[token_contract_];
-        address currentBuyer = metainfo.activeBuyOffers[tokenId].buyer;
+        address currentBuyer = metainfo.activeBuyOffers[tokenId][currency_].buyer;
         require(currentBuyer != address(0),
             "No buy offer");
-        uint256 saleValue = activeBuyOffers[tokenId].price;
+        uint256 saleValue = metainfo.activeBuyOffers[tokenId][currency_].price;
         uint256 netSaleValue = saleValue;
         // Pay royalties if applicable
+        /*
         if (_checkRoyalties(_tokenContractAddress)) {
             netSaleValue = _deduceRoyalties(tokenId, saleValue);
         }
+        */
         // Delete the current sell offer whether it exists or not
-        delete (activeSellOffers[tokenId]);
+        delete (metainfo.activeSellOffers[tokenId]);
         // Delete the buy offer that was accepted
-        delete (activeBuyOffers[tokenId]);
+        delete (metainfo.activeBuyOffers[tokenId][currency_]);
         // Withdraw buyer's balance
-        buyOffersEscrow[currentBuyer][tokenId] = 0;
+      //  buyOffersEscrow[currentBuyer][tokenId] = 0;
+
+
+
         // Transfer funds to the seller
-        msg.sender.call{value: netSaleValue}('');
+      //  msg.sender.call{value: netSaleValue}('');
+        IERC20 _currency_token = _currency_contract.get_hardcoded_currency(currency_);
+        uint256 approved_balance = _currency_token.allowance(currentBuyer, address(this));
+        if(approved_balance < netSaleValue) {
+            delete metainfo.activeBuyOffers[tokenId][currency_];
+            revert("Bad buy offer");
+        }
+        require(_currency_token.transferFrom(msg.sender, address(this), saleValue), "MetaMarketplace: ERC20: transferFrom buyer to metamarketplace contract failed, probably buyer moved it's fund somewhere else ");
+        // TODO: add calculate fee and forward funds
+
+
         // And token to the buyer
+        IERC721 token = IERC721(token_contract_);
         token.safeTransferFrom(
             msg.sender,
             currentBuyer,
             tokenId
         );
+    
         // Broadcast the sale
-        emit Sale(tokenId,
+        emit Sale( token_contract_,
+            tokenId,
             msg.sender,
             currentBuyer,
             saleValue);
     }
-    */
-    
-
-
- 
-
-   
     
 
 
