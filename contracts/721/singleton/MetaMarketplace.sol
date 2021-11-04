@@ -146,15 +146,7 @@ contract MetaMarketplace {
 
 
      /*
-    /// @notice Checks if NFT contract implements the ERC-2981 interface
-    /// @param _contract - the address of the NFT contract to query
-    /// @return true if ERC-2981 interface is supported, false otherwise
-    function _checkRoyalties(address _contract) internal returns (bool) {
-        (bool success) = IERC2981(_contract).
-        supportsInterface(_INTERFACE_ID_ERC2981);
-        return success;
-    }
-
+    
     /// @notice Puts a token on sale at a given price
     /// @param tokenId - id of the token to sell
     /// @param minPrice - minimum price at which the token can be sold

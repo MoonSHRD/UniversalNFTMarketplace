@@ -131,9 +131,6 @@ contract MSNFT is ERC721Enumerable, Ownable {
    */
     struct ItemInfo 
     {
-    // TODO: is this really nececcary to write it as string?
-    // this is link to IPFS 
-    // @todo: *WARNING -- should be unique!!*
     string ipfs_link;
 
     // TODO: rework this for searching functionality (case when user seacrh nft item at marketplace by name (or ticker?))

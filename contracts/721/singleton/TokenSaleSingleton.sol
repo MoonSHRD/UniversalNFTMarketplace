@@ -255,35 +255,6 @@ contract TokenSaleSingleton is Context, ReentrancyGuard {
         }
     }
 
-    // BUY TOKENS FOR ETHER/COIN (DEPRECATED)
-    /**
-     * @dev low level token purchase ***DO NOT OVERRIDE***
-     * This function has a non-reentrancy guard, so it shouldn't be called by
-     * another `nonReentrant` function.
-     * @param beneficiary Recipient of the token purchase
-     
-    function buyTokens(address beneficiary) public nonReentrant payable {
-        uint256 weiAmount = msg.value;
-
-        // calculate token amount to be created
-        uint256 tokens = _getTokenAmount(weiAmount);
-
-        _preValidatePurchase(beneficiary, weiAmount, tokens);
-
-        // update state
-        _weiRaised = _weiRaised.add(weiAmount);
-        _sold_count = _sold_count.add(tokens);
-
-        _processPurchase(beneficiary, tokens);
-        emit TokensPurchased(_msgSender(), beneficiary, weiAmount, tokens);
-
-        _updatePurchasingState(beneficiary, weiAmount);
-
-     //   _forwardFunds();
-         _lockFunds();
-        _postValidatePurchase(beneficiary, weiAmount);
-    }
-    **/
 
      /**
      *      @dev Main function to buyTokens
@@ -310,9 +281,6 @@ contract TokenSaleSingleton is Context, ReentrancyGuard {
         emit TokensPurchased(_msgSender(), beneficiary, weiAmount, tokens);
 
      //   _updatePurchasingState(beneficiary, weiAmount); // can be silenced as well
-
-    
-    
        // _postValidatePurchase(beneficiary, weiAmount);
     }
 
