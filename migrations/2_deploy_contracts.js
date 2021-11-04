@@ -6,6 +6,7 @@ var Master = artifacts.require("./721/singleton/MSNFT.sol");
 var SVC = artifacts.require("./SVC.sol");
 
 var InterfaceR = artifacts.require("./721/singleton/InterfaceRegister.sol");
+var MetaMarket = artifacts.require("./721/singleton/MetaMarketplace.sol");
 
 // CurrencyERC20 contract
 var Currencies = artifacts.require("./721/singleton/CurrenciesERC20.sol");
@@ -147,14 +148,21 @@ module.exports = function(deployer, network, accounts) {
   return deployer.deploy(InterfaceR, {gasPrice: wei_gas_price, from:accounts[0]});
   }).then(async () => {
     InterfaceInstance = await InterfaceR.deployed();
-    intId = await InterfaceInstance.getInterfaceMetadata();
-    console.log("Interface Id for ERC721 Metadata: ");
+    intId = await InterfaceInstance.getInterface721();
+    console.log("Interface Id for ERC721: ");
     console.log(intId);
-    intID_calc = await InterfaceInstance.calculateIERC721Metadata();
-    console.log("Interface If for ERC721 metadata calculated:");
+    intID_calc = await InterfaceInstance.calculateIERC721();
+    console.log("Interface If for ERC721 calculated:");
     console.log(intID_calc);
     return;
-    });
+    }).then(async () => {
+  
+      return deployer.deploy(MetaMarket,Currencies.address,Master.address, {gasPrice: wei_gas_price, from:accounts[0]});
+      }).then(async () => {
+        MetaMarketInstance = await MetaMarket.deployed();
+        console.log("MetaMarket address:");
+        console.log(MetaMarketInstance.address);
+      });
   
   } // end of development network migration
   

@@ -147,7 +147,12 @@ contract MSNFT is ERC721Enumerable, Ownable {
 
     }
 
-    constructor(string memory name_, string memory smbl_) ERC721(name_,smbl_) ERC721Enumerable() {}
+    bytes4 private _INTERFACE_ID_IERC721ENUMERABLE = 0x780e9d63;
+
+
+    constructor(string memory name_, string memory smbl_) ERC721(name_,smbl_) ERC721Enumerable() {
+       // ERC721Enumerable._registerInterface(_INTERFACE_ID_IERC721ENUMERABLE);
+    }
 
     // @todo should be changed visibility to external?
     /**
@@ -447,12 +452,14 @@ contract MSNFT is ERC721Enumerable, Ownable {
     }
 
 
-     ///  Informs callers that this contract supports ERC2981
+     ///  Informs callers that this contract supports IERC721Enumerable
     function supportsInterface(bytes4 interfaceId)
     public view override(ERC721Enumerable)
     returns (bool) {
        // return interfaceId == type(IERC2981).interfaceId ||
-        return super.supportsInterface(interfaceId);
+       // return interfaceId == super.supportsInterface(interfaceId);
+       return interfaceId == type(IERC721Enumerable).interfaceId ||
+       super.supportsInterface(interfaceId);
     }
 
 

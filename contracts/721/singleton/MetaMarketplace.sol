@@ -64,10 +64,10 @@ contract MetaMarketplace {
 
 
     //Hardcode interface_id's
-  //  bytes4 private constant _INTERFACE_ID_MSNFT;
-  //  bytes4 private constant _INTERFACE_ID_ERC721ENUMERABLE;
-  //  bytes4 private constant _INTERFACE_ID_ERC721METADATA = 0x5b5e139f;
-  //  bytes4 private constant _INTERFACE_ID_ERC721;
+    bytes4 private constant _INTERFACE_ID_MSNFT = 0x780e9d63;
+    bytes4 private constant _INTERFACE_ID_IERC721ENUMERABLE = 0x780e9d63;
+    bytes4 private constant _INTERFACE_ID_IERC721METADATA = 0x5b5e139f;
+    bytes4 private constant _INTERFACE_ID_IERC721= 0x7aa5391d;      // WRONG
     
 
 
@@ -96,10 +96,12 @@ contract MetaMarketplace {
     event Sale(uint256 tokenId, address seller, address buyer, uint256 value);
     
 
-    constructor(address currency_contract_) {
+    constructor(address currency_contract_, address msnft_token_) {
         //_tokenContractAddress = tokenContractAddress;
        // token = Token(_tokenContractAddress);
         _currency_contract = CurrenciesERC20(currency_contract_);
+        require(_checkStandard(msnft_token_, NftType.MoonShard), "Standard not supported");
+        SetUpMarketplace(msnft_token_, NftType.MoonShard);
     }
 
 
@@ -112,45 +114,33 @@ contract MetaMarketplace {
         metainfo.initialized = true;
     }
 
-    /*
-    function _checkStandard(address contract_, NftType standard_) internal returns (bool) {
+    
+    function _checkStandard(address contract_, NftType standard_) internal view returns (bool) {
 
         
         if(standard_ == NftType.MoonShard) {
            // MSNFT token = MSNFT(contract_);
            // if(token.symbol() == "MSNFT") {}
-           
-           // (bool success) = MSNFT(contract_).
-           // supportsInterface(IERC721Enumerable);
-           // return success;
-            
-
-          //  MSNFT token = MSNFT(contract_);
-          //  require(token.supportsInterface(interfaceId));
-            
-
-
-
+            (bool success) = MSNFT(contract_).
+            supportsInterface(_INTERFACE_ID_IERC721ENUMERABLE);
+            return success;
         }
-        
-
-         if(standard_ == NftType.Common) {
-           // MSNFT token = MSNFT(contract_);
-           // if(token.symbol() == "MSNFT") {}
-
-            //  TODO: check if contract address support interface
-          //  (bool success) = MSNFT(contract_).
-          //  supportsInterface(IERC721Enumerable);
-          //  return success;
-            
-            
-
-            
-
-
+         if(standard_ == NftType.Enum) {
+            (bool success) = IERC721Enumerable(contract_).
+            supportsInterface(_INTERFACE_ID_IERC721ENUMERABLE);
+            return success;
+        }
+        if (standard_ == NftType.Meta) {
+            (bool success) = IERC721Metadata(contract_).
+            supportsInterface(_INTERFACE_ID_IERC721METADATA);
+            return success;
+        }
+        if (standard_ == NftType.Common) {
+            return false;
+            //revert("");
         }
     }
-    */
+    
 
 
 
