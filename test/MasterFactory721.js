@@ -454,9 +454,6 @@ contract('MasterFactory721', accounts => {
         assert(checkCreatorBalance.toString() == destroyReceipt.logs[0].args.transfered_amount.toString());
         assert(feeAddressBalance.toString() == destroyReceipt.logs[0].args.fees.toString());
         assert(contractAddressBalance.toString() == '0');
-        // let contractTokenBalanceAfterWithdrawal = await weth.balanceOf(saletemplate, {from: admin});
-
-        // console.log(contractTokenBalanceAfterWithdrawal.toString());
 
         /* this test get info about nft's created by author, we need to test getting boughted items by user, we need to rework this test
         const userNfts =  await nft.getMasterIdByAddress(admin);
