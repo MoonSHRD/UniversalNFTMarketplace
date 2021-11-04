@@ -88,7 +88,7 @@ contract MetaMarketplace {
     //mapping(address => mapping(uint256 => uint256)) public buyOffersEscrow;
 
     // Events
-    event NewSellOffer(uint256 tokenId, address seller, uint256 value);
+    event NewSellOffer(address nft_contract_, uint256 tokenId, address seller, uint256 value);
     event NewBuyOffer(uint256 tokenId, address buyer, uint256 value);
     event SellOfferWithdrawn(uint256 tokenId, address seller);
     event BuyOfferWithdrawn(uint256 tokenId, address buyer);
@@ -97,12 +97,40 @@ contract MetaMarketplace {
     
 
     constructor(address currency_contract_, address msnft_token_) {
-        //_tokenContractAddress = tokenContractAddress;
-       // token = Token(_tokenContractAddress);
         _currency_contract = CurrenciesERC20(currency_contract_);
         require(_checkStandard(msnft_token_, NftType.MoonShard), "Standard not supported");
         SetUpMarketplace(msnft_token_, NftType.MoonShard);
     }
+
+
+    modifier marketplaceSetted(address mplace_) {
+        require(Marketplaces[mplace_].initialized == true,
+            "Marketplace for this token is not setup yet!");
+        _; 
+    }
+
+    modifier isMarketable(uint256 tokenId, address token_contract_) {
+     //   Marketplace storage metainfo = Marketplaces[token_contract_];
+       // NftType standard_ = metainfo.nft_standard;
+      //  if (standard_ == )
+        require(Marketplaces[token_contract_].initialized == true,
+            "Marketplace for this token is not setup yet!");
+        IERC721Enumerable token = IERC721Enumerable(token_contract_);
+       // metainfo.nft_standard = standard_;
+
+        require(token.getApproved(tokenId) == address(this),
+            "Not approved");
+        _;
+    }
+
+    // TODO: check this and probably add marketplaceSetted check
+    modifier tokenOwnerOnly(uint256 tokenId, address token_contract) {
+       IERC721 token = IERC721(token_contract);
+        require(token.ownerOf(tokenId) == msg.sender,
+            "Not token owner");
+        _;
+    }
+
 
 
     function SetUpMarketplace(address nft_token_, NftType standard_) public {
@@ -145,21 +173,26 @@ contract MetaMarketplace {
 
 
 
-     /*
-    
-    /// @notice Puts a token on sale at a given price
-    /// @param tokenId - id of the token to sell
-    /// @param minPrice - minimum price at which the token can be sold
-    function makeSellOffer(uint256 tokenId, uint256 minPrice)
-    external isMarketable(tokenId) tokenOwnerOnly(tokenId)
+     
+    /** 
+    * @notice Puts a token on sale at a given price
+    * @param tokenId - id of the token to sell
+    * @param minPrice - minimum price at which the token can be sold
+    */
+    function makeSellOffer(uint256 tokenId, uint256 minPrice, address token_contract_)
+    external marketplaceSetted(token_contract_) isMarketable(tokenId,token_contract_) tokenOwnerOnly(tokenId,token_contract_) 
     {
+        Marketplace storage metainfo = Marketplaces[token_contract_];
         // Create sell offer
-        activeSellOffers[tokenId] = SellOffer({seller : msg.sender,
+        metainfo.activeSellOffers[tokenId] = SellOffer({seller : msg.sender,
                                                minPrice : minPrice});
         // Broadcast sell offer
-        emit NewSellOffer(tokenId, msg.sender, minPrice);
+        emit NewSellOffer(token_contract_,tokenId, msg.sender, minPrice);
     }
 
+
+
+    /*
     /// @notice Withdraw a sell offer
     /// @param tokenId - id of the token whose sell order needs to be cancelled
     function withdrawSellOffer(uint256 tokenId)
@@ -335,22 +368,14 @@ contract MetaMarketplace {
             saleValue);
     }
 
-    modifier isMarketable(uint256 tokenId) {
-        require(token.getApproved(tokenId) == address(this),
-            "Not approved");
-        _;
-    }
+  
     modifier tokenOwnerForbidden(uint256 tokenId) {
         require(token.ownerOf(tokenId) != msg.sender,
             "Token owner not allowed");
         _;
     }
 
-    modifier tokenOwnerOnly(uint256 tokenId) {
-        require(token.ownerOf(tokenId) == msg.sender,
-            "Not token owner");
-        _;
-    }
+ 
 
     modifier lastBuyOfferExpired(uint256 tokenId) {
         require(

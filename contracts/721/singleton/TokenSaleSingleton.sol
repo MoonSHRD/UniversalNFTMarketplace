@@ -54,15 +54,6 @@ contract TokenSaleSingleton is Context, ReentrancyGuard {
     // service comission fee
     uint public promille_fee = 25;
 
-    // Creation date
-    uint public crDate = block.timestamp;
-
-    // How much time before event start (in seconds)
-    // TODO -- delete this
-    uint public _timeToStart;
-
-    // Funds, that have been locked
-   // uint256 public lockedFunds;
 
     /**
      * Event for token purchase logging
@@ -400,14 +391,6 @@ contract TokenSaleSingleton is Context, ReentrancyGuard {
         require(msg.sender == wallet(master_id_), "only organaizer can do it");
         IERC20Metadata currency_token =  get_currency(currency);
         require(currency_token.balanceOf(address(this)) > 0, "balance for this currency must be greater then zero");
-      /*
-        if (block.timestamp >= crDate - _timeToStart) {
-            _wallet.transfer(lockedFunds);
-            lockedFunds = 0;
-        } else {
-            revert("event is not started yet, funds are locked");
-        }
-        */
         _forwardFunds(currency,master_id_);
     }
 
