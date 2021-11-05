@@ -70,12 +70,7 @@ contract TokenSale721 is Context, ReentrancyGuard {
     // service comission fee
     uint public promille_fee = 25;
 
-    // Creation date
-    uint public crDate = block.timestamp;
 
-    // How much time before event start (in seconds)
-    // TODO -- delete this
-    uint public _timeToStart;
 
     // Funds, that have been locked
     uint256 public lockedFunds;
@@ -147,17 +142,7 @@ contract TokenSale721 is Context, ReentrancyGuard {
     }
 
 
-    // @todo used to buy tokens for ether (deprecated)
-    /**
-     * @dev fallback function ***DO NOT OVERRIDE***
-     * Note that other contracts will transfer funds with a base gas stipend
-     * of 2300, which is not enough to call buyTokens. Consider calling
-     * buyTokens directly when purchasing tokens from a contract.
-     
-    fallback() external payable {
-        buyTokens(_msgSender());
-    }
-    */
+    
 
     /**
      * @return the Master NFT contract.
@@ -359,7 +344,7 @@ contract TokenSale721 is Context, ReentrancyGuard {
     *  @return weiAmount how much we need to pay, could be zero if wrong currency, but will fail at pre-validation
     */
     function getWeiAmount(uint256 tokenAmountToBuy, CurrenciesERC20.CurrencyERC20 currency) public view returns(uint256){
-        uint256 price = get_price(currency);    // @todo: WARNING -- it can be 0 if buyer mismatch currency, but such transaction will fail at pre-validate purchase check!
+        uint256 price = get_price(currency);    
         uint256 weiAmount = price * tokenAmountToBuy; 
         return weiAmount;
     }
@@ -389,14 +374,7 @@ contract TokenSale721 is Context, ReentrancyGuard {
         require(msg.sender == _wallet, "only organaizer can do it");
         IERC20Metadata currency_token =  get_currency(currency);
         require(currency_token.balanceOf(address(this)) > 0, "balance for this currency must be greater then zero");
-      /*
-        if (block.timestamp >= crDate - _timeToStart) {
-            _wallet.transfer(lockedFunds);
-            lockedFunds = 0;
-        } else {
-            revert("event is not started yet, funds are locked");
-        }
-        */
+  
         _forwardFunds(currency);
     }
 
