@@ -157,7 +157,7 @@ module.exports = function(deployer, network, accounts) {
     return;
     }).then(async () => {
   
-      return deployer.deploy(MetaMarket,Currencies.address,Master.address, {gasPrice: wei_gas_price, from:accounts[0]});
+      return deployer.deploy(MetaMarket,Currencies.address,Master.address,accounts[0], {gasPrice: wei_gas_price, from:accounts[0]});
       }).then(async () => {
         MetaMarketInstance = await MetaMarket.deployed();
         console.log("MetaMarket address:");

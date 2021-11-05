@@ -51,7 +51,7 @@ contract MetaMarketplace {
         bool initialized;
     }
 
-    // from nft token address to marketplace
+    // from nft token contract address to marketplace
     mapping(address => Marketplace) public Marketplaces;
 
 
@@ -59,6 +59,9 @@ contract MetaMarketplace {
     CurrenciesERC20 _currency_contract;
 
     uint public promille_fee = 25; // service fee
+
+    // Address where we collect comission
+    address payable public _treasure_fund;
     
     //bytes4 private constant _INTERFACE_ID_ERC2981 = 0x2a55205a;
 
@@ -70,20 +73,6 @@ contract MetaMarketplace {
     bytes4 private constant _INTERFACE_ID_IERC721= 0x7aa5391d;      // WRONG
     
 
-
-
-
-    // Store the address of the contract of the NFT to trade. Can be changed in
-    // constructor or with a call to setTokenContractAddress.
-    //address public _tokenContractAddress = address(0);
-
-    // Store all active sell offers  and maps them to their respective token ids
-    //mapping(uint256 => SellOffer) public activeSellOffers;
-
-    // Store all active buy offers and maps them to their respective token ids
-    //mapping(uint256 => BuyOffer) public activeBuyOffers;
-    // Token contract
-   // Token token;
     // Escrow for buy offers
     //mapping(address => mapping(uint256 => uint256)) public buyOffersEscrow;
 
@@ -92,14 +81,16 @@ contract MetaMarketplace {
     event NewBuyOffer(uint256 tokenId, address buyer, uint256 value);
     event SellOfferWithdrawn(address nft_contract_, uint256 tokenId, address seller);
     event BuyOfferWithdrawn(uint256 tokenId, address buyer);
+    event CalculatedFees(uint256 initial_value, uint256 fees, uint256 transfered_amount, address feeAddress);
    // event RoyaltiesPaid(uint256 tokenId, uint value);
     event Sale(address nft_contract_, uint256 tokenId, address seller, address buyer, uint256 value);
     
 
-    constructor(address currency_contract_, address msnft_token_) {
+    constructor(address currency_contract_, address msnft_token_,address treasure_fund_) {
         _currency_contract = CurrenciesERC20(currency_contract_);
         require(_checkStandard(msnft_token_, NftType.MoonShard), "Standard not supported");
         SetUpMarketplace(msnft_token_, NftType.MoonShard);
+        treasure_fund_ = _treasure_fund;
     }
 
 
@@ -172,7 +163,7 @@ contract MetaMarketplace {
     * @param token_contract_ - address of nft contract
     * TODO: are we want to withdraw offer at all, or we want to withdraw offer in specific currency (?)
     */
-    function withdrawSellOffer(address token_contract_,uint256 tokenId,CurrenciesERC20.CurrencyERC20 currency_)
+    function withdrawSellOffer(address token_contract_,uint256 tokenId)
     external marketplaceSetted(token_contract_) isMarketable(tokenId, token_contract_)
     {
         Marketplace storage metainfo = Marketplaces[token_contract_];
@@ -221,18 +212,47 @@ contract MetaMarketplace {
         uint b = amount % scale;
         uint c = promille_fee / scale;
         uint d = promille_fee % scale;
-
         return a * c * scale + a * d + b * c + (b * d + scale - 1) / scale;
     }
 
-    
+      /**
+     * @dev Determines how ERC20 is stored/forwarded on purchases. Here we take our fee. This function can be tethered to buy tx or can be separate from buy flow.
+     * @notice transferFrom(from_) to this contract and then split payments into treasure_fund fee and send rest of it to_
+     * @param currency_ ERC20 currency. Seller should specify what exactly currency he/she want to out
+     */
+    function _forwardFunds(CurrenciesERC20.CurrencyERC20 currency_, address from_, address to_, uint256 amount) internal returns (bool){
+        IERC20 _currency_token = _currency_contract.get_hardcoded_currency(currency_);
+     
+        // TODO: add approvment check here
+        uint256 approved_balance = _currency_token.allowance(from_, address(this));
+        if(approved_balance < amount) {
+           // delete metainfo.activeBuyOffers[tokenId][currency_];
+           // revert("Bad buy offer");
+           return false;
+        }
+
+
+        uint256 scale = 1000;
+        uint256 fees = calculateFee(amount,scale);
+        uint256 net_amount = amount - fees;
+        require(_currency_token.transferFrom(from_, address(this), amount), "MetaMarketplace: ERC20: transferFrom buyer to metamarketplace contract failed ");
+        // TODO: add decreasing escrow (limit?)
+
+
+        _currency_token.transfer(to_, net_amount);
+        _currency_token.transfer(_treasure_fund, fees);
+        uint256 r = amount + fees;
+        emit CalculatedFees(r,fees,amount,_treasure_fund);
+        return true;
+    }
+
 
 
     /*
     * @notice Purchases a token and transfers royalties if applicable
     * @param tokenId - id of the token to sell
     */
-    function purchase(address token_contract_,uint256 tokenId,CurrenciesERC20.CurrencyERC20 currency_, uint256 weiPrice_)
+    function purchase(address token_contract_,uint256 tokenId,CurrenciesERC20.CurrencyERC20 currency_, uint256 saleValue_)
     external marketplaceSetted(token_contract_) tokenOwnerForbidden(tokenId,token_contract_) {
        
         Marketplace storage metainfo = Marketplaces[token_contract_];
@@ -255,12 +275,11 @@ contract MetaMarketplace {
 
         require(metainfo.activeSellOffers[tokenId].minPrice[currency_] > 0, "price for this currency has not been setted, use makeBuyOffer() instead");
 
-        IERC20 _currency_token = _currency_contract.get_hardcoded_currency(currency_); // get currency token
-        uint256 approved_balance = _currency_token.allowance(msg.sender, address(this));
-        require(weiPrice_ >= metainfo.activeSellOffers[tokenId].minPrice[currency_],     // TODO: idk if it will work properly with USDT however. need to implement price calculation algo from tokensale_singleton contract
+      //  IERC20 _currency_token = _currency_contract.get_hardcoded_currency(currency_); // get currency token
+      //  uint256 approved_balance = _currency_token.allowance(msg.sender, address(this));
+        require(saleValue_ >= metainfo.activeSellOffers[tokenId].minPrice[currency_],     // TODO: idk if it will work properly with USDT however. need to implement price calculation algo from tokensale_singleton contract
             "Amount sent too low");
-        require(approved_balance >= weiPrice_, "Approved amount is lesser then weiPrice");
-        uint256 saleValue = weiPrice_;
+      //  require(approved_balance >= saleValue_, "Approved amount is lesser then weiPrice");
         // Pay royalties if applicable
         /*
         if (_checkRoyalties(_tokenContractAddress)) {
@@ -268,9 +287,18 @@ contract MetaMarketplace {
         }
         */
 
-        // Transfer funds (ERC20) to the seller
         address seller_address = metainfo.activeSellOffers[tokenId].seller;
-        require(_currency_token.transferFrom(msg.sender, address(this), saleValue), "MetaMarketplace: ERC20: transferFrom buyer to metamarketplace contract failed ");  // TODO: probably we need to send payment directly to a seller + comission fee
+
+
+        // Transfer funds (ERC20) to the seller
+        // Tries to forward funds from buyer to seller and distribute fees
+        if(_forwardFunds(currency_,msg.sender,seller_address,saleValue_) == false) {
+           // delete metainfo.activeBuyOffers[tokenId][currency_];
+            revert("Approved amount is lesser than (saleValue_) needed to deal");
+        }
+        
+      //  _forwardFunds(currency_,msg.sender,seller_address,saleValue_);
+
 
         // And nft_token to the buyer
         token.safeTransferFrom(
@@ -286,7 +314,7 @@ contract MetaMarketplace {
             tokenId,
             seller,
             msg.sender,
-            saleValue);
+            saleValue_);
     }
 
 
@@ -294,8 +322,10 @@ contract MetaMarketplace {
     /**
     * @notice Makes a buy offer for a token. The token does not need to have
     *         been put up for sale. A buy offer can not be withdrawn or
-    *         replaced for 24 hours. Amount of the offer is put in escrow
+    *         replaced for 24 hours. Amount of the offer is NOT PUT IN ESCROW(!)
+    *
     *         until the offer is withdrawn or superceded
+    * todo: add requirement for buyers to have enough approved money for every auction
     * @param tokenId - id of the token to buy
     */
     function makeBuyOffer(address token_contract_, uint256 tokenId,CurrenciesERC20.CurrencyERC20 currency_, uint256 weiPrice_)
@@ -376,13 +406,13 @@ contract MetaMarketplace {
     * @param tokenId - id of the token whose buy order to accept
     */
     function acceptBuyOffer(address token_contract_, uint256 tokenId,CurrenciesERC20.CurrencyERC20 currency_ )
-    external marketplaceSetted(token_contract_)  isMarketable(tokenId,token_contract_) tokenOwnerOnly(tokenId,token_contract_) {
+    external isMarketable(tokenId,token_contract_) tokenOwnerOnly(tokenId,token_contract_) {
         Marketplace storage metainfo = Marketplaces[token_contract_];
         address currentBuyer = metainfo.activeBuyOffers[tokenId][currency_].buyer;
         require(currentBuyer != address(0),
             "No buy offer");
         uint256 saleValue = metainfo.activeBuyOffers[tokenId][currency_].price;
-        uint256 netSaleValue = saleValue;
+       // uint256 netSaleValue = saleValue;
         // Pay royalties if applicable
         /*
         if (_checkRoyalties(_tokenContractAddress)) {
@@ -396,27 +426,27 @@ contract MetaMarketplace {
         // Withdraw buyer's balance
       //  buyOffersEscrow[currentBuyer][tokenId] = 0;
 
-
-
+        
         // Transfer funds to the seller
-      //  msg.sender.call{value: netSaleValue}('');
-        IERC20 _currency_token = _currency_contract.get_hardcoded_currency(currency_);
-        uint256 approved_balance = _currency_token.allowance(currentBuyer, address(this));
-        if(approved_balance < netSaleValue) {
+        //_forwardFunds(currency_,currentBuyer,msg.sender,saleValue);
+
+        
+       // IERC20 _currency_token = _currency_contract.get_hardcoded_currency(currency_);
+       // uint256 approved_balance = _currency_token.allowance(currentBuyer, address(this));
+
+        // Tries to forward funds from buyer to seller and distribute fees
+        if(_forwardFunds(currency_,currentBuyer,msg.sender,saleValue) == false) {
             delete metainfo.activeBuyOffers[tokenId][currency_];
             revert("Bad buy offer");
         }
-        require(_currency_token.transferFrom(msg.sender, address(this), saleValue), "MetaMarketplace: ERC20: transferFrom buyer to metamarketplace contract failed, probably buyer moved it's fund somewhere else ");
-        // TODO: add calculate fee and forward funds
-
+        
+       
+       // Transfer funds to the seller
+        //_forwardFunds(currency_,currentBuyer,msg.sender,saleValue);
 
         // And token to the buyer
         IERC721 token = IERC721(token_contract_);
-        token.safeTransferFrom(
-            msg.sender,
-            currentBuyer,
-            tokenId
-        );
+        token.safeTransferFrom(msg.sender,currentBuyer,tokenId);
     
         // Broadcast the sale
         emit Sale( token_contract_,
@@ -426,7 +456,9 @@ contract MetaMarketplace {
             saleValue);
     }
     
-        modifier marketplaceSetted(address mplace_) {
+
+
+    modifier marketplaceSetted(address mplace_) {
         require(Marketplaces[mplace_].initialized == true,
             "Marketplace for this token is not setup yet!");
         _; 
@@ -435,14 +467,9 @@ contract MetaMarketplace {
 
 
     modifier isMarketable(uint256 tokenId, address token_contract_) {
-     //   Marketplace storage metainfo = Marketplaces[token_contract_];
-       // NftType standard_ = metainfo.nft_standard;
-      //  if (standard_ == )
         require(Marketplaces[token_contract_].initialized == true,
             "Marketplace for this token is not setup yet!");
         IERC721Enumerable token = IERC721Enumerable(token_contract_);
-       // metainfo.nft_standard = standard_;
-
         require(token.getApproved(tokenId) == address(this),
             "Not approved");
         _;

@@ -41,20 +41,15 @@ contract TokenSaleSingleton is Context, ReentrancyGuard {
 
     // Address where we collect comission
     address payable public treasure_fund;
-
-    
+    // service comission fee
+    uint public promille_fee = 25;
+ 
     // Supported erc20 currencies: .. to be extended
     //enum CurrencyERC20 {USDT, USDC, DAI, MST, WETH} 
     // CurrenciesERC20.CurrencyERC20 -- enum from above
     // Alternativly use CurrenciesERC20.
 
    
-    
-
-    // service comission fee
-    uint public promille_fee = 25;
-
-
     /**
      * Event for token purchase logging
      * @param purchaser who paid for the tokens
@@ -391,8 +386,6 @@ contract TokenSaleSingleton is Context, ReentrancyGuard {
     */
     function withDrawFunds(CurrenciesERC20.CurrencyERC20 currency,uint master_id_) public {
         require(msg.sender == wallet(master_id_), "only organaizer can do it");
-        IERC20Metadata currency_token =  get_currency(currency);
-       // require(currency_token.balanceOf(address(this)) > 0, "balance for this currency must be greater then zero");
         SaleInfo storage metasale = MSaleInfo[master_id_];
         require(metasale.currency_balances[currency] > 0, "balance for this currency must be greater then zero");
         _forwardFunds(currency,master_id_);
