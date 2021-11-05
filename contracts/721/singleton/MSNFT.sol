@@ -131,9 +131,6 @@ contract MSNFT is ERC721Enumerable, Ownable {
    */
     struct ItemInfo 
     {
-    // TODO: is this really nececcary to write it as string?
-    // this is link to IPFS 
-    // @todo: *WARNING -- should be unique!!*
     string ipfs_link;
 
     // TODO: rework this for searching functionality (case when user seacrh nft item at marketplace by name (or ticker?))
@@ -147,7 +144,12 @@ contract MSNFT is ERC721Enumerable, Ownable {
 
     }
 
-    constructor(string memory name_, string memory smbl_) ERC721(name_,smbl_) ERC721Enumerable() {}
+    bytes4 private _INTERFACE_ID_IERC721ENUMERABLE = 0x780e9d63;
+
+
+    constructor(string memory name_, string memory smbl_) ERC721(name_,smbl_) ERC721Enumerable() {
+       // ERC721Enumerable._registerInterface(_INTERFACE_ID_IERC721ENUMERABLE);
+    }
 
     // @todo should be changed visibility to external?
     /**
@@ -444,6 +446,17 @@ contract MSNFT is ERC721Enumerable, Ownable {
 
     function getFactoryAddress() public view returns(address) {
         return factory_address;
+    }
+
+
+     ///  Informs callers that this contract supports IERC721Enumerable
+    function supportsInterface(bytes4 interfaceId)
+    public view override(ERC721Enumerable)
+    returns (bool) {
+       // return interfaceId == type(IERC2981).interfaceId ||
+       // return interfaceId == super.supportsInterface(interfaceId);
+       return interfaceId == type(IERC721Enumerable).interfaceId ||
+       super.supportsInterface(interfaceId);
     }
 
 

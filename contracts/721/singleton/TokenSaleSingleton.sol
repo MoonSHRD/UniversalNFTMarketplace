@@ -41,29 +41,15 @@ contract TokenSaleSingleton is Context, ReentrancyGuard {
 
     // Address where we collect comission
     address payable public treasure_fund;
-
-    
+    // service comission fee
+    uint public promille_fee = 25;
+ 
     // Supported erc20 currencies: .. to be extended
     //enum CurrencyERC20 {USDT, USDC, DAI, MST, WETH} 
     // CurrenciesERC20.CurrencyERC20 -- enum from above
     // Alternativly use CurrenciesERC20.
 
    
-    
-
-    // service comission fee
-    uint public promille_fee = 25;
-
-    // Creation date
-    uint public crDate = block.timestamp;
-
-    // How much time before event start (in seconds)
-    // TODO -- delete this
-    uint public _timeToStart;
-
-    // Funds, that have been locked
-   // uint256 public lockedFunds;
-
     /**
      * Event for token purchase logging
      * @param purchaser who paid for the tokens
@@ -255,35 +241,6 @@ contract TokenSaleSingleton is Context, ReentrancyGuard {
         }
     }
 
-    // BUY TOKENS FOR ETHER/COIN (DEPRECATED)
-    /**
-     * @dev low level token purchase ***DO NOT OVERRIDE***
-     * This function has a non-reentrancy guard, so it shouldn't be called by
-     * another `nonReentrant` function.
-     * @param beneficiary Recipient of the token purchase
-     
-    function buyTokens(address beneficiary) public nonReentrant payable {
-        uint256 weiAmount = msg.value;
-
-        // calculate token amount to be created
-        uint256 tokens = _getTokenAmount(weiAmount);
-
-        _preValidatePurchase(beneficiary, weiAmount, tokens);
-
-        // update state
-        _weiRaised = _weiRaised.add(weiAmount);
-        _sold_count = _sold_count.add(tokens);
-
-        _processPurchase(beneficiary, tokens);
-        emit TokensPurchased(_msgSender(), beneficiary, weiAmount, tokens);
-
-        _updatePurchasingState(beneficiary, weiAmount);
-
-     //   _forwardFunds();
-         _lockFunds();
-        _postValidatePurchase(beneficiary, weiAmount);
-    }
-    **/
 
      /**
      *      @dev Main function to buyTokens
@@ -310,9 +267,6 @@ contract TokenSaleSingleton is Context, ReentrancyGuard {
         emit TokensPurchased(_msgSender(), beneficiary, weiAmount, tokens);
 
      //   _updatePurchasingState(beneficiary, weiAmount); // can be silenced as well
-
-    
-    
        // _postValidatePurchase(beneficiary, weiAmount);
     }
 
@@ -413,7 +367,9 @@ contract TokenSaleSingleton is Context, ReentrancyGuard {
      */
     function _forwardFunds(CurrenciesERC20.CurrencyERC20 currency,uint master_id_) internal {
         IERC20Metadata currency_token =  get_currency(currency);
-        uint256 amount = currency_token.balanceOf(address(this));
+        SaleInfo storage metasale = MSaleInfo[master_id_];
+       // uint256 amount = currency_token.balanceOf(address(this));
+        uint256 amount = metasale.currency_balances[currency];
         uint256 scale = 1000;
         uint256 fees = calculateFee(amount,scale);
         amount = amount - fees;
@@ -430,16 +386,8 @@ contract TokenSaleSingleton is Context, ReentrancyGuard {
     */
     function withDrawFunds(CurrenciesERC20.CurrencyERC20 currency,uint master_id_) public {
         require(msg.sender == wallet(master_id_), "only organaizer can do it");
-        IERC20Metadata currency_token =  get_currency(currency);
-        require(currency_token.balanceOf(address(this)) > 0, "balance for this currency must be greater then zero");
-      /*
-        if (block.timestamp >= crDate - _timeToStart) {
-            _wallet.transfer(lockedFunds);
-            lockedFunds = 0;
-        } else {
-            revert("event is not started yet, funds are locked");
-        }
-        */
+        SaleInfo storage metasale = MSaleInfo[master_id_];
+        require(metasale.currency_balances[currency] > 0, "balance for this currency must be greater then zero");
         _forwardFunds(currency,master_id_);
     }
 

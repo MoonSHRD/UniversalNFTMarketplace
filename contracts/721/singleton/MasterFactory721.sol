@@ -22,6 +22,8 @@ contract MasterFactory721 {
 
 // constant
 address public master_template;
+
+// TODO add func to upd sale_template when we upgrade version
 address public sale_template;
 
 address payable treasure_fund;
