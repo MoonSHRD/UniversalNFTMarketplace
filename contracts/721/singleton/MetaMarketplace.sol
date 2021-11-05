@@ -108,13 +108,11 @@ contract MetaMarketplace {
 
 
 
-    
+    // check if contract support it supposed interface. ERC-165 standard
     function _checkStandard(address contract_, NftType standard_) internal view returns (bool) {
 
         
         if(standard_ == NftType.MoonShard) {
-           // MSNFT token = MSNFT(contract_);
-           // if(token.symbol() == "MSNFT") {}
             (bool success) = MSNFT(contract_).
             supportsInterface(_INTERFACE_ID_IERC721ENUMERABLE);
             return success;
@@ -147,8 +145,6 @@ contract MetaMarketplace {
     {
         Marketplace storage metainfo = Marketplaces[token_contract_];
         // Create sell offer
-       // metainfo.activeSellOffers[tokenId] = SellOffer({seller : msg.sender,
-       //                                        minPrice : minPrice });
         metainfo.activeSellOffers[tokenId].minPrice[currency_] = minPrice;
         metainfo.activeSellOffers[tokenId].seller = msg.sender;
 
@@ -217,20 +213,17 @@ contract MetaMarketplace {
 
       /**
      * @dev Determines how ERC20 is stored/forwarded on purchases. Here we take our fee. This function can be tethered to buy tx or can be separate from buy flow.
-     * @notice transferFrom(from_) to this contract and then split payments into treasure_fund fee and send rest of it to_
+     * @notice transferFrom(from_) to this contract and then split payments into treasure_fund fee and send rest of it to_ .  Will return false if approved_balance < amount
      * @param currency_ ERC20 currency. Seller should specify what exactly currency he/she want to out
      */
     function _forwardFunds(CurrenciesERC20.CurrencyERC20 currency_, address from_, address to_, uint256 amount) internal returns (bool){
         IERC20 _currency_token = _currency_contract.get_hardcoded_currency(currency_);
      
-        // TODO: add approvment check here
         uint256 approved_balance = _currency_token.allowance(from_, address(this));
         if(approved_balance < amount) {
-           // delete metainfo.activeBuyOffers[tokenId][currency_];
            // revert("Bad buy offer");
            return false;
         }
-
 
         uint256 scale = 1000;
         uint256 fees = calculateFee(amount,scale);
@@ -275,11 +268,9 @@ contract MetaMarketplace {
 
         require(metainfo.activeSellOffers[tokenId].minPrice[currency_] > 0, "price for this currency has not been setted, use makeBuyOffer() instead");
 
-      //  IERC20 _currency_token = _currency_contract.get_hardcoded_currency(currency_); // get currency token
-      //  uint256 approved_balance = _currency_token.allowance(msg.sender, address(this));
-        require(saleValue_ >= metainfo.activeSellOffers[tokenId].minPrice[currency_],     // TODO: idk if it will work properly with USDT however. need to implement price calculation algo from tokensale_singleton contract
+        require(saleValue_ >= metainfo.activeSellOffers[tokenId].minPrice[currency_],
             "Amount sent too low");
-      //  require(approved_balance >= saleValue_, "Approved amount is lesser then weiPrice");
+      
         // Pay royalties if applicable
         /*
         if (_checkRoyalties(_tokenContractAddress)) {
@@ -287,28 +278,22 @@ contract MetaMarketplace {
         }
         */
 
-        address seller_address = metainfo.activeSellOffers[tokenId].seller;
-
-
         // Transfer funds (ERC20) to the seller
         // Tries to forward funds from buyer to seller and distribute fees
-        if(_forwardFunds(currency_,msg.sender,seller_address,saleValue_) == false) {
+        if(_forwardFunds(currency_,msg.sender,seller,saleValue_) == false) {
            // delete metainfo.activeBuyOffers[tokenId][currency_];
             revert("Approved amount is lesser than (saleValue_) needed to deal");
         }
         
-      //  _forwardFunds(currency_,msg.sender,seller_address,saleValue_);
-
-
-        // And nft_token to the buyer
+        // And transfer nft_token to the buyer
         token.safeTransferFrom(
             seller,
             msg.sender,
             tokenId
         );
-        // Remove all sell and buy offers
-        delete (metainfo.activeSellOffers[tokenId]);
-        delete (metainfo.activeBuyOffers[tokenId][currency_]);
+        // Remove all sell and buy[currency_] offers
+        delete (metainfo.activeSellOffers[tokenId]);            // this nft is SOLD, remove all SellOffers
+        delete (metainfo.activeBuyOffers[tokenId][currency_]);  // at least it was most successful order from BuyOffers by *this* currency. Orders for buy for other currencies still alive
         // Broadcast the sale
         emit Sale( token_contract_,
             tokenId,
@@ -333,7 +318,7 @@ contract MetaMarketplace {
      {
 
 
-        // TODO: check for erc20 approval here required
+        // TODO: check for erc20 approval here required (global approvment check)
 
 
         
@@ -412,7 +397,6 @@ contract MetaMarketplace {
         require(currentBuyer != address(0),
             "No buy offer");
         uint256 saleValue = metainfo.activeBuyOffers[tokenId][currency_].price;
-       // uint256 netSaleValue = saleValue;
         // Pay royalties if applicable
         /*
         if (_checkRoyalties(_tokenContractAddress)) {
@@ -428,23 +412,13 @@ contract MetaMarketplace {
 
         
         // Transfer funds to the seller
-        //_forwardFunds(currency_,currentBuyer,msg.sender,saleValue);
-
-        
-       // IERC20 _currency_token = _currency_contract.get_hardcoded_currency(currency_);
-       // uint256 approved_balance = _currency_token.allowance(currentBuyer, address(this));
-
         // Tries to forward funds from buyer to seller and distribute fees
         if(_forwardFunds(currency_,currentBuyer,msg.sender,saleValue) == false) {
             delete metainfo.activeBuyOffers[tokenId][currency_];
             revert("Bad buy offer");
         }
         
-       
-       // Transfer funds to the seller
-        //_forwardFunds(currency_,currentBuyer,msg.sender,saleValue);
-
-        // And token to the buyer
+        // And transfer nft token to the buyer
         IERC721 token = IERC721(token_contract_);
         token.safeTransferFrom(msg.sender,currentBuyer,tokenId);
     
