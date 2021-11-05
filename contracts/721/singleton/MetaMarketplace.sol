@@ -58,6 +58,7 @@ contract MetaMarketplace {
     // Currencies lib
     CurrenciesERC20 _currency_contract;
 
+    uint public promille_fee = 25; // service fee
     
     //bytes4 private constant _INTERFACE_ID_ERC2981 = 0x2a55205a;
 
@@ -102,49 +103,7 @@ contract MetaMarketplace {
     }
 
 
-    modifier marketplaceSetted(address mplace_) {
-        require(Marketplaces[mplace_].initialized == true,
-            "Marketplace for this token is not setup yet!");
-        _; 
-    }
 
-    modifier isMarketable(uint256 tokenId, address token_contract_) {
-     //   Marketplace storage metainfo = Marketplaces[token_contract_];
-       // NftType standard_ = metainfo.nft_standard;
-      //  if (standard_ == )
-        require(Marketplaces[token_contract_].initialized == true,
-            "Marketplace for this token is not setup yet!");
-        IERC721Enumerable token = IERC721Enumerable(token_contract_);
-       // metainfo.nft_standard = standard_;
-
-        require(token.getApproved(tokenId) == address(this),
-            "Not approved");
-        _;
-    }
-
-    // TODO: check this and probably add marketplaceSetted check
-    modifier tokenOwnerOnly(uint256 tokenId, address token_contract_) {
-       IERC721 token = IERC721(token_contract_);
-        require(token.ownerOf(tokenId) == msg.sender,
-            "Not token owner");
-        _;
-    }
-
-    modifier tokenOwnerForbidden(uint256 tokenId,address token_contract_) {
-        IERC721 token = IERC721(token_contract_);
-        require(token.ownerOf(tokenId) != msg.sender,
-            "Token owner not allowed");
-        _;
-    }
-
-
-    modifier lastBuyOfferExpired(uint256 tokenId,address token_contract_,CurrenciesERC20.CurrencyERC20 currency_) {
-       Marketplace storage metainfo = Marketplaces[token_contract_];
-        require(
-            metainfo.activeBuyOffers[tokenId][currency_].createTime < (block.timestamp - 1 days),
-            "Buy offer not expired");
-        _;
-    }
 
 
     function SetUpMarketplace(address nft_token_, NftType standard_) public {
@@ -251,8 +210,28 @@ contract MetaMarketplace {
     }
     */
 
-    /// @notice Purchases a token and transfers royalties if applicable
-    /// @param tokenId - id of the token to sell
+
+    /**
+    *   Calculate fee (UnSafeMath) -- use it only if it ^0.8.0
+    *   @param amount number from whom we take fee
+    *   @param scale scale for rounding. 100 is 1/100 (percent). we can encreace scale if we want better division (like we need to take 0.5% instead of 5%, then scale = 1000)
+    */
+    function calculateFee(uint256 amount, uint256 scale) internal view returns (uint256) {
+        uint a = amount / scale;
+        uint b = amount % scale;
+        uint c = promille_fee / scale;
+        uint d = promille_fee % scale;
+
+        return a * c * scale + a * d + b * c + (b * d + scale - 1) / scale;
+    }
+
+    
+
+
+    /*
+    * @notice Purchases a token and transfers royalties if applicable
+    * @param tokenId - id of the token to sell
+    */
     function purchase(address token_contract_,uint256 tokenId,CurrenciesERC20.CurrencyERC20 currency_, uint256 weiPrice_)
     external marketplaceSetted(token_contract_) tokenOwnerForbidden(tokenId,token_contract_) {
        
@@ -447,6 +426,50 @@ contract MetaMarketplace {
             saleValue);
     }
     
+        modifier marketplaceSetted(address mplace_) {
+        require(Marketplaces[mplace_].initialized == true,
+            "Marketplace for this token is not setup yet!");
+        _; 
+    }
 
+
+
+    modifier isMarketable(uint256 tokenId, address token_contract_) {
+     //   Marketplace storage metainfo = Marketplaces[token_contract_];
+       // NftType standard_ = metainfo.nft_standard;
+      //  if (standard_ == )
+        require(Marketplaces[token_contract_].initialized == true,
+            "Marketplace for this token is not setup yet!");
+        IERC721Enumerable token = IERC721Enumerable(token_contract_);
+       // metainfo.nft_standard = standard_;
+
+        require(token.getApproved(tokenId) == address(this),
+            "Not approved");
+        _;
+    }
+
+    // TODO: check this and probably add marketplaceSetted check
+    modifier tokenOwnerOnly(uint256 tokenId, address token_contract_) {
+       IERC721 token = IERC721(token_contract_);
+        require(token.ownerOf(tokenId) == msg.sender,
+            "Not token owner");
+        _;
+    }
+
+    modifier tokenOwnerForbidden(uint256 tokenId,address token_contract_) {
+        IERC721 token = IERC721(token_contract_);
+        require(token.ownerOf(tokenId) != msg.sender,
+            "Token owner not allowed");
+        _;
+    }
+
+
+    modifier lastBuyOfferExpired(uint256 tokenId,address token_contract_,CurrenciesERC20.CurrencyERC20 currency_) {
+       Marketplace storage metainfo = Marketplaces[token_contract_];
+        require(
+            metainfo.activeBuyOffers[tokenId][currency_].createTime < (block.timestamp - 1 days),
+            "Buy offer not expired");
+        _;
+    }
 
 }
