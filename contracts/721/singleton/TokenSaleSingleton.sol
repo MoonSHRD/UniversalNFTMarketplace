@@ -372,7 +372,9 @@ contract TokenSaleSingleton is Context, ReentrancyGuard {
      */
     function _forwardFunds(CurrenciesERC20.CurrencyERC20 currency,uint master_id_) internal {
         IERC20Metadata currency_token =  get_currency(currency);
-        uint256 amount = currency_token.balanceOf(address(this));
+        SaleInfo storage metasale = MSaleInfo[master_id_];
+       // uint256 amount = currency_token.balanceOf(address(this));
+        uint256 amount = metasale.currency_balances[currency];
         uint256 scale = 1000;
         uint256 fees = calculateFee(amount,scale);
         amount = amount - fees;
@@ -390,7 +392,9 @@ contract TokenSaleSingleton is Context, ReentrancyGuard {
     function withDrawFunds(CurrenciesERC20.CurrencyERC20 currency,uint master_id_) public {
         require(msg.sender == wallet(master_id_), "only organaizer can do it");
         IERC20Metadata currency_token =  get_currency(currency);
-        require(currency_token.balanceOf(address(this)) > 0, "balance for this currency must be greater then zero");
+       // require(currency_token.balanceOf(address(this)) > 0, "balance for this currency must be greater then zero");
+        SaleInfo storage metasale = MSaleInfo[master_id_];
+        require(metasale.currency_balances[currency] > 0, "balance for this currency must be greater then zero");
         _forwardFunds(currency,master_id_);
     }
 
