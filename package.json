@@ -34,6 +34,7 @@
     "@openzeppelin/test-helpers": "^0.5.13",
     "@truffle/hdwallet-provider": "^1.5.0",
     "eth-gas-reporter": "^0.2.22",
-    "solc-0.8": "npm:solc@^0.8.6"
+    "solc-0.8": "npm:solc@^0.8.9",
+    "solidity-docgen": "npm:solc@^0.8.9"
   }
 }
