@@ -148,11 +148,11 @@ module.exports = function(deployer, network, accounts) {
   return deployer.deploy(InterfaceR, {gasPrice: wei_gas_price, from:accounts[0]});
   }).then(async () => {
     InterfaceInstance = await InterfaceR.deployed();
-    intId = await InterfaceInstance.getInterface721();
-    console.log("Interface Id for ERC721: ");
+    intId = await InterfaceInstance.getInterfaceEnumerable();
+    console.log("Interface Id for ERC721Enumerable: ");
     console.log(intId);
-    intID_calc = await InterfaceInstance.calculateIERC721();
-    console.log("Interface If for ERC721 calculated:");
+    intID_calc = await InterfaceInstance.calculateIERC721Enumarable();
+    console.log("Interface If for ERC721Enumerable calculated:");
     console.log(intID_calc);
     return;
     }).then(async () => {

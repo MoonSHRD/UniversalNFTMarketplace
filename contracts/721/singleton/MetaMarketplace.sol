@@ -14,21 +14,28 @@ import "../../../node_modules/@openzeppelin/contracts/token/ERC20/extensions/IER
 
 
 /**
- * @title NFT Marketplace with ERC-2981 support
+ * @title NFT MetaMarketplace with ERC-165 support
  * @author JackBekket
  * --------------------------------------------------------ORIGINALLY FORKED FROM https://github.com/benber86/nft_royalties_market
  * @notice Defines a marketplace to bid on and sell NFTs.
- *         Sends royalties to rightsholder on each sale if applicable.
+ *         each marketplace is a struct tethered to nft-token contract
+ *         
  */
 contract MetaMarketplace {
 
 
 
+    /**
+     *  @notice offers from owner of nft-s, who are willing to sell them
+     */
     struct SellOffer {
         address seller;
-        mapping(CurrenciesERC20.CurrencyERC20 => uint256) minPrice;
+        mapping(CurrenciesERC20.CurrencyERC20 => uint256) minPrice; // price tethered to currency
     }
 
+    /**
+     *  @notice offers from users, who want to buy nfts
+     */
     struct BuyOffer {
         address buyer;
         uint256 price; 
@@ -43,7 +50,9 @@ contract MetaMarketplace {
         mapping(uint256 => SellOffer) activeSellOffers;
         // Store all active buy offers and maps them to their respective token ids
         mapping(uint256 => mapping(CurrenciesERC20.CurrencyERC20 => BuyOffer)) activeBuyOffers;
+
         // Escrow for buy offers
+        // buyer_address => token_id => Currency => locked_funds
         mapping(address => mapping(uint256 => mapping(CurrenciesERC20.CurrencyERC20=>uint256))) buyOffersEscrow;
        
         // defines which interface to use for interaction with NFT
@@ -283,6 +292,7 @@ contract MetaMarketplace {
         require((bid_price_ > metainfo.activeSellOffers[tokenId].minPrice[currency_]),
             "Sell order at this price or lower exists");
             // TODO: execute purchase if price is lower instead of revert
+
         }
 
         // Only process the offer if it is higher than the previous one or the
