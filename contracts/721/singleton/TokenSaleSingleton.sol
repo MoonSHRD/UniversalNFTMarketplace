@@ -376,6 +376,7 @@ contract TokenSaleSingleton is Context, ReentrancyGuard {
         currency_token.transfer(wallet(master_id_),amount);
         currency_token.transfer(treasure_fund,fees);
         uint256 r = amount + fees;
+        metasale.currency_balances[currency] = 0;           // zero balance after we forwarded all funds
         emit CalculatedFees(r,fees,amount,treasure_fund);
     }
 
