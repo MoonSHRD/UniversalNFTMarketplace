@@ -35,7 +35,7 @@ contract MetaMarketplace {
         uint256 createTime;
     }
 
-    // MSNFT, 721Enumerable, URIStorage, 721Metadata, erc721(common)
+    // MSNFT, 721Enumerable,721Metadata, erc721(common)
     enum NftType {MoonShard, Enum, Meta, Common}
 
     struct Marketplace {
@@ -62,18 +62,14 @@ contract MetaMarketplace {
     // Address where we collect comission
     address payable public _treasure_fund;
     
-    //bytes4 private constant _INTERFACE_ID_ERC2981 = 0x2a55205a;
-
-
+    
     //Hardcode interface_id's
     bytes4 private constant _INTERFACE_ID_MSNFT = 0x780e9d63;
     bytes4 private constant _INTERFACE_ID_IERC721ENUMERABLE = 0x780e9d63;
     bytes4 private constant _INTERFACE_ID_IERC721METADATA = 0x5b5e139f;
-    bytes4 private constant _INTERFACE_ID_IERC721= 0x7aa5391d;      // WRONG
-    
+    bytes4 private constant _INTERFACE_ID_IERC721= 0x7aa5391d;      // WRONG  @todo: add correct interface id to IERC721
+    //bytes4 private constant _INTERFACE_ID_ERC2981 = 0x2a55205a;
 
-    // Escrow for buy offers
-    //mapping(address => mapping(uint256 => uint256)) public buyOffersEscrow;
 
     // Events
     event NewSellOffer(address nft_contract_, uint256 tokenId, address seller, uint256 value);
@@ -85,19 +81,17 @@ contract MetaMarketplace {
     event Sale(address nft_contract_, uint256 tokenId, address seller, address buyer, uint256 value);
     
 
-    constructor(address currency_contract_, address msnft_token_,address treasure_fund_) {
+    constructor(address currency_contract_, address msnft_token_,address treasure_fund_) 
+    {
         _currency_contract = CurrenciesERC20(currency_contract_);
         require(_checkStandard(msnft_token_, NftType.MoonShard), "Standard not supported");
-        SetUpMarketplace(msnft_token_, NftType.MoonShard);
+        SetUpMarketplace(msnft_token_, NftType.MoonShard);      // set up MSNFT ready for sale
         treasure_fund_ = _treasure_fund;
     }
 
 
-
-
-
-    function SetUpMarketplace(address nft_token_, NftType standard_) public {
-       
+    function SetUpMarketplace(address nft_token_, NftType standard_) public 
+    {   
         require(Marketplaces[nft_token_].initialized == false, "Marketplace is already setted up");
 
         Marketplace storage metainfo = Marketplaces[nft_token_];
@@ -107,8 +101,11 @@ contract MetaMarketplace {
 
 
 
-    // check if contract support it supposed interface. ERC-165 standard
-    // 
+    /**
+    *   @notice check if contract support specific nft standard
+    *   @param standard_ is one of ERC721 standards (MSNFT, 721Enumerable,721Metadata, erc721(common))
+    *   it will return false if contract not support specific interface
+    */
     function _checkStandard(address contract_, NftType standard_) internal view returns (bool) {
 
         
@@ -139,30 +136,31 @@ contract MetaMarketplace {
     * @notice Puts a token on sale at a given price
     * @param tokenId - id of the token to sell
     * @param minPrice - minimum price at which the token can be sold
+    * @param nft_contract_ -- address of nft contract
     */
-    function makeSellOffer(uint256 tokenId, uint256 minPrice, address token_contract_, CurrenciesERC20.CurrencyERC20 currency_)
-    external marketplaceSetted(token_contract_) isMarketable(tokenId,token_contract_) tokenOwnerOnly(tokenId,token_contract_) 
+    function makeSellOffer(uint256 tokenId, uint256 minPrice, address nft_contract_, CurrenciesERC20.CurrencyERC20 currency_)
+    external marketplaceSetted(nft_contract_) isMarketable(tokenId,nft_contract_) tokenOwnerOnly(tokenId,nft_contract_) 
     {
-        Marketplace storage metainfo = Marketplaces[token_contract_];
+        Marketplace storage metainfo = Marketplaces[nft_contract_];
         // Create sell offer
         metainfo.activeSellOffers[tokenId].minPrice[currency_] = minPrice;
         metainfo.activeSellOffers[tokenId].seller = msg.sender;
 
         // Broadcast sell offer
-        emit NewSellOffer(token_contract_,tokenId, msg.sender, minPrice);
+        emit NewSellOffer(nft_contract_,tokenId, msg.sender, minPrice);
     }
 
 
     /**
-    * @notice Withdraw a sell offer
+    * @notice Withdraw a sell offer. It's called by the owner of nft. 
+    *         it will remove offer for every currency (it's intended behaviour)
     * @param tokenId - id of the token whose sell order needs to be cancelled
-    * @param token_contract_ - address of nft contract
-    * TODO: are we want to withdraw offer at all, or we want to withdraw offer in specific currency (?)
+    * @param nft_contract_ - address of nft contract
     */
-    function withdrawSellOffer(address token_contract_,uint256 tokenId)
-    external marketplaceSetted(token_contract_) isMarketable(tokenId, token_contract_)
+    function withdrawSellOffer(address nft_contract_,uint256 tokenId)
+    external marketplaceSetted(nft_contract_) isMarketable(tokenId, nft_contract_)
     {
-        Marketplace storage metainfo = Marketplaces[token_contract_];
+        Marketplace storage metainfo = Marketplaces[nft_contract_];
         require(metainfo.activeSellOffers[tokenId].seller != address(0),
             "No sale offer");
         require(metainfo.activeSellOffers[tokenId].seller == msg.sender,
@@ -170,11 +168,11 @@ contract MetaMarketplace {
         // Removes the current sell offer
         delete (metainfo.activeSellOffers[tokenId]);
         // Broadcast offer withdrawal
-        emit SellOfferWithdrawn(token_contract_,tokenId, msg.sender);
+        emit SellOfferWithdrawn(nft_contract_,tokenId, msg.sender);
     }
 
 
-    /*
+    /*      UNDER CONSIDERATION
     /// @notice Transfers royalties to the rightsowner if applicable
     /// @param tokenId - the NFT assed queried for royalties
     /// @param grossSaleValue - the price at which the asset will be sold
@@ -198,22 +196,20 @@ contract MetaMarketplace {
     */
 
 
-
-
-
-
     /**
-    * @notice Purchases a token and transfers royalties if applicable
+    * @notice Purchases a nft-token. Require active sell offer from owner of nft. Otherwise use makeBuyOffer
+    *         also require bid_price_ equal or bigger than desired price from sell offer
     * @param tokenId - id of the token to sell
+    * @param bid_price_ -- price buyer is willing to pay to the seller
     */
-    function purchase(address token_contract_,uint256 tokenId,CurrenciesERC20.CurrencyERC20 currency_, uint256 saleValue_)
+    function purchase(address token_contract_,uint256 tokenId,CurrenciesERC20.CurrencyERC20 currency_, uint256 bid_price_)
     external marketplaceSetted(token_contract_) tokenOwnerForbidden(tokenId,token_contract_) {
        
         Marketplace storage metainfo = Marketplaces[token_contract_];
         address seller = metainfo.activeSellOffers[tokenId].seller;
-
         require(seller != address(0),
             "No active sell offer");
+
 
         // If, for some reason, the token is not approved anymore (transfer or
         // sale on another market place for instance), we remove the sell order
@@ -228,9 +224,8 @@ contract MetaMarketplace {
         }
 
         require(metainfo.activeSellOffers[tokenId].minPrice[currency_] > 0, "price for this currency has not been setted, use makeBuyOffer() instead");
-
-        require(saleValue_ >= metainfo.activeSellOffers[tokenId].minPrice[currency_],
-            "Amount sent too low");
+        require(bid_price_ >= metainfo.activeSellOffers[tokenId].minPrice[currency_],
+            "Bid amount lesser than desired price!");
       
         // Pay royalties if applicable
         /*
@@ -239,11 +234,10 @@ contract MetaMarketplace {
         }
         */
 
-        // Transfer funds (ERC20) to the seller
-        // Tries to forward funds from buyer to seller and distribute fees
-        if(_forwardFunds(currency_,msg.sender,seller,saleValue_) == false) {
-            delete metainfo.activeBuyOffers[tokenId][currency_];
-            revert("Approved amount is lesser than (saleValue_) needed to deal");
+        // Transfer funds (ERC20-currency) to the seller and distribute fees
+        if(_forwardFunds(currency_,msg.sender,seller,bid_price_) == false) {
+            delete metainfo.activeBuyOffers[tokenId][currency_];                    // if we can't move funds from buyer to seller, then buyer either don't have enough balance nor approved spending this much, so we delete this order
+            revert("Approved amount is lesser than (bid_price_) needed to deal");
         }
         
         // And transfer nft_token to the buyer
@@ -252,16 +246,18 @@ contract MetaMarketplace {
             msg.sender,
             tokenId
         );
+
         // Remove all sell and buy[currency_] offers
         delete (metainfo.activeSellOffers[tokenId]);            // this nft is SOLD, remove all SellOffers
-        // @note: next line will delete offers by specific currency, which help us to avoid situtation when buyer offers made in another currency stack in this contract
+        // @note: next line will delete offers by specific currency, which help us to avoid situtation when buyer offers made in another currency clog in this contract
         delete (metainfo.activeBuyOffers[tokenId][currency_]);  // at least it was most successful order from BuyOffers by *this* currency. Orders for buy for other currencies still alive
+        
         // Broadcast the sale
         emit Sale( token_contract_,
             tokenId,
             seller,
             msg.sender,
-            saleValue_);
+            bid_price_);
     }
 
 
@@ -269,28 +265,30 @@ contract MetaMarketplace {
     /**
     * @notice Makes a buy offer for a token. The token does not need to have
     *         been put up for sale. A buy offer can not be withdrawn or
-    *         replaced for 24 hours. Amount of the offer is NOT PUT IN ESCROW(!)
-    *
+    *         replaced for 24 hours. Amount of the offer is put in escrow
     *         until the offer is withdrawn or superceded
-    * todo: add requirement for buyers to have enough approved money for every auction
+    *
     * @param tokenId - id of the token to buy
+    * @param currency_ - in what currency we want to pay
+    * @param bid_price_ - how much we are willing to offer for this nft
     */
-    function makeBuyOffer(address token_contract_, uint256 tokenId,CurrenciesERC20.CurrencyERC20 currency_, uint256 weiPrice_)
+    function makeBuyOffer(address token_contract_, uint256 tokenId,CurrenciesERC20.CurrencyERC20 currency_, uint256 bid_price_)
     external marketplaceSetted(token_contract_) tokenOwnerForbidden(tokenId,token_contract_)
      {
-
 
         Marketplace storage metainfo = Marketplaces[token_contract_];
         // Reject the offer if item is already available for purchase at a
         // lower or identical price
         if (metainfo.activeSellOffers[tokenId].minPrice[currency_] != 0) {
-        require((weiPrice_ > metainfo.activeSellOffers[tokenId].minPrice[currency_]),
+        require((bid_price_ > metainfo.activeSellOffers[tokenId].minPrice[currency_]),
             "Sell order at this price or lower exists");
+            // TODO: execute purchase if price is lower instead of revert
         }
+
         // Only process the offer if it is higher than the previous one or the
         // previous one has expired
         require(metainfo.activeBuyOffers[tokenId][currency_].createTime <
-                (block.timestamp - 1 days) || weiPrice_ >
+                (block.timestamp - 1 days) || bid_price_ >
                 metainfo.activeBuyOffers[tokenId][currency_].price,
                 "Previous buy offer higher or not expired");
 
@@ -299,28 +297,27 @@ contract MetaMarketplace {
         [tokenId][currency_];
         // Refund the owner of the previous buy offer
         if (refundBuyOfferAmount > 0) {
-           // payable(previousBuyOfferOwner).call{value: refundBuyOfferAmount}(''); // TODO:remove
            _sendRefund(currency_, previousBuyOfferOwner, refundBuyOfferAmount);
-           
         }
-        metainfo.buyOffersEscrow[previousBuyOfferOwner][tokenId][currency_] = 0;
-        
+        metainfo.buyOffersEscrow[previousBuyOfferOwner][tokenId][currency_] = 0;    // zero escrow after refund
         
         // Create a new buy offer
         metainfo.activeBuyOffers[tokenId][currency_].buyer = msg.sender;
-        metainfo.activeBuyOffers[tokenId][currency_].price = weiPrice_;
+        metainfo.activeBuyOffers[tokenId][currency_].price = bid_price_;
         metainfo.activeBuyOffers[tokenId][currency_].createTime = block.timestamp;
-
-
         // Create record of funds deposited for this offer
-        metainfo.buyOffersEscrow[msg.sender][tokenId][currency_] = weiPrice_;     
+        metainfo.buyOffersEscrow[msg.sender][tokenId][currency_] = bid_price_;    
+
+
         // Broadcast the buy offer
-        emit NewBuyOffer(tokenId, msg.sender, weiPrice_);
+        emit NewBuyOffer(tokenId, msg.sender, bid_price_);
     }
 
     
+
     /**  @notice Withdraws a buy offer. Can only be withdrawn a day after being posted
-    * @param tokenId - id of the token whose buy order to remove
+    *    @param tokenId - id of the token whose buy order to remove
+    *    @param currency_ -- in which currency we want to remove offer
     */
     function withdrawBuyOffer(address token_contract_,uint256 tokenId,CurrenciesERC20.CurrencyERC20 currency_)
     external marketplaceSetted(token_contract_) lastBuyOfferExpired(tokenId,token_contract_,currency_) {
@@ -329,17 +326,14 @@ contract MetaMarketplace {
         require(metainfo.activeBuyOffers[tokenId][currency_].buyer == msg.sender,
             "Not buyer");
         uint256 refundBuyOfferAmount = metainfo.buyOffersEscrow[msg.sender][tokenId][currency_];
-        // Set the buyer balance to 0 before refund ---- ??? why?
-      //  metainfo.buyOffersEscrow[msg.sender][tokenId][currency_] = 0;
-        // Remove the current buy offer
-      //  delete(metainfo.activeBuyOffers[tokenId][currency_]);
+        // Set the buyer balance to 0 before refund ---- ??? why? (i removed this but stick this comment in case of fire)
+ 
         // Refund the current buy offer if it is non-zero
         if (refundBuyOfferAmount > 0) {
-     //       msg.sender.call{value: refundBuyOfferAmount}('');
             _sendRefund(currency_, msg.sender, refundBuyOfferAmount);
         }
 
-     // Set the buyer balance to 0 after refund 
+        // Set the buyer balance to 0 after refund 
         metainfo.buyOffersEscrow[msg.sender][tokenId][currency_] = 0;
         // Remove the current buy offer
         delete(metainfo.activeBuyOffers[tokenId][currency_]);
@@ -349,11 +343,11 @@ contract MetaMarketplace {
     }
 
 
-    
 
     /** @notice Lets a token owner accept the current buy offer
     *         (even without a sell offer)
     * @param tokenId - id of the token whose buy order to accept
+    * @param currency_ - in which currency we want to accept offer
     */
     function acceptBuyOffer(address token_contract_, uint256 tokenId,CurrenciesERC20.CurrencyERC20 currency_ )
     external isMarketable(tokenId,token_contract_) tokenOwnerOnly(tokenId,token_contract_) {
@@ -361,13 +355,14 @@ contract MetaMarketplace {
         address currentBuyer = metainfo.activeBuyOffers[tokenId][currency_].buyer;
         require(currentBuyer != address(0),
             "No buy offer");
-        uint256 saleValue = metainfo.activeBuyOffers[tokenId][currency_].price;
+        uint256 bid_value = metainfo.activeBuyOffers[tokenId][currency_].price;
         // Pay royalties if applicable
         /*
         if (_checkRoyalties(_tokenContractAddress)) {
             netSaleValue = _deduceRoyalties(tokenId, saleValue);
         }
         */
+
         // Delete the current sell offer whether it exists or not
         delete (metainfo.activeSellOffers[tokenId]);
         // Delete the buy offer that was accepted
@@ -378,7 +373,7 @@ contract MetaMarketplace {
         
         // Transfer funds to the seller
         // Tries to forward funds from buyer to seller and distribute fees
-        if(_forwardFunds(currency_,currentBuyer,msg.sender,saleValue) == false) {
+        if(_forwardFunds(currency_,currentBuyer,msg.sender,bid_value) == false) {
             delete metainfo.activeBuyOffers[tokenId][currency_];
             revert("Bad buy offer");
         }
@@ -392,7 +387,7 @@ contract MetaMarketplace {
             tokenId,
             msg.sender,
             currentBuyer,
-            saleValue);
+            bid_value);
     }
     
 
@@ -420,14 +415,13 @@ contract MetaMarketplace {
         uint256 approved_balance = _currency_token.allowance(from_, address(this));
         if(approved_balance < amount) {
            // revert("Bad buy offer");
-           return false;
+           return false;    // return false if spender have not approved balance for deal
         }
 
         uint256 scale = 1000;
         uint256 fees = calculateFee(amount,scale);
         uint256 net_amount = amount - fees;
         require(_currency_token.transferFrom(from_, address(this), amount), "MetaMarketplace: ERC20: transferFrom buyer to metamarketplace contract failed ");  // pull funds
-
         _currency_token.transfer(to_, net_amount);      // forward funds
         _currency_token.transfer(_treasure_fund, fees); // collect fees
         uint256 r = amount + fees;
@@ -459,7 +453,7 @@ contract MetaMarketplace {
         _;
     }
 
-    // TODO: check this and probably add marketplaceSetted check
+    // TODO: check this 
     modifier tokenOwnerOnly(uint256 tokenId, address nft_contract_) {
        IERC721 token = IERC721(nft_contract_);
         require(token.ownerOf(tokenId) == msg.sender,
