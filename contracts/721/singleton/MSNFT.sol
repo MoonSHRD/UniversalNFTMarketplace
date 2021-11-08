@@ -5,7 +5,7 @@ import "../../../node_modules/@openzeppelin/contracts/token/ERC721/extensions/ER
 import "../../../node_modules/@openzeppelin/contracts/token/ERC721/ERC721.sol";
 //import "../../../node_modules/@openzeppelin/contracts/token/ERC721/presets/ERC721PresetMinterPauserAutoId.sol";
 import "../../../node_modules/@openzeppelin/contracts/utils/Counters.sol";
-import "../../../node_modules/@openzeppelin/contracts/utils/math/SafeMath.sol";
+//import "../../../node_modules/@openzeppelin/contracts/utils/math/SafeMath.sol";
 import "../../../node_modules/@openzeppelin/contracts/access/Ownable.sol";
 
 
@@ -21,7 +21,7 @@ import "../../../node_modules/@openzeppelin/contracts/access/Ownable.sol";
  * createMasterCopy, plugSale, buyItem -- external intefaces to be called from factory contract 
 */
 contract MSNFT is ERC721Enumerable, Ownable {
-   using SafeMath for uint256;
+  // using SafeMath for uint256;
    using Counters for Counters.Counter;
 
     // Master -- Mastercopy, abstraction
@@ -95,7 +95,6 @@ contract MSNFT is ERC721Enumerable, Ownable {
             
             itemIds is a map which return you array of items tethered to specific master
             arrays starts with 0, so item 245 will be stored as third element of array from itemIds[18] and can be getted from there 
-
         */
 
     // map from master_id to item ids
@@ -105,11 +104,9 @@ contract MSNFT is ERC721Enumerable, Ownable {
     mapping (uint256 => uint256) itemIndex;         // -- each token have a position in itemIds array. itemIndex is help to track where exactly stored itemId in itemIds array. 
 
     
-    // map from sale address to organizer -- TODO: this can be double info from factory
-    mapping(address => address) retailers;
     
     // map from masterId to author address
-    mapping(uint256 => address) public authors;
+    mapping(uint256 => address payable) public authors;
 
     // map from author address to masterIds array
     mapping(address => uint[]) public author_masterids; // can be used to get all objects created by one author
@@ -126,7 +123,7 @@ contract MSNFT is ERC721Enumerable, Ownable {
     /**
    *                                                            Item information
    *    @dev ItemInfo contains meta information about Master/Item. 
-   *    @param magnet_link -- unique link to a torrent
+   *    @param ipfs_link -- unique link to a ipfs
    *    @param author -- address of author
    *    @param rarity -- rarity of an item, see RarityType
    *    @param i_totalSupply -- it is not a total supply. total supply of a token is itemIds[mater_id].lenght
@@ -134,9 +131,9 @@ contract MSNFT is ERC721Enumerable, Ownable {
     struct ItemInfo 
     {
     // TODO: is this really nececcary to write it as string?
-    // this is link to torrent 
+    // this is link to IPFS 
     // @todo: *WARNING -- should be unique!!*
-    string magnet_link;
+    string ipfs_link;
 
     // TODO: rework this for searching functionality (case when user seacrh nft item at marketplace by name (or ticker?))
     string description;
@@ -167,7 +164,10 @@ contract MSNFT is ERC721Enumerable, Ownable {
         address author = meta.author;
         require(author == organizer, "you don't own to this master id");
         require(mastersales[_masterId] == address(0), "MSNFT: you already have plugged sale ");
+
+        // we set address just for ocasion if we deploy new version of tokensale in future
         mastersales[_masterId] = _sale;
+
     }
 
     /**
@@ -195,7 +195,7 @@ contract MSNFT is ERC721Enumerable, Ownable {
      * @param _supplyType -- type of supply, where 1 is for unique nft, 0 for common nft, anything else is rare. Used to check inside mint func
      * @return c_master_id reserved mastercopy id
      */
-    function createMasterCopy(string memory link, address _author ,string memory _description, uint256 _supplyType) public returns(uint256 c_master_id){
+    function createMasterCopy(string memory link, address payable _author ,string memory _description, uint256 _supplyType) public returns(uint256 c_master_id){
 
         require(msg.sender == factory_address, "MSNFT: only factory contract can create mastercopy");
 
@@ -220,6 +220,8 @@ contract MSNFT is ERC721Enumerable, Ownable {
         // return mastercopy id
         return mid;
     }
+
+    
 
      /**
      * @dev setting rarity for token
@@ -287,7 +289,6 @@ contract MSNFT is ERC721Enumerable, Ownable {
             
             itemIds is a map which return you array of items tethered to specific master
             arrays starts with 0, so item 245 will be stored as third element of array from itemIds[18] and can be getted from there 
-
         */
         itemIndex[item_id] = itemIds[m_master_id].length;   // this item_id will be stored at itemIds[m_master_id] at this *position order*.  
         itemIds[m_master_id].push(item_id);               // this item is stored at itemIds and tethered to master_id
@@ -340,51 +341,33 @@ contract MSNFT is ERC721Enumerable, Ownable {
     function redeemTicket(address owner,uint256 tokenId, uint256 event_id) public{
         require(eventsales[event_id] == msg.sender, "caller doesn't match with event_id");
         super._burn(owner,tokenId); 
-
        // To prevent a gap in the tokens array, we store the last token in the index of the token to delete, and
        // then delete the last slot (swap and pop).
-
-
         uint256 ticket_index = ticketIndex[tokenId];
         uint256 lastTicketIndex = ticketIds[event_id].length.sub(1);
-
       //  uint256[] storage ticketIdArray = ticketIds[event_id];
       //  uint256 lastTicketId = ticketIdArray[lastTicketIndex];
-
         uint256 lastTicketId = ticketIds[event_id][lastTicketIndex];
-
-
         ticketIds[event_id][ticket_index] = lastTicketId; // Move the last token to the slot of the to-delete token
         ticketIndex[lastTicketId] = ticket_index;         // Update the moved token's index
-
         ticketIds[event_id].length--;  // remove last element in array
         ticketIndex[tokenId] = 0;
-
-
     }
     */
 
 
 
-    //                  @FIXME: fix get items of owner
-    /*
-  //  Gets the list of token IDs of the requested owner.
-     function _tokensOfOwner(address owner) internal view returns (uint256[] storage) {
-        return super._ownedTokens[owner];
-    }
+   
 
-
-
-    function getTicketByOwner(address _owner) public view returns(uint256[] memory) {
-        uint256[] storage tickets = _tokensOfOwner(_owner);
-        return tickets;
-    }
-    */
+    // Gets the list of token IDs of the requested owner.
+    // function _tokensOfOwner(address owner) internal view override(ERC721Enumerable) returns (uint256[] storage) {
+    //     return super._ownedTokens[owner];
+    // }
 
 
 
     /**
-     * @dev get itemSale contract address tethered to this master_id
+     * @dev get itemSale contract address template
      */
     function getItemSale(uint256 master_id) public view returns(address) {
         address sale = mastersales[master_id];
@@ -396,7 +379,7 @@ contract MSNFT is ERC721Enumerable, Ownable {
      /**
      *  @dev get author of master
      */
-    function get_author(uint256 _masterId) public view returns (address _author) {
+    function get_author(uint256 _masterId) public view returns (address payable _author) {
         _author = authors[_masterId];
         return _author;
     }
@@ -429,22 +412,6 @@ contract MSNFT is ERC721Enumerable, Ownable {
         return _itemInfo;
     }
 
-    /**
-     *  @dev get MetaInfo by master id
-     *  @param master_id master id
-     */
-    function getInfoByMasterId(uint master_id) public view returns (ItemInfo memory){
-        return MetaInfo[master_id];
-    }
-
-    /**
-     *  @dev get Master sale address by master id
-     *  @param master_id master id
-     */
-    function getSaleAddress(uint master_id) public view returns (address) {
-        return mastersales[master_id];
-    }
-
 
     /*      
     function getTicketStatus(uint item_id) public view returns (TicketState status) {
@@ -472,16 +439,12 @@ contract MSNFT is ERC721Enumerable, Ownable {
     Usefull tips:
     // Mapping from owner to list of owned token IDs
     mapping(address => uint256[]) private _ownedTokens;
-
     // Mapping from token ID to index of the owner tokens list
     mapping(uint256 => uint256) private _ownedTokensIndex;
-
     // Array with all token ids, used for enumeration
     uint256[] private _allTokens;
-
     // Mapping from token id to position in the allTokens array
     mapping(uint256 => uint256) private _allTokensIndex;
-
     Gets the list of token IDs of the requested owner.
      function _tokensOfOwner(address owner) internal view returns (uint256[] storage) {
         return _ownedTokens[owner];

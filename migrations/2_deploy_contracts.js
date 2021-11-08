@@ -3,6 +3,7 @@ var MasterFactory = artifacts.require("./721/singleton/MasterFactory721.sol");
 // //var Deposit = artifacts.require("./Deposit.sol")
 var Master = artifacts.require("./721/singleton/MSNFT.sol");
 // var limitGas = web3.eth.getBlock("latest").gasLimit;
+var SVC = artifacts.require("./SVC.sol");
 
 
 // CurrencyERC20 contract
@@ -53,7 +54,7 @@ module.exports = function (deployer, network, accounts) {
       WETH = await WETH.deployed();
       */
 
-
+      await deployer.deploy(SVC, "v0.0.0");
       await deployer.deploy(MST, "MST", "MST");
       MST = await MST.deployed();
       console.log("MST dummy address:");

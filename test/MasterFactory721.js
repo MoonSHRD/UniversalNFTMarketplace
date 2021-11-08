@@ -5,7 +5,7 @@ const USDCcontract = artifacts.require('USDC');
 const DAIcontract = artifacts.require('DAI');
 const MSTcontract = artifacts.require('MST');
 const WETHcontract = artifacts.require('WETH');
-const TokenSale721 = artifacts.require('TokenSale721');
+const TokenSaleSingleton = artifacts.require('TokenSaleSingleton');
 
 const IERC20Metadata = artifacts.require("../../../node_modules/@openzeppelin/contracts/token/ERC20/extensions/IERC20Metadata.sol");
 
@@ -25,22 +25,19 @@ function makeid(length) {
 contract('MasterFactory721', accounts => {
     let factory;
     let usdc, mst;
-    let tokenSale721;
+    let tokenSaleSingleton;
     const [USDT, USDC, DAI, MST, WETH] = [0, 1, 2, 3, 4];
     let tokensTotal = '50';
     const admin = '0xF87F1eaa6Fd9B65bF41F90afEdF8B64D6487F61E';
     const user = '0x1b7C81DbAF6f34E878686CE6FA9463c48E2185C7';
-    let unlimitLinksArr = [];
-    let uniqueLinksArr = [];
-    let rareLinksArr = [];
-    let midOne, midTwo, midThree, midFour, midFive;
+    let midOne, midTwo, midThree;
     const linkOne = 'https://google.com/'+makeid(10);
     const linkTwo = 'https://google.com/'+makeid(10);
     const linkThree = 'https://google.com/'+makeid(10);
-    const linkFour = 'https://google.com/'+makeid(10);
-    const linkFive = 'https://google.com/'+makeid(10);
     const [unlimit, unique, rare] = [0, 1, 2];
     const desc = 'Lorem ipsum dolor sit amet';
+
+    let saletemplate;
     before(async () => {
         factory = await MasterFactory721.deployed();
         nft = await MSNFT.deployed();
@@ -65,21 +62,6 @@ contract('MasterFactory721', accounts => {
         assert(firstLink == linkOne);
 		assert.equal(receiptFirstEvent.event, 'MasterCopyCreatedHuman', 'should be the MasterCopyCreatedHuman event');
 
-        const createItemTwo = await factory.createMasterItem(linkTwo, desc, unlimit);
-        midTwo = createItemTwo.receipt.logs[0].args.master_id;
-        const receiptSecondEvent = await expectEvent.inTransaction(createItemTwo.tx, nft, 'MasterCopyCreatedHuman', {
-            author: admin,
-            master_id: midTwo,
-            description: desc,
-            link: linkTwo,
-        });
-        const secondLink = receiptSecondEvent.args.link;
-        assert(secondLink == linkTwo);
-		assert.equal(receiptSecondEvent.event, 'MasterCopyCreatedHuman', 'should be the MasterCopyCreatedHuman event');
-        assert(firstLink != secondLink);
-        unlimitLinksArr.push(firstLink, secondLink);
-        assert.equal(unlimitLinksArr.length, 2, 'count of unlimit master copy creations');
-
     });
 
     it('should NOT create master copy with no limit supply type', async () => {
@@ -88,78 +70,49 @@ contract('MasterFactory721', accounts => {
         } catch(e) {
             assert(e.message, 'error message must contain revert');
         }
-        try {
-            await factory.createMasterItem(linkTwo, desc, unlimit);
-        } catch(e) {
-            assert(e.message, 'error message must contain revert');
-        }
     });
 
     it('should create master copy with unique supply type', async () => {
-        const createUniqueItem = await factory.createMasterItem(linkThree, desc, unique);
+        const createUniqueItem = await factory.createMasterItem(linkTwo, desc, unique);
         console.log('createUniqueItem '+ createUniqueItem.receipt.logs[0].args.master_id);
-        midThree = createUniqueItem.receipt.logs[0].args.master_id;
+        midTwo = createUniqueItem.receipt.logs[0].args.master_id;
         const receiptEvent = await expectEvent.inTransaction(createUniqueItem.tx, nft, 'MasterCopyCreatedHuman', {
             author: admin,
-            master_id: midThree,
+            master_id: midTwo,
             description: desc,
-            link: linkThree,
+            link: linkTwo,
         });
         const uniqueLink = receiptEvent.args.link;
-        assert(uniqueLink == linkThree);
+        assert(uniqueLink == linkTwo);
 		assert.equal(receiptEvent.event, 'MasterCopyCreatedHuman', 'should be the MasterCopyCreatedHuman event');
-        uniqueLinksArr.push(uniqueLink);
-        assert(uniqueLinksArr.length == unique);
     });
 
     it('should NOT create master copy with unique supply type', async () => {
         try {
-            await factory.createMasterItem(linkThree, desc, unique);
+            await factory.createMasterItem(linkTwo, desc, unique);
         } catch(e) {
             assert(e.message, 'error message must contain revert');
         }
     });
 
     it('should create master copy with rare supply type', async () => {
-        const createRareItemOne = await factory.createMasterItem(linkFour, desc, rare);
+        const createRareItemOne = await factory.createMasterItem(linkThree, desc, rare);
         console.log('createRareItemOne '+ createRareItemOne.receipt.logs[0].args.master_id);
-        midFour = createRareItemOne.receipt.logs[0].args.master_id;
+        midThree = createRareItemOne.receipt.logs[0].args.master_id;
         const receiptFirstRareEvent = await expectEvent.inTransaction(createRareItemOne.tx, nft, 'MasterCopyCreatedHuman', {
             author: admin,
-            master_id: midFour,
+            master_id: midThree,
             description: desc,
-            link: linkFour,
+            link: linkThree,
         });
         const firstRareLink = receiptFirstRareEvent.args.link;
-        assert(firstRareLink == linkFour);
+        assert(firstRareLink == linkThree);
 		assert.equal(receiptFirstRareEvent.event, 'MasterCopyCreatedHuman', 'should be the MasterCopyCreatedHuman event');
-
-        const createRareItemTwo = await factory.createMasterItem(linkFive, desc, rare);
-        console.log('createRareItemTwo '+ createRareItemTwo.receipt.logs[0].args.master_id);
-        midFive = createRareItemTwo.receipt.logs[0].args.master_id;
-        const receiptSecondRareEvent = await expectEvent.inTransaction(createRareItemTwo.tx, nft, 'MasterCopyCreatedHuman', {
-            author: admin,
-            master_id: midFive,
-            description: desc,
-            link: linkFive,
-        });
-
-        const secondRareLink = receiptSecondRareEvent.args.link;
-        assert(secondRareLink == linkFive);
-		assert.equal(receiptSecondRareEvent.event, 'MasterCopyCreatedHuman', 'should be the CreateMasterItem event');
-        assert(firstRareLink != secondRareLink);
-        rareLinksArr.push(firstRareLink, secondRareLink);
-        assert.equal(rareLinksArr.length, rare, 'count of unlimit master copy creations');
     });
 
     it('should NOT create master copy with rare supply type', async () => {
         try {
-            await factory.createMasterItem(linkFour, desc, rare);
-        } catch(e) {
-            assert(e.message, 'error message must contain revert');
-        }
-        try {
-            await factory.createMasterItem(linkFive, desc, rare);
+            await factory.createMasterItem(linkThree, desc, rare);
         } catch(e) {
             assert(e.message, 'error message must contain revert');
         }
@@ -375,12 +328,14 @@ contract('MasterFactory721', accounts => {
 		assert.equal(receiptItemSale.receipt.logs[1].event, 'SaleCreatedHuman', 'should be the SaleCreatedHuman event');
         console.log('Price');
         console.log(receiptItemSale.receipt.logs[0].args.price.toString());
-        // assert(userTokenBalance, receiptItemSale.receipt.logs[0].args.price, 'balance must be above the price');
+        assert(userTokenBalance, receiptItemSale.receipt.logs[0].args.price, 'balance must be above the price');
 
-        console.log('item sale address');
-        console.log(receiptItemSale.receipt.logs[0].args.it_sale.toString());
+        saletemplate = await factory.sale_template.call();
 
-        const contractAddress = receiptItemSale.receipt.logs[0].args.it_sale;
+        // console.log('item sale address');
+        // console.log(receiptItemSale.receipt.logs[0].args.it_sale.toString());
+
+        const contractAddress = saletemplate;
 
 		await mst.approve(contractAddress, 0, { from: user });
         
@@ -395,24 +350,15 @@ contract('MasterFactory721', accounts => {
         const allowance = await mst.allowance(user,contractAddress);
         assert(allowance.toString() == tokenSnmPrice.toString());
 
-        tokenSale721 = await TokenSale721.at(contractAddress);
-        const buyToken = await tokenSale721.buyTokens(user, 1, MST);
-        console.log('buyToken mst '+buyToken.receipt.gasUsed);
+        tokenSaleSingleton = await TokenSaleSingleton.at(contractAddress);
+        const buyToken = await tokenSaleSingleton.buyTokens(user, 1, MST, midOne);
+        console.log(buyToken);
         assert.equal(buyToken.logs.length, 1, 'triggers one event');
 		assert.equal(buyToken.logs[0].event, 'TokensPurchased', 'should be the TokensPurchased event');
 
-        let userBalance = await mst.balanceOf(user, {from: admin});
-        let userBalanceAfterBuy = userTokenBalance - tokenSnmPrice;
-        console.log("userBalance");
-        console.log(userBalance.toString());
-        console.log("userBalanceAfterBuy");
-        console.log(userBalanceAfterBuy.toString());
-        // assert(userBalance.toString() == userBalanceAfterBuy.toString());
-        
-        let contractTokenBalanceBeforeSale = await mst.balanceOf(contractAddress, {from: admin});
-        assert(contractTokenBalanceBeforeSale.toString() == tokenSnmPrice.toString());
-
-        let withDrawFunds = await tokenSale721.withDrawFunds(MST);
+        let withDrawFunds = await tokenSaleSingleton.withDrawFunds(MST, midOne);
+        assert.equal(withDrawFunds.logs.length, 1, 'triggers one event');
+		assert.equal(withDrawFunds.logs[0].event, 'CalculatedFees', 'should be the CalculatedFees event');
         console.log('withDrawFunds mst '+withDrawFunds.receipt.gasUsed);
         let serviceFees = withDrawFunds.logs[0].args.fees;
         let feeAddress = withDrawFunds.logs[0].args.feeAddress;
