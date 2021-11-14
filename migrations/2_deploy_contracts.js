@@ -19,11 +19,6 @@ var WETH = artifacts.require("./test_erc20_tokens/WETH.sol");
 var MST = artifacts.require("./test_erc20_tokens/MST.sol");
 
 //  Ropsten addresses
-// var usdt_address = web3.utils.toChecksumAddress('0x3b00ef435fa4fcff5c209a37d1f3dcff37c705ad');
-// var usdc_address = web3.utils.toChecksumAddress('0xeb8f08a975ab53e34d8a0330e0d34de942c95926');
-// var dai_address = web3.utils.toChecksumAddress('0x95b58a6bff3d14b7db2f5cb5f0ad413dc2940658');
-// var weth_address = web3.utils.toChecksumAddress('0xc778417e063141139fce010982780140aa0cd5ab');
-
 var usdt_address = web3.utils.toChecksumAddress('0x6ee856ae55b6e1a249f04cd3b947141bc146273c');
 var usdc_address = web3.utils.toChecksumAddress('0xfe724a829fdf12f7012365db98730eee33742ea2');
 var dai_address = web3.utils.toChecksumAddress('0xad6d458402f60fd3bd25163575031acdce07538d');
