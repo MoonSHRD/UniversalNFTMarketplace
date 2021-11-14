@@ -15,6 +15,7 @@ import "../../../node_modules/@openzeppelin/contracts/access/Ownable.sol";
 /**
  *      CurrenciesERC20
  * @title CurrenciesERC20
+ * @author JackBekket
  * @dev This contract allow to use erc20 tokens as a currency in crowdsale-like contracts
  *
  */

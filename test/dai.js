@@ -1,17 +1,21 @@
 const DAI = artifacts.require('DAI');
+// const DAI = web3.utils.toChecksumAddress('0xad6d458402f60fd3bd25163575031acdce07538d');
 
 contract('DAI', accounts => {
-    let token;
+    let token, network;
     let eth = '10';
     let newEth = '30';
     const admin = accounts[0];
     const user = accounts[1];
     before(async () => {
         token = await DAI.deployed();
+        network = process.env.NETWORK;
     });
 
     it('should deploy smart contract', async () => {
-        assert(token.address != '');
+        if (network == 'development' || network == 'ganache') {
+            assert(token.address != '');
+        }
     });
 
     it('should mint if admin have enough balance', async () => {
@@ -20,17 +24,19 @@ contract('DAI', accounts => {
         assert.equal(adminTokenBalanceBefore, 0, 'current admins token balance');
         const receipt = await token.MintERC20(admin, tokensToMint);
         assert.equal(receipt.logs.length, 1, 'triggers one event');
-		assert.equal(receipt.logs[0].event, 'Transfer', 'should be the Transfer event');
+        assert.equal(receipt.logs[0].event, 'Transfer', 'should be the Transfer event');
         assert.equal(receipt.logs[0].address, token.address, 'minted tokens are transferred from');
         let adminTokenBalanceAfter = await token.balanceOf(admin);
         assert.equal(adminTokenBalanceAfter.toString(), tokensToMint.toString(), 'admins token balance after mint');
     });
 
-    it('should revert mint function', async () => {   
+    it('should revert mint function', async () => {
         let tokensToMint = web3.utils.toWei(web3.utils.toBN(eth));
         try {
-            await token.MintERC20(user, tokensToMint, {from: user});
-        } catch(e) {
+            await token.MintERC20(user, tokensToMint, {
+                from: user
+            });
+        } catch (e) {
             assert(e.message, 'error message must contain revert Ownable');
         }
     });

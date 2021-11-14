@@ -1,36 +1,18 @@
-Ropsten stablecoins
-
-USDT
-0x3b00ef435fa4fcff5c209a37d1f3dcff37c705ad
-
-USDC
-0xeb8f08a975ab53e34d8a0330e0d34de942c95926
-
-DAI
-0x95b58a6bff3d14b7db2f5cb5f0ad413dc2940658
-
-SNM
-0xc778417e063141139fce010982780140aa0cd5ab
-
-WETH
-0x98201f86F578154e01ec683E1962578855d8320C
-
-
-v0.0.4
+v0.0.5
 
 MST(dummy)  -- this is DUMMY contract, we own this contract and we can use it for mint, buy, transfer and other tests
-0xEC3C19C5b75BBF51C0FE90E8df6FC308FBAE755E
+0x1BA1376f8EA54Efb92214065623CeF665FF134d0
 
 WETH    -- this is wrapped ethereum contract. You can use this contract to wrap your test ether to test weth erc20 tokens. those tokens can be used to testing buy, transfer and other tests
 0x98201f86F578154e01ec683E1962578855d8320C
 
 CurrenciesERC20
-0x48B128B17C73973FB70bE30Df833ecf4175E11dA
+0xEe97Ec064E0a6E9d9F03176b0D0F62D64da29424
 
 MSNFT
-0xb3178244C037Bb71Bda01547023a475Ecd52876C
+0x3bd630031CA2818B5FbdF32390A300ECa8bb42Ed
 
 MasterFactory721
-0xE63C81Da719BDa2A7ddb80E176fEbb92b6aF7A44
+0xFC54579Fe7533e986E1991c140eb4543f2f69574
 
 After deploying (and releasing) new version do not forget to upd this doc and to create release with tag and attach ./build directory to it!
