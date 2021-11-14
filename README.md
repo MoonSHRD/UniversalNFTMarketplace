@@ -13,7 +13,7 @@ Universal NFT Marketplace
 
  ### Currencies erc20
  We use some stable-coins and other erc20 tokens as currencies
- So users can set up and get paid in USDT,USDC,DAI,MST or other custom currencies
+ So users can set up and get paid in USDT,USDC,DAI, MST or other custom currencies
 
  For more info see `./contracts/721/singleton/CurrenciesERC20.sol`
 

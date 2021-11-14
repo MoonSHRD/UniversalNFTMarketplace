@@ -1,30 +1,47 @@
-pragma solidity ^0.5.11;
+//SPDX-License-Identifier: UNLICENSED
+pragma solidity ^0.8.0;
 
-import '../../zeppeline/crowdsale/Crowdsale.sol';
-import "../../zeppeline/utils/ReentrancyGuard.sol";
-import "../../zeppeline/math/SafeMath.sol";
-import "../../zeppeline/GSN/Context.sol";
-import "../../zeppeline/token/ERC721/IERC721Enumerable.sol";
-import "../../zeppeline/drafts/Counters.sol";
+import "../../../node_modules/@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
+import "../../../node_modules/@openzeppelin/contracts/security/ReentrancyGuard.sol";
+import "../../../node_modules/@openzeppelin/contracts/utils/Context.sol";
+import "../../../node_modules/@openzeppelin/contracts/token/ERC721/extensions/IERC721Enumerable.sol";
+import "../../../node_modules/@openzeppelin/contracts/token/ERC20/extensions/IERC20Metadata.sol";
+import "../../../node_modules/@openzeppelin/contracts/utils/Counters.sol";
 
-import './Ticket721.sol';
 
+import './MSNFT.sol';
+import './CurrenciesERC20.sol';
+
+
+
+/**
+ *                  TOKENSALE721
+ *  @title TokenSale721
+ *  @author JackBekket (Sergey Ponomarev)
+ *  @dev TokenSale721 is a reworked OZ Crowdsale contract (see Crowdsale.sol). Originall contract was designed to sell ERC20 tokens
+ *  This contract is defining rules of token (ERC721Enumerable) sell.
+ *  This version of contract suppose to accept ERC20 tokens as a currency (instead of ethereum), and support work with stable-coins as a currency
+ * 
+*/
 contract TokenSale721 is Context, ReentrancyGuard {
 
-
-    using SafeMath for uint256;
-    using SafeERC20 for IERC20;
+    using SafeERC20 for IERC20Metadata;
   //  using Counters for Counters.Counter;
 
     // The token being sold
-    Ticket721 public _token;
+    MSNFT public _token;
 
+    // Interface to currency token
+    IERC20Metadata public _currency_token;
 
-    //event_id
-    uint256 public _event_id;
+    // Currencies lib
+    CurrenciesERC20 _currency_contract;
 
-    // ticket type
-    uint public _ticket_type = 1;
+    //master_id
+    uint256 public _master_id;
+
+    // rarity type
+    MSNFT.RarityType _rarity_type;
 
     // maximum amount of tickets to sale
    // Counters.Counter public _current_limit;
@@ -38,23 +55,22 @@ contract TokenSale721 is Context, ReentrancyGuard {
     // Address where we collect comission
     address payable public treasure_fund;
 
-    // How many token units a buyer gets per wei.
-    // The rate is the conversion between wei and the smallest and indivisible token unit.
-    // So, if you are using a rate of 1 with a ERC20Detailed token with 3 decimals called TOK
-    // 1 wei will give you 1 unit, or 0.001 TOK.
-    uint256 private _rate;
+    
+    // Supported erc20 currencies: .. to be extended
+    //enum CurrencyERC20 {USDT, USDC, DAI, MST, WETH} 
+    // CurrenciesERC20.CurrencyERC20 -- enum from above
+    // Alternativly use CurrenciesERC20.
 
-    // Amount of wei raised
-    uint256 private _weiRaised;
+    // Map from currency to price
+    mapping (CurrenciesERC20.CurrencyERC20 => uint256) public _price;
+   
+    // balances of this sale contract in those currencies
+    mapping (CurrenciesERC20.CurrencyERC20 => uint256) internal currency_balances; 
 
     // service comission fee
-    uint public percent_fee = 5;
+    uint public promille_fee = 25;
 
-    // Creation date
-    uint public crDate = now;
 
-    // How much time before event start (in seconds)
-    uint public _timeToStart;
 
     // Funds, that have been locked
     uint256 public lockedFunds;
@@ -68,93 +84,131 @@ contract TokenSale721 is Context, ReentrancyGuard {
      */
     event TokensPurchased(address indexed purchaser, address indexed beneficiary, uint256 value, uint256 amount);
 
-    event CalculatedFees(uint256 initial_value, uint256 fees, uint256 transfered_amount);
+    event CalculatedFees(uint256 initial_value, uint256 fees, uint256 transfered_amount, address feeAddress);
 
 
     /**
-     * @param rate Number of token units a buyer gets per wei
-     * @dev The rate is the conversion between wei and the smallest and indivisible
-     * token unit. So, if you are using a rate of 1 with a ERC20Detailed token
-     * with 3 decimals called TOK, 1 wei will give you 1 unit, or 0.001 TOK.
-     * @param wallet Address where collected funds will be forwarded to
-     * @param token Address of the token being sold
+     *  
+     * @dev Constructor of TokenSale721
+     * @param i_wallet Address where collected funds will be forwarded to
+     * @param i_token Address of the Master Contract
+     * @param i_sale_limit How much we want to sell. Should be consistent with rarity type
+     * @param _treasure_fund This is our wallet to collect fees
+     * @param sprice Price for 1 token. (in wei/lowest decimal format)
+     * @param _currency ERC20 token used as a currency. If it stable then price is setting equal for all stables. 
+     * @param c_master_id ID of mastercopy being sold
+     * @param currency_contract_ Address of currency registry contract (CurrenciesERC20.sol)
      */
-    constructor (uint256 rate, address payable wallet, Ticket721 token, uint sale_limit, string memory jid, address payable _treasure_fund,uint timeToStart) public {
-        require(rate > 0, "Crowdsale: rate is 0");
-        require(wallet != address(0), "Crowdsale: wallet is the zero address");
-        require(address(token) != address(0), "Crowdsale: token is the zero address");
+    constructor (address payable i_wallet, MSNFT i_token, uint i_sale_limit, address payable _treasure_fund, uint256 sprice, CurrenciesERC20.CurrencyERC20 _currency, uint256 c_master_id, address currency_contract_)  {
+        require(i_wallet != address(0), "Crowdsale: wallet is the zero address");
+        require(address(i_token) != address(0), "Crowdsale: token is the zero address");
 
-        _rate = rate;
-        _wallet = wallet;
+        // Check if stable
+        if (_currency == CurrenciesERC20.CurrencyERC20.DAI || _currency == CurrenciesERC20.CurrencyERC20.USDC) {
+           // _price[_currency] = sprice;
+            _price[CurrenciesERC20.CurrencyERC20.DAI] = sprice;
+            _price[CurrenciesERC20.CurrencyERC20.USDC] = sprice;
+            _price[CurrenciesERC20.CurrencyERC20.USDT] = sprice / 1 ether * 1e6;    // USDT have 6 decimals, not 18
+        } else if(_currency == CurrenciesERC20.CurrencyERC20.USDT) {
+            _price[CurrenciesERC20.CurrencyERC20.USDT] = sprice;
+            _price[CurrenciesERC20.CurrencyERC20.USDC] = sprice / 1e6 * 1 ether;
+            _price[CurrenciesERC20.CurrencyERC20.DAI] = sprice / 1e6 * 1 ether;
+        } 
+        else {
+            _price[_currency] = sprice;
+        }
+
+        _wallet = i_wallet;
         treasure_fund = _treasure_fund;
-        _token = token;
-        _sale_limit = sale_limit * (1 ether);
+        _token = i_token;
+        _currency_contract = CurrenciesERC20(currency_contract_);
+        
+        // Get rarity type and check sale_limit
+        _rarity_type = _token.get_rarity(c_master_id);
+        if (_rarity_type == MSNFT.RarityType.Unique) {
+            require(i_sale_limit == 1, "Tokensale: Attempt to create new Tokensale for unique NFT with wrong sale_limit");
+        }
+        if (_rarity_type == MSNFT.RarityType.Common) {  
+            _sale_limit = 0;
+        }
+        if (_rarity_type == MSNFT.RarityType.Rare) {
+            _sale_limit = i_sale_limit;
+        }
 
-        _event_id = _token.reserveEventId(_wallet,jid);
 
-        _timeToStart = timeToStart;
+        _master_id = c_master_id;
+
+        _timeToStart = 0;
     }
 
-    /**
-     * @dev fallback function ***DO NOT OVERRIDE***
-     * Note that other contracts will transfer funds with a base gas stipend
-     * of 2300, which is not enough to call buyTokens. Consider calling
-     * buyTokens directly when purchasing tokens from a contract.
-     */
-    function() external payable {
-        buyTokens(_msgSender());
-    }
+
+    
 
     /**
-     * @return the token being sold.
+     * @return the Master NFT contract.
      */
-    function token() public view returns (Ticket721) {
+    function token() public view returns (MSNFT) {
         return _token;
     }
 
     /**
      * @return the address where funds are collected.
      */
-    function wallet() public view returns (address payable) {
+    function wallet() public view returns (address) {
         return _wallet;
     }
 
-    /**
-     * @return the number of token units a buyer gets per wei.
-     */
-    function rate() public view returns (uint256) {
-        return _rate;
+    function getBalances(CurrenciesERC20.CurrencyERC20 _currency) public view returns (uint) {
+        return currency_balances[_currency];
     }
 
-    /**
-     * @return the amount of wei raised.
-     */
-    function weiRaised() public view returns (uint256) {
-        return _weiRaised;
-    }
-
-    function event_id() public view returns (uint256) {
-        return _event_id;
+    function master_id() public view returns (uint256) {
+        return _master_id;
     }
 
     function sale_limit() public view returns (uint) {
         return _sale_limit;
     }
 
-    function ticket_type() public view returns (uint) {
-        return _ticket_type;
-    }
 
     function sold_count() public view returns (uint) {
         return _sold_count;
     }
 
+    function get_price(CurrenciesERC20.CurrencyERC20 currency) public view returns (uint256) {
+        return _price[currency];
+    }
+
+    function get_currency(CurrenciesERC20.CurrencyERC20 currency) public view returns (IERC20Metadata) {
+        return _currency_contract.get_hardcoded_currency(currency);
+      //  return _currencies[currency];
+    }
+
+    /**
+     * @dev check if sale limit is not exceeded 
+     * @param amountToBuy how much of tokens want to buy
+     */
+    function check_sale_limit(uint256 amountToBuy) public view returns (bool) {
+        uint sl = sale_limit();
+        if (sl == 0){
+            return true;
+        }
+        if (sl == 1) {
+            require(amountToBuy == 1,"TokenSale: exceed sale limit!");
+            return true;
+        } else {
+            require(amountToBuy <= sl,"TokenSale: exceed sale limit!");
+            return true;
+        }
+    }
+
+    // BUY TOKENS FOR ETHER/COIN (DEPRECATED)
     /**
      * @dev low level token purchase ***DO NOT OVERRIDE***
      * This function has a non-reentrancy guard, so it shouldn't be called by
      * another `nonReentrant` function.
      * @param beneficiary Recipient of the token purchase
-     */
+     
     function buyTokens(address beneficiary) public nonReentrant payable {
         uint256 weiAmount = msg.value;
 
@@ -176,6 +230,38 @@ contract TokenSale721 is Context, ReentrancyGuard {
          _lockFunds();
         _postValidatePurchase(beneficiary, weiAmount);
     }
+    **/
+
+     /**
+     *      @dev Main function to buyTokens
+     *      @param beneficiary buyer address
+     *      @param tokenAmountToBuy how much tokens we want to buy by one tx
+     *      @param currency ERC20 token used as a currency
+     */
+     function buyTokens(address beneficiary,uint256 tokenAmountToBuy, CurrenciesERC20.CurrencyERC20 currency) public nonReentrant payable {
+        uint256 tokens = tokenAmountToBuy;
+
+        // How much is needed to pay
+        uint256 weiAmount = getWeiAmount(tokens,currency);  // can be zero if wrong currency set-up to pay. in this case tx will fail under pre-validate purchase check
+
+        _preValidatePurchase(beneficiary, weiAmount, tokens, currency);
+
+        // update state
+        currency_balances[currency] = currency_balances[currency] + (weiAmount);
+       // If it is unlimited sale then _sale_limit should be always 0   
+        _sold_count = _sold_count + tokens;
+    
+        _processPurchase(beneficiary, tokens,currency, weiAmount);
+        emit TokensPurchased(_msgSender(), beneficiary, weiAmount, tokens);
+
+        _updatePurchasingState(beneficiary, weiAmount);
+
+     //   _forwardFunds();
+    //     _lockFunds();
+        _postValidatePurchase(beneficiary, weiAmount);
+    }
+
+
 
     /**
      * @dev Validation of an incoming purchase. Use require statements to revert state when conditions are not met.
@@ -185,13 +271,24 @@ contract TokenSale721 is Context, ReentrancyGuard {
      *     require(weiRaised().add(weiAmount) <= cap);
      * @param beneficiary Address performing the token purchase
      * @param weiAmount Value in wei involved in the purchase
+     * @param tokens number of tokens we want to buy
+     * @param currency ERC20 we use as currency
      */
-    function _preValidatePurchase(address beneficiary, uint256 weiAmount, uint256 tokens) internal view {
+    function _preValidatePurchase(address beneficiary, uint256 weiAmount, uint256 tokens, CurrenciesERC20.CurrencyERC20 currency) internal view {
         require(beneficiary != address(0), "Crowdsale: beneficiary is the zero address");
-        require(weiAmount != 0, "Crowdsale: weiAmount is 0");
-        uint sc = _sold_count * (1 ether);
+        require(weiAmount != 0, "Crowdsale: Pre-validate: weiAmount is 0, consider you have choose right currency to pay with");
+        uint sc = _sold_count;
         uint limit = sc + tokens;
-        require(limit <= _sale_limit, "tokens amount should not exceed sale_limit");
+
+     // Check sale_limit (including rarity check)
+        require(check_sale_limit(limit) == true, "tokens amount should not exceed sale_limit");
+
+     // Check allowance of currency balance
+        IERC20Metadata currency_token = get_currency(currency);
+        uint256 approved_balance = currency_token.allowance(beneficiary, address(this));
+        require(approved_balance >= weiAmount, "Tokensale: ERC20:approved spending limit is not enoght");
+
+
         this; // silence state mutability warning without generating bytecode - see https://github.com/ethereum/solidity/issues/2691
     }
 
@@ -212,7 +309,7 @@ contract TokenSale721 is Context, ReentrancyGuard {
      * @param tokenAmount Number of tokens to be emitted
      */
     function _deliverTokens(address beneficiary, uint256 tokenAmount) internal {
-        _token.buyTicket(beneficiary,tokenAmount, _event_id, _ticket_type);
+        _token.buyItem(beneficiary,tokenAmount, _master_id);
     }
 
     /**
@@ -220,8 +317,12 @@ contract TokenSale721 is Context, ReentrancyGuard {
      * tokens.
      * @param beneficiary Address receiving the tokens
      * @param tokenAmount Number of tokens to be purchased
+     * @param currency ERC20 used as currency
+     * @param weiAmount wei amount involved in transaction
      */
-    function _processPurchase(address beneficiary, uint256 tokenAmount) internal {
+    function _processPurchase(address beneficiary, uint256 tokenAmount, CurrenciesERC20.CurrencyERC20 currency, uint256 weiAmount) internal {
+        IERC20Metadata currency_token = get_currency(currency);
+        require(currency_token.transferFrom(beneficiary, address(this), weiAmount), "TokenSale: ERC20: transferFrom buyer to itemsale contract failed ");
         _deliverTokens(beneficiary, tokenAmount);
     }
 
@@ -235,104 +336,94 @@ contract TokenSale721 is Context, ReentrancyGuard {
         // solhint-disable-previous-line no-empty-blocks
     }
 
-    /**
-     * @dev Override to extend the way in which ether is converted to tokens.
-     * @param weiAmount Value in wei to be converted into tokens
-     * @return Number of tokens that can be purchased with the specified _weiAmount
-     */
-    function _getTokenAmount(uint256 weiAmount) internal view returns (uint256) {
-      //  require(condition, message);
-        require(weiAmount >= _rate, "wei amount should be bigger or equal of rate");
-       // uint256 ta = SafeMath.mul(weiAmount, _rate);
-        uint256 ta = (weiAmount / (1 ether)) / (_rate / (1 ether));
-        return ta;
-       // return weiAmount.mul(_rate);
-        //FIXME: round result to int, check math
+
+    /** 
+    *  @dev How much is needed to pay for this token amount to buy
+    *  @param tokenAmountToBuy how much we want to buy
+    *  @param currency  ERC20 used as currency
+    *  @return weiAmount how much we need to pay, could be zero if wrong currency, but will fail at pre-validation
+    */
+    function getWeiAmount(uint256 tokenAmountToBuy, CurrenciesERC20.CurrencyERC20 currency) public view returns(uint256){
+        uint256 price = get_price(currency);    
+        uint256 weiAmount = price * tokenAmountToBuy; 
+        return weiAmount;
     }
 
     /**
-     * @dev Determines how ETH is stored/forwarded on purchases.
+     * @dev Determines how ERC20 is stored/forwarded on purchases. Here we take our fee. This function can be tethered to buy tx or can be separate from buy flow.
+     * @param currency ERC20 currency. Seller should specify what exactly currency he/she want to out
      */
-    function _forwardFunds() internal {
-        uint256 amount = msg.value;
-        uint256 scale = 100;
+    function _forwardFunds(CurrenciesERC20.CurrencyERC20 currency) internal {
+        IERC20Metadata currency_token =  get_currency(currency);
+        uint256 amount = currency_token.balanceOf(address(this));
+        uint256 scale = 1000;
         uint256 fees = calculateFee(amount,scale);
         amount = amount - fees;
-        _wallet.transfer(amount);
-        treasure_fund.transfer(fees);
+        currency_token.transfer(_wallet,amount);
+        currency_token.transfer(treasure_fund,fees);
         uint256 r = amount + fees;
-        emit CalculatedFees(r,fees,amount);
+        emit CalculatedFees(r,fees,amount,treasure_fund);
     }
 
-    // Locking funds form sales to contract balance
-    function _lockFunds() public payable {
-        uint256 amount = msg.value;
-        uint256 scale = 100;
-        uint256 fees = calculateFee(amount,scale);
-        amount = amount - fees;
-        treasure_fund.transfer(fees);
-        uint256 r = amount + fees;
-        emit CalculatedFees(r,fees,amount);
-        lockedFunds = lockedFunds + amount;
 
-    }
-
-    // WithDraw locked funds to organiser
-    function withDrawFunds() public {
+    /**
+    *   @dev determine how funds are collected by seller
+    *   @param currency ERC20 currency
+    */
+    function withDrawFunds(CurrenciesERC20.CurrencyERC20 currency) public {
         require(msg.sender == _wallet, "only organaizer can do it");
-        if (now >= crDate - _timeToStart) {
-            _wallet.transfer(lockedFunds);
-            lockedFunds = 0;
-        } else {
-            revert("event is not started yet, funds are locked");
+        IERC20Metadata currency_token =  get_currency(currency);
+        require(currency_token.balanceOf(address(this)) > 0, "balance for this currency must be greater then zero");
+  
+        _forwardFunds(currency);
+    }
+
+    function CloseAndDestroy(address payable _to) public {
+        require(msg.sender == _wallet, "must be author address");
+        for (uint8 i = 0; i <= 4;i++) {
+            IERC20Metadata currency_token =  get_currency(CurrenciesERC20.CurrencyERC20(i));
+            if (currency_token.balanceOf(address(this)) > 0) {
+            withDrawFunds(CurrenciesERC20.CurrencyERC20(i));
+            }
         }
+        selfdestruct(_to);
+
     }
 
-    function refundToken(address payable visitor, uint256 amount) internal {
-        visitor.transfer(amount);
-        lockedFunds = lockedFunds.sub(amount);
-    }
-
-    /*
-    *   EXAMPLE OF TAKING FEE (BASIC OPERATORS)
-    *
-    // calculate percent -- amount * percent / 100
+    /**
+    *   Calculate fee (UnSafeMath) -- use it only if it ^0.8.0
+    *   @param amount number from whom we take fee
+    *   @param scale scale for rounding. 100 is 1/100 (percent). we can encreace scale if we want better division (like we need to take 0.5% instead of 5%, then scale = 1000)
+    */
     function calculateFee(uint256 amount, uint256 scale) internal view returns (uint256) {
         uint a = amount / scale;
         uint b = amount % scale;
-        uint c = percent_fee / scale;
-        uint d = percent_fee % scale;
+        uint c = promille_fee / scale;
+        uint d = promille_fee % scale;
 
         // Calculate fee with ROUND DOWN
-       // return a * c * scale + a * d + b * c + b * d / scale;
+        // return a * c * scale + a * d + b * c + b * d / scale;
 
-       // calculate fee with ROUND UP
-     //   return a * c * scale + a * d + b * c + (b * d + scale - 1) / scale;
+        // calculate fee with ROUND UP
+        // return a * c * scale + a * d + b * c + (b * d + scale - 1) / scale;   // I guess we use this
 
-     //calculate fee with CLOSESTS INTEGER
-        return a * c * scale + a * d + b * c + (b * d + scale / 2) / scale;
+        //calculate fee with CLOSESTS INTEGER
+        // return a * c * scale + a * d + b * c + (b * d + scale / 2) / scale;
 
+       return a * c * scale + a * d + b * c + (b * d + scale - 1) / scale;
     }
-    */
 
 
-    /*
+    /**
     *   Calculate fee (SafeMath)
-    */
-    function calculateFee(uint256 amount, uint256 scale) internal view returns (uint256) {
+    *   @param amount number from whom we take fee
+    *   @param scale scale for rounding. 100 is 1/100 (percent). we can encreace scale if we want better division (like we need to take 0.5% instead of 5%, then scale = 1000)
+    function calculateFeeSafeMath(uint256 amount, uint256 scale) internal view returns (uint256) {
         uint256 a = SafeMath.div(amount, scale);
         uint256 b = SafeMath.mod(amount, scale);
-        uint256 c = SafeMath.div(percent_fee, scale);
-        uint256 d = SafeMath.mod(percent_fee, scale);
+        uint256 c = SafeMath.div(promille_fee, scale);
+        uint256 d = SafeMath.mod(promille_fee, scale);
 
-        // Calculate fee with ROUND DOWN
-       // return a * c * scale + a * d + b * c + b * d / scale;
-
-       // calculate fee with ROUND UP
-     //   return a * c * scale + a * d + b * c + (b * d + scale - 1) / scale;
-
-     //calculate fee with CLOSESTS INTEGER
-       // return a * c * scale + a * d + b * c + (b * d + scale / 2) / scale;
         uint256 m1 = SafeMath.mul(SafeMath.mul(a,c), scale);
         uint256 m2 = SafeMath.mul(a,d);
         uint256 m3 = SafeMath.mul(b,c);
@@ -347,9 +438,6 @@ contract TokenSale721 is Context, ReentrancyGuard {
         uint256 a4 = SafeMath.add(a3,d2);
         return a4;
     }
-
-
-
-
+    */
 
 }
