@@ -2,7 +2,7 @@
 pragma solidity ^0.8.0;
 
 import "../../../node_modules/@openzeppelin/contracts/token/ERC721/extensions/ERC721Enumerable.sol";
-import "../../../node_modules/@openzeppelin/contracts/token/ERC721/ERC721.sol";
+//import "../../../node_modules/@openzeppelin/contracts/token/ERC721/ERC721.sol";
 //import "../../../node_modules/@openzeppelin/contracts/token/ERC721/presets/ERC721PresetMinterPauserAutoId.sol";
 import "../../../node_modules/@openzeppelin/contracts/utils/Counters.sol";
 //import "../../../node_modules/@openzeppelin/contracts/utils/math/SafeMath.sol";
@@ -75,11 +75,11 @@ contract MSNFT is ERC721Enumerable, Ownable {
     // Rarity type
     /**
      * @dev Rarity type of token
-     * @param Unique -- only one token can exist
-     * @param Rare -- there are limited number of tokens ------ usefull for so called collections
-     * @param Common -- there are unlimited number of tokens
+     * @param Unique -- only one token can exist. use this type for something unique. high gas costs.
+     * @param Limited -- there are limited number of tokens . use this type for multy-asset nft (erc-1155 like). safe gas costs
+     * @param Unlimited -- there are unlimited number of tokens. use this when you want to sell 'clones' of your assets. so cheap that even you can afford it
      */
-    enum RarityType {Unique, Rare, Common}
+    enum RarityType {Unique, Limited, Unlimited}
 
     // map from mastercopy_id  to itemsale address
     mapping(uint256 => address) public mastersales;
@@ -118,7 +118,7 @@ contract MSNFT is ERC721Enumerable, Ownable {
     // map from link to master_id
     mapping(string => uint256) public links;
 
-    // map from itemId to positionOrder. Should be 0 if it is not collection
+    // map from itemId to positionOrder. Should be 0 if it is not collection. positionOrder is a file position order inside IPFS directory. Think of it as ancient CDROM's from 1990-s.
     mapping(uint256 => uint256) public positionOrder;
 
     // map from MasterCopyId to Meta info
@@ -209,11 +209,11 @@ contract MSNFT is ERC721Enumerable, Ownable {
 
         RarityType _rarity = set_rarity(_supplyType);
         uint m_totalSupply;
-        if (_rarity == RarityType.Rare){
+        if (_rarity == RarityType.Limited){
             m_totalSupply = _supplyType;
         } if (_rarity == RarityType.Unique) {
             m_totalSupply = 1;
-        } if (_rarity == RarityType.Common) {
+        } if (_rarity == RarityType.Unlimited) {
             m_totalSupply = 0;  // infinite. which means it is not really totalSupply
         }
         MetaInfo[mid] = ItemInfo(link, _description,_author,_rarity, m_totalSupply);
@@ -239,9 +239,9 @@ contract MSNFT is ERC721Enumerable, Ownable {
             _rarity = RarityType.Unique;
         }
         if (_supplyType == 0) {         // Unlimited sale
-            _rarity = RarityType.Common;
+            _rarity = RarityType.Unlimited;
         } else {
-            _rarity = RarityType.Rare;  // Limited sale
+            _rarity = RarityType.Limited;  // Limited sale
         }
         
         return _rarity;
@@ -270,7 +270,7 @@ contract MSNFT is ERC721Enumerable, Ownable {
      *  @param m_master_id master copy of item
      *  @param item_id counter of item. There are no incrementation of this counter here, so make sure this function is purely internal(!)
      */
-    function Mint(address to, uint m_master_id, uint item_id) internal {
+    function Mint(address to, uint m_master_id, uint item_id, uint positionOrder_) internal {
 
         ItemInfo memory meta;
         meta = MetaInfo[m_master_id];
@@ -279,8 +279,10 @@ contract MSNFT is ERC721Enumerable, Ownable {
         if (meta.rarity == RarityType.Unique) {
             require(itemIds[m_master_id].length == 0 , "MSNFT: MINT: try to mint more than one of Unique Items");
         }
-        if (meta.rarity == RarityType.Rare) {
-            require(itemIds[m_master_id].length < meta.i_totalSupply," MSNFT: MINT: try to mint more than totalSupply of Rare token");
+        if (meta.rarity == RarityType.Limited) {
+            require(itemIds[m_master_id].length < meta.i_totalSupply," MSNFT: MINT: try to mint more than totalSupply of Limited token");
+            require(positionOrder[item_id] == 0, "MSNFT: limited item with this positionOrder is already minted");
+            positionOrder[item_id] = positionOrder_;
         }
         
         _mint(to,item_id);
@@ -299,6 +301,8 @@ contract MSNFT is ERC721Enumerable, Ownable {
         itemIndex[item_id] = itemIds[m_master_id].length;   // this item_id will be stored at itemIds[m_master_id] at this *position order*.  
         itemIds[m_master_id].push(item_id);               // this item is stored at itemIds and tethered to master_id
         ItemToMaster[item_id] = m_master_id;            // here we can store and obtain what mid is tethered to specific token id, so we can get MetaInfo for specific token fast
+
+        positionOrder[item_id] = 0; // should be always zero if it is not limited rarity type
         emit MintNewToken(to, m_master_id, item_id);
     }
 
@@ -325,19 +329,19 @@ contract MSNFT is ERC721Enumerable, Ownable {
      *  
      *  @param master_id Master copy id 
      */
-    function buyItem(address buyer, uint256 master_id) public{
+    function buyItem(address buyer, uint256 master_id, uint positionOrder_) public{
         address _sale = mastersales[master_id];
         require(_sale == msg.sender, "MSNFT: you should call buyItem from itemsale contract");
 
-      //  for (uint256 i = 0; i < itemAmount; i++ ){
+      
             _item_id_count.increment();
             uint256 item_id = _item_id_count.current();
 
-            Mint(buyer, master_id, item_id);
+            Mint(buyer, master_id, item_id, positionOrder_);
             
             emit ItemBought(buyer,master_id,item_id);
             emit ItemBoughtHuman(buyer,master_id,item_id);
-     //   }
+     
 
     }
 

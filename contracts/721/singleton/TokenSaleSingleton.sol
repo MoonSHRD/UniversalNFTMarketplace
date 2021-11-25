@@ -223,10 +223,11 @@ contract TokenSaleSingleton is Context, ReentrancyGuard {
       //  return _currencies[currency];
     }
 
+    // @todo: rework?
     /**
      * @dev check if sale limit is not exceeded 
      * @param amountToBuy how much of tokens want to buy
-     * @todo rework this?
+     * 
      */
     function check_sale_limit(uint256 amountToBuy, uint master_id_) public view returns (bool) {
         uint sl = sale_limit(master_id_);
