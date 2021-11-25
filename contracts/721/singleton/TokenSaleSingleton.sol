@@ -164,10 +164,10 @@ contract TokenSaleSingleton is Context, ReentrancyGuard {
             require(i_sale_limit == 1, "Tokensale: Attempt to create new Tokensale for unique NFT with wrong sale_limit");
             metasale._sale_limit = 1;
         }
-        if (metasale._rarity_type == MSNFT.RarityType.Common) {  
+        if (metasale._rarity_type == MSNFT.RarityType.Unlimited) {  
             metasale._sale_limit = 0;
         }
-        if (metasale._rarity_type == MSNFT.RarityType.Rare) {
+        if (metasale._rarity_type == MSNFT.RarityType.Limited) {
             metasale._sale_limit = i_sale_limit;
         }
 
@@ -223,7 +223,7 @@ contract TokenSaleSingleton is Context, ReentrancyGuard {
       //  return _currencies[currency];
     }
 
-    // @todo: rework?
+    
     /**
      * @dev check if sale limit is not exceeded 
      * @param amountToBuy how much of tokens want to buy
@@ -250,7 +250,7 @@ contract TokenSaleSingleton is Context, ReentrancyGuard {
      *      
      *      @param currency ERC20 token used as a currency
      */
-     function buyTokens(address beneficiary, CurrenciesERC20.CurrencyERC20 currency, uint master_id_) public nonReentrant payable {
+     function buyTokens(address beneficiary, CurrenciesERC20.CurrencyERC20 currency, uint master_id_, uint file_order_) public nonReentrant payable {
         
         SaleInfo storage metasale = MSaleInfo[master_id_];
         
@@ -258,14 +258,14 @@ contract TokenSaleSingleton is Context, ReentrancyGuard {
         // How much is needed to pay (perhaps we need to rework it to make only 1 token buy per one call) -- it will make logic simplier and cheaper
         uint256 weiAmount = getWeiAmount(currency,master_id_);  // can be zero if wrong currency set-up to pay. in this case tx will fail under pre-validate purchase check
 
-        _preValidatePurchase(beneficiary, weiAmount, currency,master_id_);
+        _preValidatePurchase(beneficiary, weiAmount, currency,master_id_,file_order_);
 
         // update state
         metasale.currency_balances[currency] = metasale.currency_balances[currency] + (weiAmount);
        // If it is unlimited sale then _sale_limit should be always 0   
         metasale._sold_count++;
     
-        _processPurchase(beneficiary, currency, weiAmount,master_id_);
+        _processPurchase(beneficiary, currency, weiAmount,master_id_,file_order_);
         emit TokensPurchased(_msgSender(), beneficiary, weiAmount);
 
      //   _updatePurchasingState(beneficiary, weiAmount); // can be silenced as well
@@ -285,7 +285,7 @@ contract TokenSaleSingleton is Context, ReentrancyGuard {
      * 
      * @param currency ERC20 we use as currency
      */
-    function _preValidatePurchase(address beneficiary, uint256 weiAmount, CurrenciesERC20.CurrencyERC20 currency, uint master_id_) internal view {
+    function _preValidatePurchase(address beneficiary, uint256 weiAmount, CurrenciesERC20.CurrencyERC20 currency, uint master_id_, uint256 file_order_) internal view {
         require(beneficiary != address(0), "Crowdsale: beneficiary is the zero address");
         require(weiAmount != 0, "Crowdsale: Pre-validate: weiAmount is 0, consider you have choose right currency to pay with");
         
@@ -296,17 +296,19 @@ contract TokenSaleSingleton is Context, ReentrancyGuard {
 
      // Check sale_limit (including rarity check)
         require(check_sale_limit(limit,master_id_) == true, "tokens amount should not exceed sale_limit");
-     //   metasale._sold_count = limit;
+        if (file_order_ != 0) 
+        {
+            require(metasale._rarity_type == MSNFT.RarityType.Limited , "file order can be setted up only for limited collection");
+        }
 
      // Check allowance of currency balance
         IERC20Metadata currency_token = get_currency(currency);
         uint256 approved_balance = currency_token.allowance(beneficiary, address(this));
         require(approved_balance >= weiAmount, "Tokensale: ERC20:approved spending limit is not enoght");
 
-
-
         this; // silence state mutability warning without generating bytecode - see https://github.com/ethereum/solidity/issues/2691
     }
+
 
     /**
      * @dev Validation of an executed purchase. Observe state and use revert statements to undo rollback when valid
@@ -324,8 +326,8 @@ contract TokenSaleSingleton is Context, ReentrancyGuard {
      * @param beneficiary Address performing the token purchase
      * 
      */
-    function _deliverTokens(address beneficiary, uint master_id_) internal {
-        _token.buyItem(beneficiary, master_id_);
+    function _deliverTokens(address beneficiary, uint master_id_, uint256 file_order_) internal {
+        _token.buyItem(beneficiary, master_id_,file_order_);
     }
 
     /**
@@ -336,10 +338,10 @@ contract TokenSaleSingleton is Context, ReentrancyGuard {
      * @param currency ERC20 used as currency
      * @param weiAmount wei amount involved in transaction
      */
-    function _processPurchase(address beneficiary, CurrenciesERC20.CurrencyERC20 currency, uint256 weiAmount,uint master_id_) internal {
+    function _processPurchase(address beneficiary, CurrenciesERC20.CurrencyERC20 currency, uint256 weiAmount,uint master_id_, uint256 file_order_) internal {
         IERC20Metadata currency_token = get_currency(currency);
         require(currency_token.transferFrom(beneficiary, address(this), weiAmount), "TokenSale: ERC20: transferFrom buyer to itemsale contract failed ");
-        _deliverTokens(beneficiary, master_id_);
+        _deliverTokens(beneficiary, master_id_,file_order_);
     }
 
     /**

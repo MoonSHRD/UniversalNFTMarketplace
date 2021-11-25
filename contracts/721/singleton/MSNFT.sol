@@ -118,8 +118,8 @@ contract MSNFT is ERC721Enumerable, Ownable {
     // map from link to master_id
     mapping(string => uint256) public links;
 
-    // map from itemId to positionOrder. Should be 0 if it is not collection. positionOrder is a file position order inside IPFS directory. Think of it as ancient CDROM's from 1990-s.
-    mapping(uint256 => uint256) public positionOrder;
+    // map from master id to positionOrder to itemId. Should be 0 if it is not collection. positionOrder is a file position order inside IPFS directory. Think of it as ancient CDROM's from 1990-s.
+    mapping(uint256 => mapping(uint256 => uint256)) public positionOrder;
 
     // map from MasterCopyId to Meta info
     mapping(uint256 => ItemInfo) public MetaInfo;
@@ -281,8 +281,8 @@ contract MSNFT is ERC721Enumerable, Ownable {
         }
         if (meta.rarity == RarityType.Limited) {
             require(itemIds[m_master_id].length < meta.i_totalSupply," MSNFT: MINT: try to mint more than totalSupply of Limited token");
-            require(positionOrder[item_id] == 0, "MSNFT: limited item with this positionOrder is already minted");
-            positionOrder[item_id] = positionOrder_;
+            require(positionOrder[m_master_id][positionOrder_] == 0, "MSNFT: limited item with this positionOrder is already minted");
+            positionOrder[m_master_id][positionOrder_] = item_id;
         }
         
         _mint(to,item_id);
@@ -302,7 +302,7 @@ contract MSNFT is ERC721Enumerable, Ownable {
         itemIds[m_master_id].push(item_id);               // this item is stored at itemIds and tethered to master_id
         ItemToMaster[item_id] = m_master_id;            // here we can store and obtain what mid is tethered to specific token id, so we can get MetaInfo for specific token fast
 
-        positionOrder[item_id] = 0; // should be always zero if it is not limited rarity type
+        positionOrder[m_master_id][0] = 0; // should be always zero if it is not limited rarity type
         emit MintNewToken(to, m_master_id, item_id);
     }
 
@@ -312,14 +312,14 @@ contract MSNFT is ERC721Enumerable, Ownable {
      * @param to whom minted token will be sent
      * @param m_master_id id of mastercopy
      */
-    function EmitItem(address to, uint m_master_id) public {
+    function EmitItem(address to, uint m_master_id, uint positionOrder_) public {
         ItemInfo memory meta;
         meta = MetaInfo[m_master_id];
         require(msg.sender == meta.author, "MSNFT: only author can emit items outside of sale");
 
         _item_id_count.increment();
         uint256 item_id = _item_id_count.current();
-        Mint(to, m_master_id, item_id);
+        Mint(to, m_master_id, item_id,positionOrder_);
     }
 
     // @todo -- make external instead of public?
