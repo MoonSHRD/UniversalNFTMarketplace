@@ -76,7 +76,7 @@ contract MSNFT is ERC721Enumerable, Ownable {
     /**
      * @dev Rarity type of token
      * @param Unique -- only one token can exist
-     * @param Rare -- there are limited number of tokens
+     * @param Rare -- there are limited number of tokens ------ usefull for so called collections
      * @param Common -- there are unlimited number of tokens
      */
     enum RarityType {Unique, Rare, Common}
@@ -115,8 +115,11 @@ contract MSNFT is ERC721Enumerable, Ownable {
     // map from itemId to masterId
     mapping(uint256 => uint256) public ItemToMaster;
 
-    // map from from link to master_id
+    // map from link to master_id
     mapping(string => uint256) public links;
+
+    // map from itemId to positionOrder. Should be 0 if it is not collection
+    mapping(uint256 => uint256) public positionOrder;
 
     // map from MasterCopyId to Meta info
     mapping(uint256 => ItemInfo) public MetaInfo;
@@ -133,13 +136,12 @@ contract MSNFT is ERC721Enumerable, Ownable {
     {
     string ipfs_link;
 
-    // TODO: rework this for searching functionality (case when user seacrh nft item at marketplace by name (or ticker?))
     string description;
     address author;
     RarityType rarity;
   
     // @todo rename it
-    uint i_totalSupply; // 0 means infinite, so it not be actually considered as usual totalSupply(!!)
+    uint i_totalSupply; // 0 means infinite, this variable can be used as maximum positionOrder for limited rarity type
     // ACTUAL total supply for specific mastercopy can be getted as itemIds[master_id].lenght
 
     }
@@ -320,14 +322,14 @@ contract MSNFT is ERC721Enumerable, Ownable {
     /**
      *  @dev external function for buying items, should be invoked from tokensale contract
      *  @param buyer address of buyer
-     *  @param itemAmount how much of tokens we want to buy if possible
+     *  
      *  @param master_id Master copy id 
      */
-    function buyItem(address buyer, uint256 itemAmount, uint256 master_id) public{
+    function buyItem(address buyer, uint256 master_id) public{
         address _sale = mastersales[master_id];
         require(_sale == msg.sender, "MSNFT: you should call buyItem from itemsale contract");
 
-        for (uint256 i = 0; i < itemAmount; i++ ){
+      //  for (uint256 i = 0; i < itemAmount; i++ ){
             _item_id_count.increment();
             uint256 item_id = _item_id_count.current();
 
@@ -335,7 +337,7 @@ contract MSNFT is ERC721Enumerable, Ownable {
             
             emit ItemBought(buyer,master_id,item_id);
             emit ItemBoughtHuman(buyer,master_id,item_id);
-        }
+     //   }
 
     }
 

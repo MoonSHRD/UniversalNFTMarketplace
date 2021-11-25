@@ -55,9 +55,9 @@ contract TokenSaleSingleton is Context, ReentrancyGuard {
      * @param purchaser who paid for the tokens
      * @param beneficiary who got the tokens
      * @param value weis paid for purchase
-     * @param amount amount of tokens purchased
+     * 
      */
-    event TokensPurchased(address indexed purchaser, address indexed beneficiary, uint256 value, uint256 amount);
+    event TokensPurchased(address indexed purchaser, address indexed beneficiary, uint256 value);
 
     event CalculatedFees(uint256 initial_value, uint256 fees, uint256 transfered_amount, address feeAddress);
 
@@ -226,6 +226,7 @@ contract TokenSaleSingleton is Context, ReentrancyGuard {
     /**
      * @dev check if sale limit is not exceeded 
      * @param amountToBuy how much of tokens want to buy
+     * @todo rework this?
      */
     function check_sale_limit(uint256 amountToBuy, uint master_id_) public view returns (bool) {
         uint sl = sale_limit(master_id_);
@@ -245,26 +246,26 @@ contract TokenSaleSingleton is Context, ReentrancyGuard {
      /**
      *      @dev Main function to buyTokens
      *      @param beneficiary buyer address
-     *      @param tokenAmountToBuy how much tokens we want to buy by one tx
+     *      
      *      @param currency ERC20 token used as a currency
      */
-     function buyTokens(address beneficiary,uint256 tokenAmountToBuy, CurrenciesERC20.CurrencyERC20 currency, uint master_id_) public nonReentrant payable {
+     function buyTokens(address beneficiary, CurrenciesERC20.CurrencyERC20 currency, uint master_id_) public nonReentrant payable {
         
         SaleInfo storage metasale = MSaleInfo[master_id_];
         
-        uint256 tokens = tokenAmountToBuy;
+       // uint256 tokens = tokenAmountToBuy;
         // How much is needed to pay (perhaps we need to rework it to make only 1 token buy per one call) -- it will make logic simplier and cheaper
-        uint256 weiAmount = getWeiAmount(tokens,currency,master_id_);  // can be zero if wrong currency set-up to pay. in this case tx will fail under pre-validate purchase check
+        uint256 weiAmount = getWeiAmount(currency,master_id_);  // can be zero if wrong currency set-up to pay. in this case tx will fail under pre-validate purchase check
 
-        _preValidatePurchase(beneficiary, weiAmount, tokens, currency,master_id_);
+        _preValidatePurchase(beneficiary, weiAmount, currency,master_id_);
 
         // update state
         metasale.currency_balances[currency] = metasale.currency_balances[currency] + (weiAmount);
        // If it is unlimited sale then _sale_limit should be always 0   
-        metasale._sold_count = metasale._sold_count + tokens;
+        metasale._sold_count++;
     
-        _processPurchase(beneficiary, tokens,currency, weiAmount,master_id_);
-        emit TokensPurchased(_msgSender(), beneficiary, weiAmount, tokens);
+        _processPurchase(beneficiary, currency, weiAmount,master_id_);
+        emit TokensPurchased(_msgSender(), beneficiary, weiAmount);
 
      //   _updatePurchasingState(beneficiary, weiAmount); // can be silenced as well
        // _postValidatePurchase(beneficiary, weiAmount);
@@ -280,25 +281,27 @@ contract TokenSaleSingleton is Context, ReentrancyGuard {
      *     require(weiRaised().add(weiAmount) <= cap);
      * @param beneficiary Address performing the token purchase
      * @param weiAmount Value in wei involved in the purchase
-     * @param tokens number of tokens we want to buy
+     * 
      * @param currency ERC20 we use as currency
      */
-    function _preValidatePurchase(address beneficiary, uint256 weiAmount, uint256 tokens, CurrenciesERC20.CurrencyERC20 currency, uint master_id_) internal view {
+    function _preValidatePurchase(address beneficiary, uint256 weiAmount, CurrenciesERC20.CurrencyERC20 currency, uint master_id_) internal view {
         require(beneficiary != address(0), "Crowdsale: beneficiary is the zero address");
         require(weiAmount != 0, "Crowdsale: Pre-validate: weiAmount is 0, consider you have choose right currency to pay with");
         
         SaleInfo storage metasale = MSaleInfo[master_id_];
         
         uint sc = metasale._sold_count;
-        uint limit = sc + tokens;
+        uint limit = sc++;    // @todo: check this in tests
 
      // Check sale_limit (including rarity check)
         require(check_sale_limit(limit,master_id_) == true, "tokens amount should not exceed sale_limit");
+     //   metasale._sold_count = limit;
 
      // Check allowance of currency balance
         IERC20Metadata currency_token = get_currency(currency);
         uint256 approved_balance = currency_token.allowance(beneficiary, address(this));
         require(approved_balance >= weiAmount, "Tokensale: ERC20:approved spending limit is not enoght");
+
 
 
         this; // silence state mutability warning without generating bytecode - see https://github.com/ethereum/solidity/issues/2691
@@ -318,24 +321,24 @@ contract TokenSaleSingleton is Context, ReentrancyGuard {
      * @dev Source of tokens. Override this method to modify the way in which the crowdsale ultimately gets and sends
      * its tokens.
      * @param beneficiary Address performing the token purchase
-     * @param tokenAmount Number of tokens to be emitted
+     * 
      */
-    function _deliverTokens(address beneficiary, uint256 tokenAmount,uint master_id_) internal {
-        _token.buyItem(beneficiary,tokenAmount, master_id_);
+    function _deliverTokens(address beneficiary, uint master_id_) internal {
+        _token.buyItem(beneficiary, master_id_);
     }
 
     /**
      * @dev Executed when a purchase has been validated and is ready to be executed. Doesn't necessarily emit/send
      * tokens.
      * @param beneficiary Address receiving the tokens
-     * @param tokenAmount Number of tokens to be purchased
+     * 
      * @param currency ERC20 used as currency
      * @param weiAmount wei amount involved in transaction
      */
-    function _processPurchase(address beneficiary, uint256 tokenAmount, CurrenciesERC20.CurrencyERC20 currency, uint256 weiAmount,uint master_id_) internal {
+    function _processPurchase(address beneficiary, CurrenciesERC20.CurrencyERC20 currency, uint256 weiAmount,uint master_id_) internal {
         IERC20Metadata currency_token = get_currency(currency);
         require(currency_token.transferFrom(beneficiary, address(this), weiAmount), "TokenSale: ERC20: transferFrom buyer to itemsale contract failed ");
-        _deliverTokens(beneficiary, tokenAmount, master_id_);
+        _deliverTokens(beneficiary, master_id_);
     }
 
     /**
@@ -351,14 +354,14 @@ contract TokenSaleSingleton is Context, ReentrancyGuard {
 
     /** 
     *  @dev How much is needed to pay for this token amount to buy
-    *  @param tokenAmountToBuy how much we want to buy
+    *  
     *  @param currency  ERC20 used as currency
-    *  @return weiAmount how much we need to pay, could be zero if wrong currency, but will fail at pre-validation
+    *  @return price how much we need to pay, could be zero if wrong currency, but will fail at pre-validation
     */
-    function getWeiAmount(uint256 tokenAmountToBuy, CurrenciesERC20.CurrencyERC20 currency, uint master_id_) public view returns(uint256){
+    function getWeiAmount(CurrenciesERC20.CurrencyERC20 currency, uint master_id_) public view returns(uint256){
         uint256 price = get_price(currency,master_id_);    // @todo: WARNING -- it can be 0 if buyer mismatch currency, but such transaction will fail at pre-validate purchase check!
-        uint256 weiAmount = price * tokenAmountToBuy; 
-        return weiAmount;
+       // uint256 weiAmount = price * tokenAmountToBuy; 
+        return price;
     }
 
     /**
