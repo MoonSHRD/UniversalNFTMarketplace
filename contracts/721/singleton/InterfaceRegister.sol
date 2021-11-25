@@ -44,7 +44,7 @@ contract InterfaceRegister {
 
 
     function calculateIERC721() public pure returns (bytes4) {
-        // TODO: wrong calculation, need to fix.. use IERC721Enumarable interface for MSNFT
+        //  wrong calculation, need to fix.. use IERC721Enumarable interface for MSNFT
         IERC721 i;
         return i.balanceOf.selector ^ i.ownerOf.selector ^ i.transferFrom.selector ^ i.approve.selector ^ i.getApproved.selector ^ i.setApprovalForAll.selector ^ i.isApprovedForAll.selector;
 
@@ -54,7 +54,7 @@ contract InterfaceRegister {
 
         _INTERFACE_ID_IERC721ENUMERABLE = calculateIERC721Enumarable();
         _INTERFACE_ID_IERC721METADATA = calculateIERC721Metadata();
-        _INTERFACE_ID_IERC721 = 0x80ac58cd;
+        _INTERFACE_ID_IERC721 = 0x80ac58cd; // hardcode is not the best way to do it but
     }
 
 
