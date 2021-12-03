@@ -22,7 +22,7 @@ import "../../node_modules/@openzeppelin/contracts/access/Ownable.sol";
        // super._mint(msg.sender, amount);
     }
 
-    function MintERC20 (address to, uint amount) public onlyOwner{
+    function MintERC20 (address to, uint amount) virtual public onlyOwner{
         super._mint(to, amount);
     }
 
