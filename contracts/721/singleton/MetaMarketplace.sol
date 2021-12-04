@@ -16,7 +16,7 @@ import "../../../node_modules/@openzeppelin/contracts/token/ERC20/extensions/IER
 /**
  * @title NFT MetaMarketplace with ERC-165 support
  * @author JackBekket
- * --------------------------------------------------------ORIGINALLY FORKED FROM https://github.com/benber86/nft_royalties_market
+ * original idea from https://github.com/benber86/nft_royalties_market
  * @notice Defines a marketplace to bid on and sell NFTs.
  *         each marketplace is a struct tethered to nft-token contract
  *         
@@ -76,7 +76,7 @@ contract MetaMarketplace {
     bytes4 private constant _INTERFACE_ID_MSNFT = 0x780e9d63;
     bytes4 private constant _INTERFACE_ID_IERC721ENUMERABLE = 0x780e9d63;
     bytes4 private constant _INTERFACE_ID_IERC721METADATA = 0x5b5e139f;
-    bytes4 private constant _INTERFACE_ID_IERC721= 0x7aa5391d;      // WRONG  @todo: add correct interface id to IERC721
+    bytes4 private constant _INTERFACE_ID_IERC721= 0x80ac58cd;      
     //bytes4 private constant _INTERFACE_ID_ERC2981 = 0x2a55205a;
 
 
@@ -134,8 +134,9 @@ contract MetaMarketplace {
             return success;
         }
         if (standard_ == NftType.Common) {
-            return false;
-            //revert("");
+            (bool success) = IERC721(contract_).
+            supportsInterface(_INTERFACE_ID_IERC721);
+            return success;
         }
     }
     
