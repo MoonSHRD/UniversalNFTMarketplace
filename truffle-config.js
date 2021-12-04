@@ -25,8 +25,8 @@
 // const mnemonic = fs.readFileSync(".secret").toString().trim();
 
 // const path = require("path");
-const { projectId, privateKeys, coinmarketcupKey , etherscanApiKey} = require('./secret.json');
-const HDWalletProvider = require('@truffle/hdwallet-provider');
+//const { projectId, privateKeys, coinmarketcupKey , etherscanApiKey} = require('./secret.json');
+//const HDWalletProvider = require('@truffle/hdwallet-provider');
 module.exports = {
   /**
    * Networks define how you connect to your ethereum client and let you set the
@@ -92,8 +92,8 @@ module.exports = {
     ropsten: {
       provider: () => new HDWalletProvider(privateKeys, `wss://ropsten.infura.io/ws/v3/${projectId}`),
       network_id: 3,       // Ropsten's id
-     // gas: 7900000,        // Ropsten has a lower block limit than mainnet
-     // gasLimit: '7999999',
+      gas: 7900000,        // Ropsten has a lower block limit than mainnet
+      gasLimit: '7999999',
       gasPrice: '10000000000',
       websocket: true,
       confirmations: 2,    // # of confs to wait between deployments. (default: 0)
@@ -124,9 +124,9 @@ module.exports = {
     'truffle-plugin-verify'
   ],
 
-  api_keys: {
-    etherscan: etherscanApiKey
-  },
+  //api_keys: {
+    //etherscan: etherscanApiKey
+  //},
 
   // Configure your compilers
   compilers: {
