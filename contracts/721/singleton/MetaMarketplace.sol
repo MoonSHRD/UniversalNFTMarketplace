@@ -292,7 +292,7 @@ contract MetaMarketplace {
         if (metainfo.activeSellOffers[tokenId].minPrice[currency_] != 0) {
         require((bid_price_ > metainfo.activeSellOffers[tokenId].minPrice[currency_]),
             "Sell order at this price or lower exists");
-            // TODO: execute purchase if price is lower instead of revert
+            // @TODO: execute purchase if price is lower instead of revert
 
         }
 
@@ -312,6 +312,9 @@ contract MetaMarketplace {
         }
         metainfo.buyOffersEscrow[previousBuyOfferOwner][tokenId][currency_] = 0;    // zero escrow after refund
         
+        // pull bid payment for lock
+        require(_pullFunds(currency_,msg.sender,bid_price_),"MetaMarketplace: can't pull funds from buyer to contract");
+
         // Create a new buy offer
         metainfo.activeBuyOffers[tokenId][currency_].buyer = msg.sender;
         metainfo.activeBuyOffers[tokenId][currency_].price = bid_price_;
@@ -415,7 +418,9 @@ contract MetaMarketplace {
         return a * c * scale + a * d + b * c + (b * d + scale - 1) / scale;
     }
 
-      /**
+
+
+    /**
      * @dev Determines how ERC20 is stored/forwarded on purchases. Here we take our fee. This function can be tethered to buy tx or can be separate from buy flow.
      * @notice transferFrom(from_) to this contract and then split payments into treasure_fund fee and send rest of it to_ .  Will return false if approved_balance < amount
      * @param currency_ ERC20 currency. Seller should specify what exactly currency he/she want to out
@@ -438,6 +443,17 @@ contract MetaMarketplace {
         uint256 r = amount + fees;
         emit CalculatedFees(r,fees,amount,_treasure_fund);
         return true;
+    }
+
+
+    /**
+    *   pull funds from buyer and lock it at contract
+    *
+    */
+    function _pullFunds(CurrenciesERC20.CurrencyERC20 currency_, address from_, uint256 amount) internal {
+        IERC20 _currency_token = _currency_contract.get_hardcoded_currency(currency_);
+        require(_currency_token.transferFrom(from_, address(this), amount), "MetaMarketplace: ERC20: transferFrom buyer to metamarketplace contract failed ");  // pull funds
+
     }
 
     // Unsafe refund
