@@ -245,8 +245,8 @@ contract MetaMarketplace {
         */
 
         // Transfer funds (ERC20-currency) to the seller and distribute fees
-        if(_forwardFunds(currency_,msg.sender,seller,bid_price_) == false) {
-            delete metainfo.activeBuyOffers[tokenId][currency_];                    // if we can't move funds from buyer to seller, then buyer either don't have enough balance nor approved spending this much, so we delete this order
+        if(_processPurchase(currency_,msg.sender,seller,bid_price_) == false) {
+          //  delete metainfo.activeBuyOffers[tokenId][currency_];                    // if we can't move funds from buyer to seller, then buyer either don't have enough balance nor approved spending this much, so we delete this order
             revert("Approved amount is lesser than (bid_price_) needed to deal");
         }
         
@@ -260,7 +260,7 @@ contract MetaMarketplace {
         // Remove all sell and buy[currency_] offers
         delete (metainfo.activeSellOffers[tokenId]);            // this nft is SOLD, remove all SellOffers
         // @note: next line will delete offers by specific currency, which help us to avoid situtation when buyer offers made in another currency clog in this contract
-        delete (metainfo.activeBuyOffers[tokenId][currency_]);  // at least it was most successful order from BuyOffers by *this* currency. Orders for buy for other currencies still alive
+      //  delete (metainfo.activeBuyOffers[tokenId][currency_]);  // at least it was most successful order from BuyOffers by *this* currency. Orders for buy for other currencies still alive
         
         // Broadcast the sale
         emit Sale( token_contract_,
@@ -313,7 +313,7 @@ contract MetaMarketplace {
         metainfo.buyOffersEscrow[previousBuyOfferOwner][tokenId][currency_] = 0;    // zero escrow after refund
         
         // pull bid payment for lock
-        require(_pullFunds(currency_,msg.sender,bid_price_),"MetaMarketplace: can't pull funds from buyer to contract");
+        require(_pullFunds(currency_,msg.sender,bid_price_), "MetaMarketplace: can't pull funds from buyer to Marketplace contract");
 
         // Create a new buy offer
         metainfo.activeBuyOffers[tokenId][currency_].buyer = msg.sender;
@@ -386,11 +386,9 @@ contract MetaMarketplace {
 
         
         // Transfer funds to the seller
-        // Tries to forward funds from buyer to seller and distribute fees
-        if(_forwardFunds(currency_,currentBuyer,msg.sender,bid_value) == false) {
-            delete metainfo.activeBuyOffers[tokenId][currency_];
-            revert("Bad buy offer");
-        }
+        // Tries to forward funds from this contract (which already has been locked when makeBuyOffer executed) to seller and distribute fees
+        require(_forwardFunds(currency_, msg.sender, bid_value), "MetaMarketplace: can't forward funds to seller");
+        
         
         // And transfer nft token to the buyer
         IERC721 token = IERC721(token_contract_);
@@ -421,11 +419,11 @@ contract MetaMarketplace {
 
 
     /**
-     * @dev Determines how ERC20 is stored/forwarded on purchases. Here we take our fee. This function can be tethered to buy tx or can be separate from buy flow.
+     * @dev Determines how ERC20 is stored/forwarded on *purchases*. Here we take our fee. This function can be tethered to buy tx or can be separate from buy flow.
      * @notice transferFrom(from_) to this contract and then split payments into treasure_fund fee and send rest of it to_ .  Will return false if approved_balance < amount
      * @param currency_ ERC20 currency. Seller should specify what exactly currency he/she want to out
      */
-    function _forwardFunds(CurrenciesERC20.CurrencyERC20 currency_, address from_, address to_, uint256 amount) internal returns (bool){
+    function _processPurchase(CurrenciesERC20.CurrencyERC20 currency_, address from_, address to_, uint256 amount) internal returns (bool){
        
         IERC20 _currency_token = _currency_contract.get_hardcoded_currency(currency_);
         uint256 approved_balance = _currency_token.allowance(from_, address(this));
@@ -446,14 +444,35 @@ contract MetaMarketplace {
     }
 
 
-    /**
-    *   pull funds from buyer and lock it at contract
-    *
-    */
-    function _pullFunds(CurrenciesERC20.CurrencyERC20 currency_, address from_, uint256 amount) internal {
-        IERC20 _currency_token = _currency_contract.get_hardcoded_currency(currency_);
-        require(_currency_token.transferFrom(from_, address(this), amount), "MetaMarketplace: ERC20: transferFrom buyer to metamarketplace contract failed ");  // pull funds
 
+    /**
+     * @dev Determines how ERC20 is forwarded on *accepting* buy offer. Here we take our fee. 
+     * @notice this function do not pull funds (cause it's already has been pulled from buyer when he/she makes makeBuyOffer)
+     * @param currency_ ERC20 currency. Seller should specify what exactly currency he/she want to out 
+     * @param to_ seller address
+     */
+    function _forwardFunds(CurrenciesERC20.CurrencyERC20 currency_, address to_, uint256 amount) internal returns(bool) {
+       
+        IERC20 _currency_token = _currency_contract.get_hardcoded_currency(currency_);
+        
+        uint256 scale = 1000;
+        uint256 fees = calculateFee(amount,scale);
+        uint256 net_amount = amount - fees;
+        _currency_token.transfer(to_, net_amount);      // forward funds
+        _currency_token.transfer(_treasure_fund, fees); // collect fees
+        uint256 r = amount + fees;
+        emit CalculatedFees(r,fees,amount,_treasure_fund);
+        return true;
+    }
+
+    /**
+    * @dev  pull funds from buyer to this contract
+    * @param from_ address of buyer where we make pull from
+    */
+    function _pullFunds(CurrenciesERC20.CurrencyERC20 currency_, address from_, uint256 amount) internal returns(bool) {
+        IERC20 _currency_token = _currency_contract.get_hardcoded_currency(currency_);
+        require(_currency_token.transferFrom(from_, address(this), amount), "MetaMarketplace: ERC20: transferFrom buyer to metamarketplace contract failed, check approval ");  // pull funds
+        return true;
     }
 
     // Unsafe refund
