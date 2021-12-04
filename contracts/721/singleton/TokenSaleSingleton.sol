@@ -102,17 +102,7 @@ contract TokenSaleSingleton is Context, ReentrancyGuard {
 
 
 
-    // @todo used to buy tokens for ether (deprecated)
-    /**
-     * @dev fallback function ***DO NOT OVERRIDE***
-     * Note that other contracts will transfer funds with a base gas stipend
-     * of 2300, which is not enough to call buyTokens. Consider calling
-     * buyTokens directly when purchasing tokens from a contract.
-     
-    fallback() external payable {
-        buyTokens(_msgSender());
-    }
-    */
+
 
     /**
      * @return the Master NFT contract.
@@ -398,19 +388,21 @@ contract TokenSaleSingleton is Context, ReentrancyGuard {
         _forwardFunds(currency,master_id_);
     }
 
-    /*
-    function CloseAndDestroy(address payable _to) public {
-        require(msg.sender == _wallet, "must be author address");
+
+    /**
+    *   @dev close Crowdsale for specific master_id
+    */
+    function closeCrowdsale(uint master_id_) public {
+        require(msg.sender == wallet(master_id_), "Crowdsale: unauthorized closing sale");
         for (uint8 i = 0; i <= 4;i++) {
             IERC20Metadata currency_token =  get_currency(CurrenciesERC20.CurrencyERC20(i));
             if (currency_token.balanceOf(address(this)) > 0) {
-            withDrawFunds(CurrenciesERC20.CurrencyERC20(i));
+            withDrawFunds(CurrenciesERC20.CurrencyERC20(i),master_id_);
             }
         }
-        selfdestruct(_to);
-
+        delete MSaleInfo[master_id_];
     }
-    */
+
 
     /**
     *   Calculate fee (UnSafeMath) -- use it only if it ^0.8.0
