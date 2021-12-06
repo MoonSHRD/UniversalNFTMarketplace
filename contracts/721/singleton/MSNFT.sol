@@ -435,9 +435,9 @@ contract MSNFT is ERC721Enumerable, Ownable {
     }
 
     function get_author_by_token_id(uint256 item_id) public view returns (address author_) {
-        uint _master_id = ItemToMaster[tokenId];
+        uint _master_id = ItemToMaster[item_id];
         author_ = authors[_master_id];
-        return author;
+        return author_;
     }
 
     /**

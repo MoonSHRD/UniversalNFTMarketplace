@@ -88,7 +88,7 @@ contract MetaMarketplace {
     event SellOfferWithdrawn(address nft_contract_, uint256 tokenId, address seller);
     event BuyOfferWithdrawn(uint256 tokenId, address buyer);
     event CalculatedFees(uint256 initial_value, uint256 fees, uint256 transfered_amount, address feeAddress);
-   // event RoyaltiesPaid(uint256 tokenId, uint value);
+    event RoyaltiesPaid(address nft_contract_,uint256 tokenId, address recepient, uint value);
     event Sale(address nft_contract_, uint256 tokenId, address seller, address buyer, uint256 value);
     
 
@@ -209,23 +209,21 @@ contract MetaMarketplace {
 
 
     // deduct royalties, if NFT is created in MoonShard, then applicate +1.5% royalties fee to author of nft
-    function _deductRoyalties(address nft_token_contract_, uint256 token_id_, uint256 grossSaleValue) internal returns (address royalties_reciver,uint256 royalties_amount) {
+    function _deductRoyalties(address nft_token_contract_, uint256 token_id_, uint256 grossSaleValue) internal view returns (address royalties_reciver,uint256 royalties_amount) {
 
         // check nft type
         NftType standard = Marketplaces[nft_token_contract_].nft_standard;
         if (standard == NftType.MoonShard) 
         {
-            royalties_reciver = MSNFT.get_author_by_token_id(token_id_);
+            royalties_reciver = MSNFT(nft_token_contract_).get_author_by_token_id(token_id_);
             royalties_amount = calculateFee(grossSaleValue,1000);
         } else
         {
             royalties_reciver = address (0x0);
             royalties_amount = 0;
         }
-           return royalties_reciver,royalties_amount;
+           return (royalties_reciver,royalties_amount);
     }
-
-
 
 
 
@@ -268,7 +266,7 @@ contract MetaMarketplace {
         */
 
         // Transfer funds (ERC20-currency) to the seller and distribute fees
-        if(_processPurchase(currency_,msg.sender,seller,bid_price_) == false) {
+        if(_processPurchase(token_contract_,tokenId,currency_,msg.sender,seller,bid_price_) == false) {
           //  delete metainfo.activeBuyOffers[tokenId][currency_];                    // if we can't move funds from buyer to seller, then buyer either don't have enough balance nor approved spending this much, so we delete this order
             revert("Approved amount is lesser than (bid_price_) needed to deal");
         }
@@ -446,7 +444,7 @@ contract MetaMarketplace {
      * @notice transferFrom(from_) to this contract and then split payments into treasure_fund fee and send rest of it to_ .  Will return false if approved_balance < amount
      * @param currency_ ERC20 currency. Seller should specify what exactly currency he/she want to out
      */
-    function _processPurchase(CurrenciesERC20.CurrencyERC20 currency_, address from_, address to_, uint256 amount) internal returns (bool){
+    function _processPurchase(address nft_contract_, uint256 tokenId, CurrenciesERC20.CurrencyERC20 currency_, address from_, address to_, uint256 amount) internal returns (bool){
        
         IERC20 _currency_token = _currency_contract.get_hardcoded_currency(currency_);
         uint256 approved_balance = _currency_token.allowance(from_, address(this));
@@ -456,13 +454,25 @@ contract MetaMarketplace {
         }
 
         uint256 scale = 1000;
-        uint256 fees = calculateFee(amount,scale);
-        uint256 net_amount = amount - fees;
+        uint256 fees = calculateFee(amount,scale);  // service fees
+
+        // check royalties
+        address r_reciver;
+        uint256 r_amount;
+        (r_reciver,r_amount) = _deductRoyalties(nft_contract_,tokenId,amount);
+
+        uint256 net_amount = amount - fees - r_amount; // @todo check calculation in tests
         require(_currency_token.transferFrom(from_, address(this), amount), "MetaMarketplace: ERC20: transferFrom buyer to metamarketplace contract failed ");  // pull funds
-        _currency_token.transfer(to_, net_amount);      // forward funds
+        _currency_token.transfer(to_, net_amount);      // forward funds to seller
         _currency_token.transfer(_treasure_fund, fees); // collect fees
-        uint256 r = amount + fees;
-        emit CalculatedFees(r,fees,amount,_treasure_fund);
+        
+        if (r_amount > 0) 
+        {
+            _currency_token.transfer(r_reciver, r_amount);
+            emit RoyaltiesPaid(nft_contract_,tokenId,r_reciver, r_amount);
+        }
+
+        emit CalculatedFees(amount,fees,net_amount,_treasure_fund);
         return true;
     }
 
