@@ -67,11 +67,13 @@ contract MetaMarketplace {
     // Currencies lib
     CurrenciesERC20 _currency_contract;
 
-    uint public promille_fee = 25; // service fee (2.5%)
+    uint public promille_fee = 15; // service fee (1.5%)
     // Address where we collect comission
     address payable public _treasure_fund;
     
-    
+  //  uint public royalty_fee = 15;
+
+
     //Hardcode interface_id's
     bytes4 private constant _INTERFACE_ID_MSNFT = 0x780e9d63;
     bytes4 private constant _INTERFACE_ID_IERC721ENUMERABLE = 0x780e9d63;
@@ -204,6 +206,27 @@ contract MetaMarketplace {
         return netSaleValue;
     }
     */
+
+
+    // deduct royalties, if NFT is created in MoonShard, then applicate +1.5% royalties fee to author of nft
+    function _deductRoyalties(address nft_token_contract_, uint256 token_id_, uint256 grossSaleValue) internal returns (address royalties_reciver,uint256 royalties_amount) {
+
+        // check nft type
+        NftType standard = Marketplaces[nft_token_contract_].nft_standard;
+        if (standard == NftType.MoonShard) 
+        {
+            royalties_reciver = MSNFT.get_author_by_token_id(token_id_);
+            royalties_amount = calculateFee(grossSaleValue,1000);
+        } else
+        {
+            royalties_reciver = address (0x0);
+            royalties_amount = 0;
+        }
+           return royalties_reciver,royalties_amount;
+    }
+
+
+
 
 
     /**
