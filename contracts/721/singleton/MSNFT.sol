@@ -21,7 +21,7 @@ import "../../../node_modules/@openzeppelin/contracts/access/Ownable.sol";
  * createMasterCopy, plugSale, buyItem -- external intefaces to be called from factory contract 
 */
 contract MSNFT is ERC721Enumerable, Ownable {
-  // using SafeMath for uint256;
+
    using Counters for Counters.Counter;
 
     // Master -- Mastercopy, abstraction

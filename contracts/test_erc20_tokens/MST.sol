@@ -8,7 +8,7 @@ import "./TestTokenERC20.sol";
 
     constructor(string memory name_, string memory symbol_) TestTokenERC20(name_,symbol_) {}
 /*
- TODO: delete the function below before release
+ @TODO: delete the function below before release
  
  LINES 15-17 ARE HERE FOR TESTING PURPOSES ONLY! IT'S IMPORTANT TO REMOVE THEM AFTERWARDS!
  */
