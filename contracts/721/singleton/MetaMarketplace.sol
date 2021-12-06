@@ -484,17 +484,28 @@ contract MetaMarketplace {
      * @param currency_ ERC20 currency. Seller should specify what exactly currency he/she want to out 
      * @param to_ seller address
      */
-    function _forwardFunds(CurrenciesERC20.CurrencyERC20 currency_, address to_, uint256 amount) internal returns(bool) {
+    function _forwardFunds(address nft_contract_, uint256 tokenId, CurrenciesERC20.CurrencyERC20 currency_, address to_, uint256 amount) internal returns(bool) {
        
         IERC20 _currency_token = _currency_contract.get_hardcoded_currency(currency_);
         
         uint256 scale = 1000;
         uint256 fees = calculateFee(amount,scale);
-        uint256 net_amount = amount - fees;
+
+        // check royalties
+        address r_reciver;
+        uint256 r_amount;
+        (r_reciver,r_amount) = _deductRoyalties(nft_contract_,tokenId,amount);
+
+        uint256 net_amount = amount - fees - r_amount;
         _currency_token.transfer(to_, net_amount);      // forward funds
         _currency_token.transfer(_treasure_fund, fees); // collect fees
-        uint256 r = amount + fees;
-        emit CalculatedFees(r,fees,amount,_treasure_fund);
+        if (r_amount > 0) 
+        {
+            _currency_token.transfer(r_reciver, r_amount);  // forward royalties if appliciable
+            emit RoyaltiesPaid(nft_contract_,tokenId,r_reciver, r_amount);
+        }
+
+        emit CalculatedFees(amount,fees,net_amount,_treasure_fund);
         return true;
     }
 
