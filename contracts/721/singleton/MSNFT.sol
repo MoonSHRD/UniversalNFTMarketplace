@@ -110,7 +110,7 @@ contract MSNFT is ERC721Enumerable, Ownable {
     mapping(uint256 => address payable) public authors;
 
     // map from author address to masterIds array
-    mapping(address => uint[]) public author_masterids; // can be used to get all objects created by one author
+    mapping(address => uint[]) public author_masterids; // can be used to get all objects created by one author. @note -- it contains array of ORIGINALLY created master_ids, if authorship was transfered this array will NOT change
 
     // map from itemId to masterId
     mapping(uint256 => uint256) public ItemToMaster;
@@ -153,7 +153,7 @@ contract MSNFT is ERC721Enumerable, Ownable {
        // ERC721Enumerable._registerInterface(_INTERFACE_ID_IERC721ENUMERABLE);
     }
 
-    // @todo should be changed visibility to external?
+    //@todo should be changed visibility to external?
     /**
      *  @dev This function 'plug' itemsale contract from factory to mastersales map (works only for MoonShard NFT, should be called after MasterCopy creation)
      *  @param organizer -- address of seller (author)
@@ -262,8 +262,6 @@ contract MSNFT is ERC721Enumerable, Ownable {
     }
 
 
-   
-
     /**
      *  @dev Mint new token. Require master_id and item_id
      *  @param to whom address should mint
@@ -322,6 +320,7 @@ contract MSNFT is ERC721Enumerable, Ownable {
         Mint(to, m_master_id, item_id,file_order_);
     }
 
+
     // @todo -- make external instead of public?
     /**
      *  @dev external function for buying items, should be invoked from tokensale contract
@@ -341,9 +340,30 @@ contract MSNFT is ERC721Enumerable, Ownable {
             
             emit ItemBought(buyer,master_id,item_id);
             emit ItemBoughtHuman(buyer,master_id,item_id);
-     
+    }
+
+
+    // transfer authorship of mastercopy
+    function transferAuthorship() public {
 
     }
+
+
+    // update authorship for unique rarity token (setting owner of token to author)
+    function updateAuthorsip(uint tokenId) public {
+
+        uint _master_id = ItemToMaster[tokenId];
+        RarityType rarity_ = get_rarity(_master_id);
+        if (rarity_ == RarityType.Unique) 
+        {
+            address owner_ = ownerOf(tokenId);
+            authors[_master_id] = payable(owner_);
+        }
+
+    }
+
+
+
 
     // This function is burning tokens. 
     // @deprecated
@@ -395,8 +415,7 @@ contract MSNFT is ERC721Enumerable, Ownable {
     }
 
 
-
-     /**
+    /**
      *  @dev get author of master
      */
     function get_author(uint256 _masterId) public view returns (address payable _author) {
@@ -431,15 +450,6 @@ contract MSNFT is ERC721Enumerable, Ownable {
         ItemInfo memory _itemInfo = MetaInfo[master_id];
         return _itemInfo;
     }
-
-
-    /*      
-    function getTicketStatus(uint item_id) public view returns (TicketState status) {
-        ItemInfo memory info = itemInfoStorage[item_id];
-        status = info.state;
-        return status;
-    }
-    */
 
 
     /**
