@@ -184,30 +184,6 @@ contract MetaMarketplace {
     }
 
 
-    /*      UNDER CONSIDERATION
-    /// @notice Transfers royalties to the rightsowner if applicable
-    /// @param tokenId - the NFT assed queried for royalties
-    /// @param grossSaleValue - the price at which the asset will be sold
-    /// @return netSaleAmount - the value that will go to the seller after
-    ///         deducting royalties
-    function _deduceRoyalties(uint256 tokenId, uint256 grossSaleValue)
-    internal returns (uint256 netSaleAmount) {
-        // Get amount of royalties to pays and recipient
-        (address royaltiesReceiver, uint256 royaltiesAmount) = token
-        .royaltyInfo(tokenId, grossSaleValue);
-        // Deduce royalties from sale value
-        uint256 netSaleValue = grossSaleValue - royaltiesAmount;
-        // Transfer royalties to rightholder if not zero
-        if (royaltiesAmount > 0) {
-            royaltiesReceiver.call{value: royaltiesAmount}('');
-        }
-        // Broadcast royalties payment
-        emit RoyaltiesPaid(tokenId, royaltiesAmount);
-        return netSaleValue;
-    }
-    */
-
-
     // deduct royalties, if NFT is created in MoonShard, then applicate +1.5% royalties fee to author of nft
     function _deductRoyalties(address nft_token_contract_, uint256 token_id_, uint256 grossSaleValue) internal view returns (address royalties_reciver,uint256 royalties_amount) {
 
@@ -257,13 +233,7 @@ contract MetaMarketplace {
         require(metainfo.activeSellOffers[tokenId].minPrice[currency_] > 0, "price for this currency has not been setted, use makeBuyOffer() instead");
         require(bid_price_ >= metainfo.activeSellOffers[tokenId].minPrice[currency_],
             "Bid amount lesser than desired price!");
-      
-        // Pay royalties if applicable
-        /*
-        if (_checkRoyalties(_tokenContractAddress)) {
-            saleValue = _deduceRoyalties(tokenId, saleValue);
-        }
-        */
+
 
         // Transfer funds (ERC20-currency) to the seller and distribute fees
         if(_processPurchase(token_contract_,tokenId,currency_,msg.sender,seller,bid_price_) == false) {
@@ -391,12 +361,6 @@ contract MetaMarketplace {
         require(currentBuyer != address(0),
             "No buy offer");
         uint256 bid_value = metainfo.activeBuyOffers[tokenId][currency_].price;
-        // Pay royalties if applicable
-        /*
-        if (_checkRoyalties(_tokenContractAddress)) {
-            netSaleValue = _deduceRoyalties(tokenId, saleValue);
-        }
-        */
 
         // Delete the current sell offer whether it exists or not
         delete (metainfo.activeSellOffers[tokenId]);
@@ -408,7 +372,7 @@ contract MetaMarketplace {
         
         // Transfer funds to the seller
         // Tries to forward funds from this contract (which already has been locked when makeBuyOffer executed) to seller and distribute fees
-        require(_forwardFunds(currency_, msg.sender, bid_value), "MetaMarketplace: can't forward funds to seller");
+        require(_forwardFunds(token_contract_,tokenId,currency_, msg.sender, bid_value), "MetaMarketplace: can't forward funds to seller");
         
         
         // And transfer nft token to the buyer
