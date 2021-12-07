@@ -4,6 +4,7 @@ var MasterFactory = artifacts.require("./721/singleton/MasterFactory721.sol");
 var Master = artifacts.require("./721/singleton/MSNFT.sol");
 // var limitGas = web3.eth.getBlock("latest").gasLimit;
 var SVC = artifacts.require("./SVC.sol");
+var NFTTemplate = artifacts.require("./721/singleton/NftTemplate.sol");
 
 var InterfaceR = artifacts.require("./721/singleton/InterfaceRegister.sol");
 var MetaMarket = artifacts.require("./721/singleton/MetaMarketplace.sol");
@@ -75,7 +76,7 @@ module.exports = function (deployer, network, accounts) {
     }).then(function () {
       console.log("Master token address:");
       console.log(Master.address);
-      return deployer.deploy(MasterFactory, Master.address, accounts[1], Currencies.address, {
+      return deployer.deploy(MasterFactory, Master.address, accounts[0], Currencies.address, {
         gasPrice: wei_gas_price,
         from: accounts[0]
       });
@@ -108,9 +109,8 @@ module.exports = function (deployer, network, accounts) {
     console.log(limitGasDev);
     // console.log(string_gas_price);
 
-
-
     deployer.then(async () => {
+      await deployer.deploy(NFTTemplate, "NFT template", "NTMP");
       await deployer.deploy(SVC, "v0.0.0");
       await deployer.deploy(USDT, "USDT", "USDT");
       await deployer.deploy(USDC, "USDC", "USDC");
@@ -171,7 +171,7 @@ module.exports = function (deployer, network, accounts) {
       return;
     }).then(async () => {
 
-      return deployer.deploy(MetaMarket, Currencies.address, Master.address, accounts[0], {
+      return deployer.deploy(MetaMarket, Currencies.address, Master.address, accounts[1], {
         gasPrice: wei_gas_price,
         from: accounts[0]
       });
