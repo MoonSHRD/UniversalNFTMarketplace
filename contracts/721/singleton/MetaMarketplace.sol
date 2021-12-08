@@ -92,12 +92,12 @@ contract MetaMarketplace {
     event Sale(address nft_contract_, uint256 tokenId, address seller, address buyer, uint256 value);
     
 
-    constructor(address currency_contract_, address msnft_token_,address treasure_fund_) 
+    constructor(address currency_contract_, address msnft_token_,address payable treasure_fund_) 
     {
         _currency_contract = CurrenciesERC20(currency_contract_);
         require(_checkStandard(msnft_token_, NftType.MoonShard), "Standard not supported");
         SetUpMarketplace(msnft_token_, NftType.MoonShard);      // set up MSNFT ready for sale
-        treasure_fund_ = _treasure_fund;
+        _treasure_fund = treasure_fund_;
     }
 
 
