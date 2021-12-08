@@ -363,7 +363,114 @@ contract MSNFT is ERC721Enumerable, Ownable {
 
     }
 
+    //override all transfers
 
+     function transferFrom(
+        address from,
+        address to,
+        uint256 tokenId
+    ) public virtual override {
+        //solhint-disable-next-line max-line-length
+      //  require(_isApprovedOrOwner(_msgSender(), tokenId), "ERC721: transfer caller is not owner nor approved");
+      //  _transfer(from, to, tokenId);
+
+      super.transferFrom(from,to,tokenId);
+      updateAuthorsip(tokenId);
+    }
+
+    /**
+     * @dev See {IERC721-safeTransferFrom}.
+     */
+    function safeTransferFrom(
+        address from,
+        address to,
+        uint256 tokenId
+    ) public virtual override {
+       // safeTransferFrom(from, to, tokenId, "");
+       super.safeTransferFrom(from,to,tokenId);
+       updateAuthorsip(tokenId);
+    }
+
+    /**
+     * @dev See {IERC721-safeTransferFrom}.
+     */
+    function safeTransferFrom(
+        address from,
+        address to,
+        uint256 tokenId,
+        bytes memory _data
+    ) public virtual override {
+       // require(_isApprovedOrOwner(_msgSender(), tokenId), "ERC721: transfer caller is not owner nor approved");
+       // _safeTransfer(from, to, tokenId, _data);
+       super.safeTransferFrom(from,to,tokenId, _data);
+       updateAuthorsip(tokenId);
+    }
+
+    /**
+     * @dev Safely transfers `tokenId` token from `from` to `to`, checking first that contract recipients
+     * are aware of the ERC721 protocol to prevent tokens from being forever locked.
+     *
+     * `_data` is additional data, it has no specified format and it is sent in call to `to`.
+     *
+     * This internal function is equivalent to {safeTransferFrom}, and can be used to e.g.
+     * implement alternative mechanisms to perform token transfer, such as signature-based.
+     *
+     * Requirements:
+     *
+     * - `from` cannot be the zero address.
+     * - `to` cannot be the zero address.
+     * - `tokenId` token must exist and be owned by `from`.
+     * - If `to` refers to a smart contract, it must implement {IERC721Receiver-onERC721Received}, which is called upon a safe transfer.
+     *
+     * Emits a {Transfer} event.
+     */
+    function _safeTransfer(
+        address from,
+        address to,
+        uint256 tokenId,
+        bytes memory _data
+    ) internal virtual override {
+      //  _transfer(from, to, tokenId);
+      //  require(_checkOnERC721Received(from, to, tokenId, _data), "ERC721: transfer to non ERC721Receiver implementer");
+      super._safeTransfer(from,to,tokenId,_data);
+      updateAuthorsip(tokenId);
+    }
+
+     /**
+     * @dev Transfers `tokenId` from `from` to `to`.
+     *  As opposed to {transferFrom}, this imposes no restrictions on msg.sender.
+     *
+     * Requirements:
+     *
+     * - `to` cannot be the zero address.
+     * - `tokenId` token must be owned by `from`.
+     *
+     * Emits a {Transfer} event.
+     */
+    function _transfer(
+        address from,
+        address to,
+        uint256 tokenId
+    ) internal virtual override {
+        /*
+        require(ERC721.ownerOf(tokenId) == from, "ERC721: transfer of token that is not own");
+        require(to != address(0), "ERC721: transfer to the zero address");
+
+        _beforeTokenTransfer(from, to, tokenId);
+
+        // Clear approvals from the previous owner
+        _approve(address(0), tokenId);
+
+        _balances[from] -= 1;
+        _balances[to] += 1;
+        _owners[tokenId] = to;
+
+        emit Transfer(from, to, tokenId);
+        */
+
+        super._transfer(from,to,tokenId);
+        updateAuthorsip(tokenId);
+    }
 
 
     // This function is burning tokens. 
