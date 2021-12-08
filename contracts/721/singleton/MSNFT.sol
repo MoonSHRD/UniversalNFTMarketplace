@@ -5,7 +5,6 @@ import "../../../node_modules/@openzeppelin/contracts/token/ERC721/extensions/ER
 //import "../../../node_modules/@openzeppelin/contracts/token/ERC721/ERC721.sol";
 //import "../../../node_modules/@openzeppelin/contracts/token/ERC721/presets/ERC721PresetMinterPauserAutoId.sol";
 import "../../../node_modules/@openzeppelin/contracts/utils/Counters.sol";
-//import "../../../node_modules/@openzeppelin/contracts/utils/math/SafeMath.sol";
 import "../../../node_modules/@openzeppelin/contracts/access/Ownable.sol";
 
 
@@ -140,7 +139,6 @@ contract MSNFT is ERC721Enumerable, Ownable {
     address author;
     RarityType rarity;
   
-    // @todo rename it
     uint i_totalSupply; // 0 means infinite, this variable can be used as maximum positionOrder for limited rarity type
     // ACTUAL total supply for specific mastercopy can be getted as itemIds[master_id].lenght
 
@@ -343,15 +341,19 @@ contract MSNFT is ERC721Enumerable, Ownable {
     }
 
 
-    /*
-    // transfer authorship of mastercopy
-    function transferAuthorship() public {
-
-    }
+    /**
+    *   @dev transfer authorship of mastercopy. authorship allow getting royalties from MetaMarketplace. There are no restriction to rarity type
     */
+    function transferAuthorship(uint master_id_) public {
+        require(authors[master_id_] == msg.sender, "MSNFT: you are not author of this master_id");
+        authors[master_id_] = payable(msg.sender);
+    }
+    
 
-    // update authorship for unique rarity token (setting owner of token to author)
-    function updateAuthorsip(uint tokenId) public {
+    /**
+    *   @dev update authorship for *unique* rarity token (setting owner of token to author)
+    */
+    function updateAuthorsip(uint tokenId) internal {
 
         uint _master_id = ItemToMaster[tokenId];
         RarityType rarity_ = get_rarity(_master_id);
@@ -363,7 +365,7 @@ contract MSNFT is ERC721Enumerable, Ownable {
 
     }
 
-    //override all token transfers, to update authorship automatically
+    //override all token transfers, to update authorship automatically if appliciable
 
      function transferFrom(
         address from,
@@ -492,7 +494,9 @@ contract MSNFT is ERC721Enumerable, Ownable {
     }
 
     /**
-     *  @dev get masterIds array for specific author address
+     *  @dev get masterIds array for specific creator address
+     *  IMPORTANT -- author_masterids contain only *originally* created master_ids. If authorsip is changed there are no updates in this array
+     *  to get *current* authorship of a token use get_author_by_token_id or get_author
      */
     function getMasterIdByAuthor(address _creator) public view returns (uint[] memory) {
         return author_masterids[_creator];
