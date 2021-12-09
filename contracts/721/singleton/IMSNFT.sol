@@ -175,7 +175,11 @@ interface IMSNFT {
      *  @dev update factory address. as we deploy separately this contract, then factory contract, then we need to update factory address outside of MSNFT constructor
      *  also, it may be useful if we would need to upgrade tokensale contract (which include upgrade of a factory contract), so it can be used when rollup new versions of factory and sale 
      */
-     //@TODO:check this in tests. Interfaces do not support function modifiers, so the onlyOwner modifier was deleted in the function below.
+    /*
+    @TODO:check this in tests
+
+    Interfaces do not support function modifiers, so the onlyOwner modifier was deleted in the function below. Check if it's still may be used only by owner.
+    */
     function updateFactoryAddress(address factory_address_) external; 
 
     function getFactoryAddress() external view returns(address); 
