@@ -123,7 +123,5 @@ interface ITokenSaleSingleton {
         uint256 master_id_
     ) external;
 
-    /**
-    function CloseAndDestroy(address payable _to) external; 
-    */
+    function closeCrowdsale(uint master_id_) external;
 }
