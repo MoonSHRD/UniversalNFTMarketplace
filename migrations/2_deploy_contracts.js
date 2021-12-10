@@ -86,7 +86,7 @@ module.exports = function (deployer, network, accounts) {
       console.log(MasterFactory.address);
       MasterInstance = await Master.deployed();
       MasterFactoryInstance = await MasterFactory.deployed();
-      await MasterInstance.updateFactoryAdress(MasterFactoryInstance.address);
+      await MasterInstance.updateFactoryAddress(MasterFactoryInstance.address);
       fa = await MasterInstance.getFactoryAddress();
       console.log("factory address");
       console.log(fa);
@@ -149,7 +149,7 @@ module.exports = function (deployer, network, accounts) {
       console.log(MasterFactory.address);
       MasterInstance = await Master.deployed();
       MasterFactoryInstance = await MasterFactory.deployed();
-      await MasterInstance.updateFactoryAdress(MasterFactoryInstance.address);
+      await MasterInstance.updateFactoryAddress(MasterFactoryInstance.address);
       fa = await MasterInstance.getFactoryAddress();
       console.log("factory address");
       console.log(fa);
@@ -168,6 +168,10 @@ module.exports = function (deployer, network, accounts) {
       intID_calc = await InterfaceInstance.calculateIERC721Enumarable();
       console.log("Interface If for ERC721Enumerable calculated:");
       console.log(intID_calc);
+      intID_calc1 = await InterfaceInstance.calculateIERC721();
+      console.log("Interface Id for ERC721 calculated:");
+      console.log(intID_calc1);
+
       return;
     }).then(async () => {
 
