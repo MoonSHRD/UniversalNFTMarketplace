@@ -44,17 +44,22 @@ contract InterfaceRegister {
 
 
     function calculateIERC721() public pure returns (bytes4) {
-        //  wrong calculation, need to fix.. use IERC721Enumarable interface for MSNFT
-        IERC721 i;
-        return i.balanceOf.selector ^ i.ownerOf.selector ^ i.transferFrom.selector ^ i.approve.selector ^ i.getApproved.selector ^ i.setApprovalForAll.selector ^ i.isApprovedForAll.selector;
-
+    return  bytes4(keccak256('balanceOf(address)')) ^
+      bytes4(keccak256('ownerOf(uint256)')) ^
+      bytes4(keccak256('approve(address,uint256)')) ^
+      bytes4(keccak256('getApproved(uint256)')) ^
+      bytes4(keccak256('setApprovalForAll(address,bool)')) ^
+      bytes4(keccak256('isApprovedForAll(address,address)')) ^
+      bytes4(keccak256('transferFrom(address,address,uint256)')) ^
+      bytes4(keccak256('safeTransferFrom(address,address,uint256)')) ^
+      bytes4(keccak256('safeTransferFrom(address,address,uint256,bytes)')); 
     }
 
     constructor() {
 
         _INTERFACE_ID_IERC721ENUMERABLE = calculateIERC721Enumarable();
         _INTERFACE_ID_IERC721METADATA = calculateIERC721Metadata();
-        _INTERFACE_ID_IERC721 = 0x80ac58cd; // hardcode is not the best way to do it but
+        _INTERFACE_ID_IERC721 = calculateIERC721(); // hardcode is not the best way to do it but
     }
 
 

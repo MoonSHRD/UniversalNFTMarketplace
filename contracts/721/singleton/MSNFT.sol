@@ -517,7 +517,7 @@ contract MSNFT is ERC721Enumerable, Ownable {
      *  @dev update factory address. as we deploy separately this contract, then factory contract, then we need to update factory address outside of MSNFT constructor
      *  also, it may be useful if we would need to upgrade tokensale contract (which include upgrade of a factory contract), so it can be used when rollup new versions of factory and sale
      */
-    function updateFactoryAdress(address factory_address_) public onlyOwner() {
+    function updateFactoryAddress(address factory_address_) public onlyOwner() {
         factory_address = factory_address_;
     }
 
