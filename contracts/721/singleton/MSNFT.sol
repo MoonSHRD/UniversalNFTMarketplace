@@ -39,6 +39,9 @@ contract MSNFT is ERC721Enumerable, Ownable {
     //Mint new token
     event MintNewToken(address to, uint m_master_id, uint item_id);
 
+    // transfer authorship
+    event AuthorshipTransferred(address old_author, address new_author, uint master_id);
+
 
     // Service event for debug
     event MasterIdReserved(address indexed author, uint256 indexed master_id);
@@ -344,23 +347,27 @@ contract MSNFT is ERC721Enumerable, Ownable {
     /**
     *   @dev transfer authorship of mastercopy. authorship allow getting royalties from MetaMarketplace. There are no restriction to rarity type
     */
-    function transferAuthorship(uint master_id_) public {
+    function transferAuthorship(uint master_id_, address new_author_) public {
         require(authors[master_id_] == msg.sender, "MSNFT: you are not author of this master_id");
-        authors[master_id_] = payable(msg.sender);
+        address old_author_ = msg.sender;
+        authors[master_id_] = payable(new_author_);
+        emit AuthorshipTransferred(old_author_, new_author_, master_id_);
     }
     
 
     /**
-    *   @dev update authorship for *unique* rarity token (setting owner of token to author)
+    *   @dev update authorship for *unique* rarity token (setting owner of token to author), authors have privelege to 
     */
     function updateAuthorsip(uint tokenId) internal {
 
         uint _master_id = ItemToMaster[tokenId];
+        address old_author_ = authors[_master_id];
         RarityType rarity_ = get_rarity(_master_id);
         if (rarity_ == RarityType.Unique) 
         {
             address owner_ = ownerOf(tokenId);
             authors[_master_id] = payable(owner_);
+            emit AuthorshipTransferred(old_author_, owner_, _master_id);
         }
 
     }
