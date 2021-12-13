@@ -12,25 +12,24 @@ contract Label is Ownable
 {
 
 
-
-
 mapping (address => uint256) locked_balances;
-
 mapping (address => bool) public authorized_status;
-
 mapping (address => bool) public block_list;
-
 
 
 // WL -- those, who submitted by us, bail list -- those, who deposit bail, kyc -- appendix for future work
 enum AuthorizationType {white_list, bail_list, kyc, blocked}
-
-
 mapping (address => AuthorizationType) MetaAuthorization;
 
 uint256 price;
 CurrenciesERC20.CurrencyERC20 _currency;
 address _treasure_fund;
+
+//events
+event AuthorizationSubmit(address author_, AuthorizationType authorization_type, address authorizer);
+event Blocked(address author_);
+
+
 
     // Currencies lib
     CurrenciesERC20 _currency_contract;
@@ -53,6 +52,7 @@ address _treasure_fund;
     function whiteList(address author_) public onlyOwner {
         authorized_status[author_] = true;
         MetaAuthorization[author_] = AuthorizationType.white_list;
+        emit AuthorizationSubmit(author_,AuthorizationType.white_list, msg.sender);
     }
 
 
@@ -63,6 +63,7 @@ address _treasure_fund;
         locked_balances[msg.sender] = price;
         authorized_status[msg.sender] = true;
         MetaAuthorization[msg.sender] = AuthorizationType.bail_list;
+        emit AuthorizationSubmit(msg.sender, AuthorizationType.bail_list, msg.sender);
     }
 
     function blacklist(address author_) public onlyOwner {
@@ -73,6 +74,7 @@ address _treasure_fund;
         authorized_status[author_] = false;
         MetaAuthorization[author_] = AuthorizationType.blocked;
         block_list[author_] = true;
+        emit Blocked(author_);
     }
 
     function setBond(CurrenciesERC20.CurrencyERC20 currency_, uint price_) public onlyOwner {
