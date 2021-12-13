@@ -18,6 +18,7 @@ var USDC = artifacts.require("./test_erc20_tokens/USDC.sol");
 var DAI = artifacts.require("./test_erc20_tokens/DAI.sol");
 var WETH = artifacts.require("./test_erc20_tokens/WETH.sol");
 var MST = artifacts.require("./test_erc20_tokens/MST.sol");
+var WBTC = artifacts.require("./test_erc20_tokens/WBTC.sol");
 
 //  Ropsten addresses
 var usdt_address = web3.utils.toChecksumAddress('0x6ee856ae55b6e1a249f04cd3b947141bc146273c');
@@ -52,6 +53,8 @@ module.exports = function (deployer, network, accounts) {
       DAI = await DAI.deployed();
       await deployer.deploy(WETH,"WETH","WETH");
       WETH = await WETH.deployed();
+      await deployer.deploy(WBTC,"WBTC","WBTC");
+      WBTC = await WBTC.deployed();
       */
       await deployer.deploy(MST, "SONM", "MST");
       MST = await MST.deployed();
@@ -117,15 +120,17 @@ module.exports = function (deployer, network, accounts) {
       USDC = await USDC.deployed();
       await deployer.deploy(DAI, "DAI", "DAI");
       DAI = await DAI.deployed();
-      await deployer.deploy(WETH, "WETH", "WETH");
+      await deployer.deploy(WETH, "Wrapped_Ethereum", "WETH");
       WETH = await WETH.deployed();
+      await deployer.deploy(WBTC,"Wrapped_Bitcoin", "WBTC")
 
       await deployer.deploy(MST, "SONM", "MST");
       MST = await MST.deployed();
+
       //...
     }).then(function () {
 
-      return deployer.deploy(Currencies, USDT.address, USDC.address, DAI.address, WETH.address, MST.address, {
+      return deployer.deploy(Currencies, USDT.address, USDC.address, DAI.address, WETH.address, MST.address, WBTC.address, {
         gasPrice: wei_gas_price,
         from: accounts[0]
       });
