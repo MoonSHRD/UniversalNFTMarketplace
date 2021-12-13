@@ -394,7 +394,7 @@ contract TokenSaleSingleton is Context, ReentrancyGuard {
     */
     function closeCrowdsale(uint master_id_) public {
         require(msg.sender == wallet(master_id_), "Crowdsale: unauthorized closing sale");
-        for (uint8 i = 0; i <= 4;i++) {
+        for (uint8 i = 0; i <= 5;i++) {
             IERC20Metadata currency_token =  get_currency(CurrenciesERC20.CurrencyERC20(i));
             if (currency_token.balanceOf(address(this)) > 0) {
             withDrawFunds(CurrenciesERC20.CurrencyERC20(i),master_id_);
