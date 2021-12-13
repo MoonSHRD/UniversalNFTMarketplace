@@ -89,13 +89,13 @@ contract TokenSaleSingleton is Context, ReentrancyGuard {
      *  
      * @dev Constructor of TokenSale721
      * @param i_token Address of the Master Contract (nft - enumerable)
-     * @param _treasure_fund This is our wallet to collect fees
+     * @param treasure_fund_ This is our wallet to collect fees
      * @param currency_contract_ Address of currency registry contract (CurrenciesERC20.sol)
      */
-    constructor ( MSNFT i_token, address payable _treasure_fund, address currency_contract_)  {
-        require(_treasure_fund != address(0), "Crowdsale: wallet is the zero address");
+    constructor ( MSNFT i_token, address payable treasure_fund_, address currency_contract_)  {
+        require(treasure_fund_ != address(0), "Crowdsale: wallet is the zero address");
         require(address(i_token) != address(0), "Crowdsale: token is the zero address");
-        treasure_fund = _treasure_fund;
+        treasure_fund = treasure_fund_;
         _token = i_token;
         _currency_contract = CurrenciesERC20(currency_contract_);
     }
