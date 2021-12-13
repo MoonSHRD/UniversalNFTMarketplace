@@ -7,8 +7,14 @@ import "../../../node_modules/@openzeppelin/contracts/token/ERC20/extensions/IER
 
 
 
-// whitelist
-contract Label is Ownable 
+/** 
+*   @title Gatekeeper contract with white_list and block_list functionality
+*------------ YOU SHALL NOT PASS!--------------------------------------
+*   @notice we can whitelist user (explicit yes)
+*           OR user can make a bail deposit (which can be taken for broke rules)  (non-explicit yes)
+*           also anyone can be blocked (и раскулачен)
+ */
+contract Gatekeeper is Ownable 
 {
 
 
@@ -30,10 +36,8 @@ event AuthorizationSubmit(address author_, AuthorizationType authorization_type,
 event Blocked(address author_);
 
 
-
     // Currencies lib
     CurrenciesERC20 _currency_contract;
-
 
 
     // Constructor
