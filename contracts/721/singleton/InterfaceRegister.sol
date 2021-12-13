@@ -14,7 +14,7 @@ contract InterfaceRegister {
     bytes4 public _INTERFACE_ID_IERC721ENUMERABLE;  // should be 0x780e9d63
    // bytes4 private _INTERFACE_ID_ERC721METADATA = 0x5b5e139f; // 0x5b5e139f
     bytes4 public _INTERFACE_ID_IERC721METADATA; // 0x5b5e139f
-    bytes4 public _INTERFACE_ID_IERC721;    // 0x7aa5391d  -- @WARN -- MAY BE *WRONG*       should be eqal 0x80ac58cd
+    bytes4 public _INTERFACE_ID_IERC721;    // 0x80ac58cd  
 
 
     function getInterfaceEnumerable() public view returns (bytes4) {
@@ -59,7 +59,7 @@ contract InterfaceRegister {
 
         _INTERFACE_ID_IERC721ENUMERABLE = calculateIERC721Enumarable();
         _INTERFACE_ID_IERC721METADATA = calculateIERC721Metadata();
-        _INTERFACE_ID_IERC721 = calculateIERC721(); // hardcode is not the best way to do it but
+        _INTERFACE_ID_IERC721 = calculateIERC721(); 
     }
 
 
