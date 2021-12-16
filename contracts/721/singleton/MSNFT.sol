@@ -55,7 +55,6 @@ contract MSNFT is ERC721Enumerable, Ownable {
      * @param link -- link to a file in CDN
      */
     event MaterCopyCreated(address indexed author, uint256 master_id, string indexed description, string indexed link);
-    event MasterCopyCreatedHuman(address author, uint256 indexed master_id, string description, string link);
 
     
     /**
@@ -82,6 +81,8 @@ contract MSNFT is ERC721Enumerable, Ownable {
      * @param Unlimited -- there are unlimited number of tokens. use this when you want to sell 'clones' of your assets. so cheap that even you can afford it
      */
     enum RarityType {Unique, Limited, Unlimited}
+
+    event MasterCopyCreatedHuman(address author, uint256 indexed master_id, string description, string link, uint m_totalSupply, RarityType rarity);
 
     // map from mastercopy_id  to itemsale address
     mapping(uint256 => address) public mastersales;
@@ -154,7 +155,6 @@ contract MSNFT is ERC721Enumerable, Ownable {
        // ERC721Enumerable._registerInterface(_INTERFACE_ID_IERC721ENUMERABLE);
     }
 
-    //@todo should be changed visibility to external?
     /**
      *  @dev This function 'plug' itemsale contract from factory to mastersales map (works only for MoonShard NFT, should be called after MasterCopy creation)
      *  @param organizer -- address of seller (author)
@@ -222,7 +222,7 @@ contract MSNFT is ERC721Enumerable, Ownable {
         links[link] = mid;
         author_masterids[_author].push(mid);
         emit MaterCopyCreated(_author, mid, _description, link);
-        emit MasterCopyCreatedHuman(_author,mid,_description,link);
+        emit MasterCopyCreatedHuman(_author,mid,_description,link, m_totalSupply, _rarity);
         // return mastercopy id
         return mid;
     }
@@ -321,8 +321,6 @@ contract MSNFT is ERC721Enumerable, Ownable {
         Mint(to, m_master_id, item_id,file_order_);
     }
 
-
-    // @todo -- make external instead of public?
     /**
      *  @dev external function for buying items, should be invoked from tokensale contract
      *  @param buyer address of buyer
@@ -358,7 +356,7 @@ contract MSNFT is ERC721Enumerable, Ownable {
     /**
     *   @dev update authorship for *unique* rarity token (setting owner of token to author), authors have privelege to 
     */
-    function updateAuthorsip(uint tokenId) internal {
+    function updateAuthorsip(uint tokenId) public {
 
         uint _master_id = ItemToMaster[tokenId];
         address old_author_ = authors[_master_id];
@@ -404,7 +402,6 @@ contract MSNFT is ERC721Enumerable, Ownable {
         uint256 tokenId,
         bytes memory _data
     ) public virtual override {
-
        super.safeTransferFrom(from,to,tokenId, _data);
        updateAuthorsip(tokenId);
     }

@@ -24,6 +24,7 @@ function makeRandomLink(length) {
 
 contract('MetaMarketplace', accounts => {
     let factory, nft, mst, mMarket;
+    let tokenId;
     let network;
     let tokenIdUnlimitOne, tokenIdUnlimitTwo, tokenIdUnlimitThree, tokenIdLimit, tokenIdUniue;
     let admin, userone, royaltyaddress, userthree;
@@ -158,16 +159,15 @@ contract('MetaMarketplace', accounts => {
             assert.equal(userWethTokenBalanceAfter.toString(), wethTokensToMint.toString(), 'admins token balance after mint');
         }
     });
+
     it('should create nft', async () => {
-
         const createItemUnlimit = await nft.mintNft(admin);
-        const tokenId = createItemUnlimit.logs[1].args.tokenId;
-        console.log(createItemUnlimit.logs[0].args);
-        console.log(createItemUnlimit.logs[1].args.tokenId);
-
+        tokenId = createItemUnlimit.logs[1].args.tokenId;
         const balance = await nft.balanceOf(admin);
-        console.log(balance.toString());
+        assert.equal(balance, 1, "must be owner of one nft token");
+    });
 
+    it('should make buy offer to token with unique supply type without created sale and accept it by owner', async () => {
         //Set token price
         const tokenMstPriceStr = '2';
         let tokenMstPrice = web3.utils.toWei(web3.utils.toBN(tokenMstPriceStr));
@@ -223,18 +223,19 @@ contract('MetaMarketplace', accounts => {
         const aMstBalance = await mst.balanceOf(admin);
 
         assert.equal(acceptOfferByOwner.receipt.logs.length, 2, 'triggers two events');
-        assert.equal(acceptOfferByOwner.receipt.logs[0].event, 'CalculatedFees', 'should be the CalculatedFees event');
-        assert.equal(acceptOfferByOwner.receipt.logs[1].event, 'Sale', 'should be the Sale event');
+        // assert.equal(acceptOfferByOwner.receipt.logs[0].event, 'RoyaltiesPaid', 'must be the RoyaltiesPaid event');
+        assert.equal(acceptOfferByOwner.receipt.logs[0].event, 'CalculatedFees', 'must be the CalculatedFees event');
+        assert.equal(acceptOfferByOwner.receipt.logs[1].event, 'Sale', 'must be the Sale event');
 
         assert.equal(acceptOfferByOwner.receipt.logs[0].args.fees.toString(), royaltyMstBalance.toString(), 'must be equal');
         assert.equal(acceptOfferByOwner.receipt.logs[0].args.feeAddress, royaltyaddress, 'must be admin address to get royalty');
-        const authorBalance = acceptOfferByOwner.receipt.logs[0].args.transfered_amount - acceptOfferByOwner.receipt.logs[0].args.fees;
+        const authorBalance = tokenMstPrice - acceptOfferByOwner.receipt.logs[0].args.fees;
         assert.equal(authorBalance.toString(), aMstBalance.toString(), 'must be equal');
         assert.equal(mMstBalance.toString(), 0, 'must be zero after buy offer acception');
 
         const expectedTokenId = acceptOfferByOwner.receipt.logs[1].args.tokenId;
         assert.equal(acceptOfferByOwner.receipt.logs[1].args.nft_contract_, nft.address, 'must be nft contract address');
-        // assert.equal(expectedTokenId, tokenId, 'must be equal');
+        assert.equal(expectedTokenId.toString(), tokenId.toString(), 'must be equal');
         assert.equal(acceptOfferByOwner.receipt.logs[1].args.seller, admin, 'seller must be admin');
         assert.equal(acceptOfferByOwner.receipt.logs[1].args.buyer, userone, 'buyer must be userone');
         assert.equal(acceptOfferByOwner.receipt.logs[1].args.value.toString(), tokenMstPrice.toString(), 'must be equal');

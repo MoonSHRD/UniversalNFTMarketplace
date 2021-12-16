@@ -376,7 +376,7 @@ contract MetaMarketplace {
         
         
         // And transfer nft token to the buyer
-        IERC721 token = IERC721(token_contract_);
+        MSNFT token = MSNFT(token_contract_);
         token.safeTransferFrom(msg.sender,currentBuyer,tokenId);
     
         // Broadcast the sale
@@ -425,7 +425,7 @@ contract MetaMarketplace {
         uint256 r_amount;
         (r_reciver,r_amount) = _deductRoyalties(nft_contract_,tokenId,amount);
 
-        uint256 net_amount = amount - fees - r_amount; // @todo check calculation in tests
+        uint256 net_amount = amount - fees - r_amount;
         require(_currency_token.transferFrom(from_, address(this), amount), "MetaMarketplace: ERC20: transferFrom buyer to metamarketplace contract failed ");  // pull funds
         _currency_token.transfer(to_, net_amount);      // forward funds to seller
         _currency_token.transfer(_treasure_fund, fees); // collect fees

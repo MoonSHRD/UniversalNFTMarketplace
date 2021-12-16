@@ -352,7 +352,7 @@ contract TokenSaleSingleton is Context, ReentrancyGuard {
     *  @return price how much we need to pay, could be zero if wrong currency, but will fail at pre-validation
     */
     function getWeiAmount(CurrenciesERC20.CurrencyERC20 currency, uint master_id_) public view returns(uint256){
-        uint256 price = get_price(currency,master_id_);    // @todo: WARNING -- it can be 0 if buyer mismatch currency, but such transaction will fail at pre-validate purchase check!
+        uint256 price = get_price(currency,master_id_);    //: WARNING -- it can be 0 if buyer mismatch currency, but such transaction will fail at pre-validate purchase check!
        // uint256 weiAmount = price * tokenAmountToBuy; 
         return price;
     }
