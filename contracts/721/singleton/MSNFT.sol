@@ -355,7 +355,7 @@ contract MSNFT is ERC721Enumerable, Ownable {
     /**
     *   @dev update authorship for *unique* rarity token (setting owner of token to author), authors have privelege to 
     */
-    function updateAuthorsip(uint tokenId) public {
+    function updateAuthorsip(uint tokenId) internal {
 
         uint _master_id = ItemToMaster[tokenId];
         address old_author_ = authors[_master_id];
