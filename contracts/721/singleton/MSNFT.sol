@@ -238,8 +238,7 @@ contract MSNFT is ERC721Enumerable, Ownable {
 
         if (_supplyType == 1) {         // Only one token exist
             _rarity = RarityType.Unique;
-        }
-        if (_supplyType == 0) {         // Unlimited sale
+        }else if(_supplyType == 0) {
             _rarity = RarityType.Unlimited;
         } else {
             _rarity = RarityType.Limited;  // Limited sale
