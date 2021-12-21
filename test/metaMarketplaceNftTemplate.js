@@ -1,4 +1,3 @@
-const MasterFactory721 = artifacts.require('MasterFactory721');
 const NftTemplate = artifacts.require('NftTemplate');
 const USDTcontract = artifacts.require('TestUSDT');
 const USDCcontract = artifacts.require('USDC');
@@ -23,10 +22,9 @@ function makeRandomLink(length) {
 }
 
 contract('MetaMarketplace', accounts => {
-    let factory, nft, mst, mMarket;
+    let nft, mst, mMarket;
     let tokenId;
     let network;
-    let tokenIdUnlimitOne, tokenIdUnlimitTwo, tokenIdUnlimitThree, tokenIdLimit, tokenIdUniue;
     let admin, userone, royaltyaddress, userthree;
     const desc = 'Lorem ipsum dolor sit amet';
     let linkOne, linkTwo, linkThree;
@@ -36,7 +34,6 @@ contract('MetaMarketplace', accounts => {
     const [MoonShard, Enum, Meta, Common] = [0, 1, 2, 3];
     const [USDT, USDC, DAI, MST, WETH] = [0, 1, 2, 3, 4];
     before(async () => {
-        factory = await MasterFactory721.deployed();
         nft = await NftTemplate.deployed();
         mMarket = await MetaMarketplace.deployed();
         linkOne = 'https://google.com/' + makeRandomLink(20);
