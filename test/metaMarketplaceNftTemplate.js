@@ -5,7 +5,7 @@ const DAIcontract = artifacts.require('DAI');
 const MSTcontract = artifacts.require('MST');
 const WETHcontract = artifacts.require('WETH');
 const MetaMarketplace = artifacts.require('MetaMarketplace');
-
+const ERC1155Item = artifacts.require('ERC1155Item');
 const {
     time
 } = require('@openzeppelin/test-helpers');
@@ -22,8 +22,8 @@ function makeRandomLink(length) {
 }
 
 contract('MetaMarketplace', accounts => {
-    let nft, mst, mMarket;
-    let tokenId;
+    let nft, mst, mMarket, multi;
+    let tokenId, tokenIdMulty;
     let network;
     let admin, userone, royaltyaddress, userthree;
     const desc = 'Lorem ipsum dolor sit amet';
@@ -35,6 +35,7 @@ contract('MetaMarketplace', accounts => {
     const [USDT, USDC, DAI, MST, WETH] = [0, 1, 2, 3, 4];
     before(async () => {
         nft = await NftTemplate.deployed();
+        multi = await ERC1155Item.deployed();
         mMarket = await MetaMarketplace.deployed();
         linkOne = 'https://google.com/' + makeRandomLink(20);
         linkTwo = 'https://google.com/' + makeRandomLink(20);
@@ -164,6 +165,14 @@ contract('MetaMarketplace', accounts => {
         assert.equal(balance, 1, "must be owner of one nft token");
     });
 
+    it('should create multi', async () => {
+        const createItemMulti = await multi.addNewItem(5);
+        console.log(createItemMulti.logs[0].args);
+        tokenIdMulty = createItemMulti.logs[0].args.id.toString();
+        const balance = await multi.balanceOf(admin,tokenIdMulty);
+        assert.equal(balance, 5, "must be owner of one nft token");
+    });
+
     it('should make buy offer to token with unique supply type without created sale and accept it by owner', async () => {
         //Set token price
         const tokenMstPriceStr = '2';
@@ -233,6 +242,79 @@ contract('MetaMarketplace', accounts => {
         const expectedTokenId = acceptOfferByOwner.receipt.logs[1].args.tokenId;
         assert.equal(acceptOfferByOwner.receipt.logs[1].args.nft_contract_, nft.address, 'must be nft contract address');
         assert.equal(expectedTokenId.toString(), tokenId.toString(), 'must be equal');
+        assert.equal(acceptOfferByOwner.receipt.logs[1].args.seller, admin, 'seller must be admin');
+        assert.equal(acceptOfferByOwner.receipt.logs[1].args.buyer, userone, 'buyer must be userone');
+        assert.equal(acceptOfferByOwner.receipt.logs[1].args.value.toString(), tokenMstPrice.toString(), 'must be equal');
+    });
+
+
+    it('should make buy offer to token with limited supply type without created sale and accept it by owner', async () => {
+        //Set token price
+        const tokenMstPriceStr = '2';
+        let tokenMstPrice = web3.utils.toWei(web3.utils.toBN(tokenMstPriceStr));
+
+        await mMarket.SetUpMarketplace(multi.address, Enum);
+
+        // Approve mst tokens from userone to meta market address
+        const approveMstTokens = await mst.approve(mMarket.address, tokenMstPrice, {
+            from: userone
+        });
+        assert.equal(approveMstTokens.receipt.logs.length, 1, 'triggers one events');
+        assert.equal(approveMstTokens.receipt.logs[0].event, 'Approval', 'should be the Approval event');
+        assert.equal(userone, approveMstTokens.logs[0].args.owner, 'must be owner');
+        assert.equal(mMarket.address, approveMstTokens.logs[0].args.spender, 'must be spender');
+        assert.equal(tokenMstPrice.toString(), approveMstTokens.logs[0].args.value.toString(), 'must be equal');
+
+        //Check approved value
+        const checkAllowance = await mst.allowance(userone, mMarket.address);
+        assert.equal(checkAllowance.toString(), tokenMstPrice.toString());
+
+        //Userone make buy offer
+        const saleoffer = await mMarket.makeBuyOffer(multi.address, tokenIdMulty, MST, tokenMstPrice, {
+            from: userone
+        });
+
+        assert.equal(saleoffer.receipt.logs.length, 1, 'triggers one events');
+        assert.equal(saleoffer.receipt.logs[0].event, 'NewBuyOffer', 'should be the NewBuyOffer event');
+        assert.equal(tokenIdMulty.toString(), saleoffer.logs[0].args.tokenId.toString(), 'must be equal');
+        assert.equal(userone, saleoffer.logs[0].args.buyer, 'offer must be called by userone');
+        assert.equal(tokenMstPrice.toString(), saleoffer.logs[0].args.value.toString(), 'must be equal');
+
+        const approveNftToken = await nft.approve(mMarket.address, tokenIdMulty, {
+            from: admin
+        });
+        assert.equal(approveNftToken.receipt.logs.length, 1, 'triggers one events');
+        assert.equal(approveNftToken.receipt.logs[0].event, 'Approval', 'should be the Approval event');
+        assert.equal(admin, approveNftToken.logs[0].args.owner, 'must be equal');
+        assert.equal(mMarket.address, approveNftToken.logs[0].args.approved, 'must be equal');
+        assert.equal(tokenIdMulty.toString(), approveNftToken.logs[0].args.tokenId.toString(), 'must be equal');
+
+        //Check approved address
+        const approvedAddress = await nft.getApproved(tokenIdMulty);
+        assert.equal(mMarket.address, approvedAddress, 'must be equal');
+
+        const acceptOfferByOwner = await mMarket.acceptBuyOffer(multi.address, tokenIdMulty, MST, {
+            from: admin
+        });
+
+        const mMstBalance = await mst.balanceOf(mMarket.address);
+        const royaltyMstBalance = await mst.balanceOf(royaltyaddress);
+        const aMstBalance = await mst.balanceOf(admin);
+
+        assert.equal(acceptOfferByOwner.receipt.logs.length, 2, 'triggers two events');
+        // assert.equal(acceptOfferByOwner.receipt.logs[0].event, 'RoyaltiesPaid', 'must be the RoyaltiesPaid event');
+        assert.equal(acceptOfferByOwner.receipt.logs[0].event, 'CalculatedFees', 'must be the CalculatedFees event');
+        assert.equal(acceptOfferByOwner.receipt.logs[1].event, 'Sale', 'must be the Sale event');
+
+        assert.equal(acceptOfferByOwner.receipt.logs[0].args.fees.toString(), royaltyMstBalance.toString(), 'must be equal');
+        assert.equal(acceptOfferByOwner.receipt.logs[0].args.feeAddress, royaltyaddress, 'must be admin address to get royalty');
+        const authorBalance = tokenMstPrice - acceptOfferByOwner.receipt.logs[0].args.fees;
+        assert.equal(authorBalance.toString(), aMstBalance.toString(), 'must be equal');
+        assert.equal(mMstBalance.toString(), 0, 'must be zero after buy offer acception');
+
+        const expectedTokenId = acceptOfferByOwner.receipt.logs[1].args.tokenId;
+        assert.equal(acceptOfferByOwner.receipt.logs[1].args.nft_contract_, nft.address, 'must be nft contract address');
+        assert.equal(expectedTokenId.toString(), tokenIdMulty.toString(), 'must be equal');
         assert.equal(acceptOfferByOwner.receipt.logs[1].args.seller, admin, 'seller must be admin');
         assert.equal(acceptOfferByOwner.receipt.logs[1].args.buyer, userone, 'buyer must be userone');
         assert.equal(acceptOfferByOwner.receipt.logs[1].args.value.toString(), tokenMstPrice.toString(), 'must be equal');

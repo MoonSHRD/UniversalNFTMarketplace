@@ -5,6 +5,7 @@ var Master = artifacts.require("./721/singleton/MSNFT.sol");
 // var limitGas = web3.eth.getBlock("latest").gasLimit;
 var SVC = artifacts.require("./SVC.sol");
 var NFTTemplate = artifacts.require("./721/singleton/NftTemplate.sol");
+var ERC1155Item = artifacts.require("./1155/ERC1155Item.sol");
 
 var InterfaceR = artifacts.require("./721/singleton/InterfaceRegister.sol");
 var MetaMarket = artifacts.require("./721/singleton/MetaMarketplace.sol");
@@ -113,6 +114,7 @@ module.exports = function (deployer, network, accounts) {
     // console.log(string_gas_price);
 
     deployer.then(async () => {
+      await deployer.deploy(ERC1155Item);
       await deployer.deploy(NFTTemplate, "NFT template", "NTMP");
       await deployer.deploy(SVC, "v0.0.0");
       await deployer.deploy(USDT, "USDT", "USDT");
