@@ -26,6 +26,7 @@ var usdt_address = web3.utils.toChecksumAddress('0x6ee856ae55b6e1a249f04cd3b9471
 var usdc_address = web3.utils.toChecksumAddress('0xfe724a829fdf12f7012365db98730eee33742ea2');
 var dai_address = web3.utils.toChecksumAddress('0xad6d458402f60fd3bd25163575031acdce07538d');
 var weth_address = web3.utils.toChecksumAddress('0xc778417e063141139fce010982780140aa0cd5ab');
+var wbtc_address = web3.utils.toChecksumAddress('0x65058d7081fcdc3cd8727dbb7f8f9d52cefdd291');
 
 var deposit_value = '50000';  // deposit INITIAL exchange market cup (turn capital)
 var deposit_value_wei = web3.utils.toWei(deposit_value,'ether');
@@ -59,6 +60,7 @@ module.exports = function (deployer, network, accounts) {
       */
       await deployer.deploy(MST, "SONM", "MST");
       MST = await MST.deployed();
+      await deployer.deploy(SVC, "v0.0.0");
       console.log("MST dummy address:");
       console.log(MST.address);
       //...
@@ -67,7 +69,7 @@ module.exports = function (deployer, network, accounts) {
       console.log(usdt_address);
       console.log("weth address:");
       console.log(weth_address);
-      return deployer.deploy(Currencies, usdt_address, usdc_address, dai_address, weth_address, MST.address, {
+      return deployer.deploy(Currencies, usdt_address, usdc_address, dai_address, weth_address, MST.address, wbtc_address, {
         gasPrice: wei_gas_price,
         from: accounts[0]
       });
@@ -96,7 +98,34 @@ module.exports = function (deployer, network, accounts) {
       console.log(fa);
       return;
     }).then(async () => {
+
+      return deployer.deploy(InterfaceR, {
+        gasPrice: wei_gas_price,
+        from: accounts[0]
+      });
+    }).then(async () => {
+      InterfaceInstance = await InterfaceR.deployed();
+      intId = await InterfaceInstance.getInterfaceEnumerable();
+      console.log("Interface Id for ERC721Enumerable: ");
+      console.log(intId);
+      intID_calc = await InterfaceInstance.calculateIERC721Enumarable();
+      console.log("Interface If for ERC721Enumerable calculated:");
+      console.log(intID_calc);
+      intID_calc1 = await InterfaceInstance.calculateIERC721();
+      console.log("Interface Id for ERC721 calculated:");
+      console.log(intID_calc1);
+
       return;
+    }).then(async () => {
+
+      return deployer.deploy(MetaMarket, Currencies.address, Master.address, accounts[0], {
+        gasPrice: wei_gas_price,
+        from: accounts[0]
+      });
+    }).then(async () => {
+      MetaMarketInstance = await MetaMarket.deployed();
+      console.log("MetaMarket address:");
+      console.log(MetaMarketInstance.address);
     });
 
   } // end of ropsten deployment
@@ -124,7 +153,7 @@ module.exports = function (deployer, network, accounts) {
       DAI = await DAI.deployed();
       await deployer.deploy(WETH, "Wrapped_Ethereum", "WETH");
       WETH = await WETH.deployed();
-      await deployer.deploy(WBTC,"Wrapped_Bitcoin", "WBTC")
+      await deployer.deploy(WBTC,"Wrapped_Bitcoin", "WBTC");
 
       await deployer.deploy(MST, "SONM", "MST");
       MST = await MST.deployed();

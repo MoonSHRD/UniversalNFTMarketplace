@@ -87,8 +87,8 @@ contract CurrenciesERC20 is ReentrancyGuard, Ownable {
        require(US_Circle != address(0), "US_Circle contract address is zero!");
        require(DAI != address(0), "DAI contract address is zero!");
        require(W_Ethereum != address(0), "W_Ethereum contract address is zero!");
-       require(WBTC != address(0), "MST contract address is zero!");
-       require(WBTC != address(0), "MST contract address is zero!");
+       require(MST != address(0), "MST contract address is zero!");
+       require(WBTC != address(0), "WBTC contract address is zero!");
        
        
        

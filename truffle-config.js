@@ -26,7 +26,7 @@
 
 // const path = require("path");
 const { projectId, privateKeys, coinmarketcupKey , etherscanApiKey} = require('./secret.json');
-// const HDWalletProvider = require('@truffle/hdwallet-provider');
+const HDWalletProvider = require('@truffle/hdwallet-provider');
 module.exports = {
   /**
    * Networks define how you connect to your ethereum client and let you set the
@@ -89,35 +89,34 @@ module.exports = {
       gasPrice: '20000000000',
       network_id: "*"
     },
-    // ropsten: {
-    //   provider: () => new HDWalletProvider(privateKeys, `wss://ropsten.infura.io/ws/v3/${projectId}`),
-    //   network_id: 3,       // Ropsten's id
-    //   gas: 7900000,        // Ropsten has a lower block limit than mainnet
-    //   gasLimit: '7999999',
-    //   gasPrice: '10000000000',
-    //   websocket: true,
-    //   confirmations: 2,    // # of confs to wait between deployments. (default: 0)
-    //   timeoutBlocks: 50000,  // # of blocks before a deployment times out  (minimum/default: 50)
-    //   skipDryRun: false,    // Skip dry run before migrations? (default: false for public nets )
-    //   networkCheckTimeout: 1000000
-    // },
+    ropsten: {
+      provider: () => new HDWalletProvider(privateKeys, `wss://ropsten.infura.io/ws/v3/${projectId}`),
+      network_id: 3,       // Ropsten's id
+      gas: 7900000,        // Ropsten has a lower block limit than mainnet
+      gasLimit: '7999999',
+      gasPrice: '10000000000',
+      websocket: true,
+      confirmations: 2,    // # of confs to wait between deployments. (default: 0)
+      timeoutBlocks: 50000,  // # of blocks before a deployment times out  (minimum/default: 50)
+      skipDryRun: false,    // Skip dry run before migrations? (default: false for public nets )
+      networkCheckTimeout: 1000000
+    },
 
   },
 
   // Set default mocha options here, use special reporters etc.
   mocha: {
     enableTimeouts: false,
-    reporter: 'eth-gas-reporter',
-    reporterOptions : {
-      currency: 'EUR',
-      url:'http://127.0.0.1:7545',
-      coinmarketcap: coinmarketcupKey,
-      onlyCalledMethods: true,
-      showTimeSpent: true,
-      excludeContracts: ['Migrations'],
-      showMethodSig: true,
-    }, // See options below
-    timeout: 100000
+    // reporter: 'eth-gas-reporter',
+    // reporterOptions : {
+    //   currency: 'EUR',
+    //   url:'http://127.0.0.1:7545',
+    //   coinmarketcap: coinmarketcupKey,
+    //   onlyCalledMethods: true,
+    //   showTimeSpent: true,
+    //   excludeContracts: ['Migrations'],
+    //   showMethodSig: true,
+    // }
   },
 
   plugins: [
