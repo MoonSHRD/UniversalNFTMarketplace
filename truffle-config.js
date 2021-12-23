@@ -76,24 +76,24 @@ module.exports = {
     // production: true    // Treats this network as if it was a public net. (default: false)
     // }
 
-    // ganache: {            // truffle migrate --reset --network ganache
-    //   host: "127.0.0.1",
-    //   port: 7545,
-    //   gasLimit: '6721975',
-    //   gasPrice: '20000000000',
-    //   network_id: '*'
-    // },
-    // development: {
-    //   host: "127.0.0.1",
-    //   port: 7545,
-    //   gasPrice: '20000000000',
-    //   network_id: "*"
-    // },
+    ganache: {            // truffle migrate --reset --network ganache
+      host: "127.0.0.1",
+      port: 7545,
+      gasLimit: '6721975',
+      gasPrice: '20000000000',
+      network_id: '*'
+    },
+    development: {
+      host: "127.0.0.1",
+      port: 7545,
+      gasPrice: '20000000000',
+      network_id: "*"
+    },
     ropsten: {
       provider: () => new HDWalletProvider(privateKeys, `wss://ropsten.infura.io/ws/v3/${projectId}`),
       network_id: 3,       // Ropsten's id
-     // gas: 7900000,        // Ropsten has a lower block limit than mainnet
-     // gasLimit: '7999999',
+      gas: 7900000,        // Ropsten has a lower block limit than mainnet
+      gasLimit: '7999999',
       gasPrice: '10000000000',
       websocket: true,
       confirmations: 2,    // # of confs to wait between deployments. (default: 0)
@@ -106,18 +106,17 @@ module.exports = {
 
   // Set default mocha options here, use special reporters etc.
   mocha: {
-    enableTimeouts: false
+    enableTimeouts: false,
     // reporter: 'eth-gas-reporter',
     // reporterOptions : {
     //   currency: 'EUR',
-    //   url:'http://127.0.0.1:8545',
+    //   url:'http://127.0.0.1:7545',
     //   coinmarketcap: coinmarketcupKey,
     //   onlyCalledMethods: true,
     //   showTimeSpent: true,
     //   excludeContracts: ['Migrations'],
     //   showMethodSig: true,
-    // } // See options below
-    // timeout: 100000
+    // }
   },
 
   plugins: [
@@ -143,10 +142,4 @@ module.exports = {
        }
     },
   },
-  plugins: [
-    'truffle-plugin-verify'
-  ],
-  api_keys: {
-    etherscan: 'CV3EECG18KPRIIQFSJRDYXSMXVAI4E339X'
-  }
 };

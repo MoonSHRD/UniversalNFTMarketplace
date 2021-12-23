@@ -4,6 +4,8 @@ var MasterFactory = artifacts.require("./721/singleton/MasterFactory721.sol");
 var Master = artifacts.require("./721/singleton/MSNFT.sol");
 // var limitGas = web3.eth.getBlock("latest").gasLimit;
 var SVC = artifacts.require("./SVC.sol");
+var NFTTemplate = artifacts.require("./721/singleton/NftTemplate.sol");
+var ERC1155Item = artifacts.require("./1155/ERC1155Item.sol");
 
 var InterfaceR = artifacts.require("./721/singleton/InterfaceRegister.sol");
 var MetaMarket = artifacts.require("./721/singleton/MetaMarketplace.sol");
@@ -17,12 +19,14 @@ var USDC = artifacts.require("./test_erc20_tokens/USDC.sol");
 var DAI = artifacts.require("./test_erc20_tokens/DAI.sol");
 var WETH = artifacts.require("./test_erc20_tokens/WETH.sol");
 var MST = artifacts.require("./test_erc20_tokens/MST.sol");
+var WBTC = artifacts.require("./test_erc20_tokens/WBTC.sol");
 
 //  Ropsten addresses
 var usdt_address = web3.utils.toChecksumAddress('0x6ee856ae55b6e1a249f04cd3b947141bc146273c');
 var usdc_address = web3.utils.toChecksumAddress('0xfe724a829fdf12f7012365db98730eee33742ea2');
 var dai_address = web3.utils.toChecksumAddress('0xad6d458402f60fd3bd25163575031acdce07538d');
 var weth_address = web3.utils.toChecksumAddress('0xc778417e063141139fce010982780140aa0cd5ab');
+var wbtc_address = web3.utils.toChecksumAddress('0x65058d7081fcdc3cd8727dbb7f8f9d52cefdd291');
 
 var deposit_value = '50000';  // deposit INITIAL exchange market cup (turn capital)
 var deposit_value_wei = web3.utils.toWei(deposit_value,'ether');
@@ -51,9 +55,12 @@ module.exports = function (deployer, network, accounts) {
       DAI = await DAI.deployed();
       await deployer.deploy(WETH,"WETH","WETH");
       WETH = await WETH.deployed();
+      await deployer.deploy(WBTC,"WBTC","WBTC");
+      WBTC = await WBTC.deployed();
       */
       await deployer.deploy(MST, "SONM", "MST");
       MST = await MST.deployed();
+      await deployer.deploy(SVC, "v0.0.0");
       console.log("MST dummy address:");
       console.log(MST.address);
       //...
@@ -62,7 +69,7 @@ module.exports = function (deployer, network, accounts) {
       console.log(usdt_address);
       console.log("weth address:");
       console.log(weth_address);
-      return deployer.deploy(Currencies, usdt_address, usdc_address, dai_address, weth_address, MST.address, {
+      return deployer.deploy(Currencies, usdt_address, usdc_address, dai_address, weth_address, MST.address, wbtc_address, {
         gasPrice: wei_gas_price,
         from: accounts[0]
       });
@@ -75,7 +82,7 @@ module.exports = function (deployer, network, accounts) {
     }).then(function () {
       console.log("Master token address:");
       console.log(Master.address);
-      return deployer.deploy(MasterFactory, Master.address, accounts[1], Currencies.address, {
+      return deployer.deploy(MasterFactory, Master.address, accounts[0], Currencies.address, {
         gasPrice: wei_gas_price,
         from: accounts[0]
       });
@@ -85,70 +92,7 @@ module.exports = function (deployer, network, accounts) {
       console.log(MasterFactory.address);
       MasterInstance = await Master.deployed();
       MasterFactoryInstance = await MasterFactory.deployed();
-      await MasterInstance.updateFactoryAdress(MasterFactoryInstance.address);
-      fa = await MasterInstance.getFactoryAddress();
-      console.log("factory address");
-      console.log(fa);
-      return;
-    }).then(async () => {
-      return;
-    });
-
-  } // end of ropsten deployment
-
-
-
-
-  if (network == "development") {
-    console.log(accounts);
-    console.log(wei_gas_price);
-
-    console.log("block gas price:");
-    var limitGasDev = web3.eth.getBlock("latest").gasLimit;
-    console.log(limitGasDev);
-    // console.log(string_gas_price);
-
-
-
-    deployer.then(async () => {
-      await deployer.deploy(SVC, "v0.0.0");
-      await deployer.deploy(USDT, "USDT", "USDT");
-      await deployer.deploy(USDC, "USDC", "USDC");
-      USDC = await USDC.deployed();
-      await deployer.deploy(DAI, "DAI", "DAI");
-      DAI = await DAI.deployed();
-      await deployer.deploy(WETH, "WETH", "WETH");
-      WETH = await WETH.deployed();
-
-      await deployer.deploy(MST, "SONM", "MST");
-      MST = await MST.deployed();
-      //...
-    }).then(function () {
-
-      return deployer.deploy(Currencies, USDT.address, USDC.address, DAI.address, WETH.address, MST.address, {
-        gasPrice: wei_gas_price,
-        from: accounts[0]
-      });
-
-    }).then(function () {
-      return deployer.deploy(Master, "MoonShardNFT", "MSNFT", {
-        gasPrice: wei_gas_price,
-        from: accounts[0]
-      });
-    }).then(function () {
-      console.log("Master token address:");
-      console.log(Master.address);
-      return deployer.deploy(MasterFactory, Master.address, accounts[1], Currencies.address, {
-        gasPrice: wei_gas_price,
-        from: accounts[0]
-      });
-
-    }).then(async () => {
-      console.log("MasterFactory address:");
-      console.log(MasterFactory.address);
-      MasterInstance = await Master.deployed();
-      MasterFactoryInstance = await MasterFactory.deployed();
-      await MasterInstance.updateFactoryAdress(MasterFactoryInstance.address);
+      await MasterInstance.updateFactoryAddress(MasterFactoryInstance.address);
       fa = await MasterInstance.getFactoryAddress();
       console.log("factory address");
       console.log(fa);
@@ -167,10 +111,106 @@ module.exports = function (deployer, network, accounts) {
       intID_calc = await InterfaceInstance.calculateIERC721Enumarable();
       console.log("Interface If for ERC721Enumerable calculated:");
       console.log(intID_calc);
+      intID_calc1 = await InterfaceInstance.calculateIERC721();
+      console.log("Interface Id for ERC721 calculated:");
+      console.log(intID_calc1);
+
       return;
     }).then(async () => {
 
       return deployer.deploy(MetaMarket, Currencies.address, Master.address, accounts[0], {
+        gasPrice: wei_gas_price,
+        from: accounts[0]
+      });
+    }).then(async () => {
+      MetaMarketInstance = await MetaMarket.deployed();
+      console.log("MetaMarket address:");
+      console.log(MetaMarketInstance.address);
+    });
+
+  } // end of ropsten deployment
+
+
+
+
+  if (network == "development") {
+    console.log(accounts);
+    console.log(wei_gas_price);
+
+    console.log("block gas price:");
+    var limitGasDev = web3.eth.getBlock("latest").gasLimit;
+    console.log(limitGasDev);
+    // console.log(string_gas_price);
+
+    deployer.then(async () => {
+      await deployer.deploy(ERC1155Item);
+      await deployer.deploy(NFTTemplate, "NFT template", "NTMP");
+      await deployer.deploy(SVC, "v0.0.0");
+      await deployer.deploy(USDT, "USDT", "USDT");
+      await deployer.deploy(USDC, "USDC", "USDC");
+      USDC = await USDC.deployed();
+      await deployer.deploy(DAI, "DAI", "DAI");
+      DAI = await DAI.deployed();
+      await deployer.deploy(WETH, "Wrapped_Ethereum", "WETH");
+      WETH = await WETH.deployed();
+      await deployer.deploy(WBTC,"Wrapped_Bitcoin", "WBTC");
+
+      await deployer.deploy(MST, "SONM", "MST");
+      MST = await MST.deployed();
+
+      //...
+    }).then(function () {
+
+      return deployer.deploy(Currencies, USDT.address, USDC.address, DAI.address, WETH.address, MST.address, WBTC.address, {
+        gasPrice: wei_gas_price,
+        from: accounts[0]
+      });
+
+    }).then(function () {
+      return deployer.deploy(Master, "MoonShardNFT", "MSNFT", {
+        gasPrice: wei_gas_price,
+        from: accounts[0]
+      });
+    }).then(function () {
+      console.log("Master token address:");
+      console.log(Master.address);
+      return deployer.deploy(MasterFactory, Master.address, accounts[1], Currencies.address, {
+        gasPrice: wei_gas_price,
+        from: accounts[0]
+      });
+
+    }).then(async () => {
+      console.log("MasterFactory address:");
+      console.log(MasterFactory.address);
+      MasterInstance = await Master.deployed();
+      MasterFactoryInstance = await MasterFactory.deployed();
+      await MasterInstance.updateFactoryAddress(MasterFactoryInstance.address);
+      fa = await MasterInstance.getFactoryAddress();
+      console.log("factory address");
+      console.log(fa);
+      return;
+    }).then(async () => {
+
+      return deployer.deploy(InterfaceR, {
+        gasPrice: wei_gas_price,
+        from: accounts[0]
+      });
+    }).then(async () => {
+      InterfaceInstance = await InterfaceR.deployed();
+      intId = await InterfaceInstance.getInterfaceEnumerable();
+      console.log("Interface Id for ERC721Enumerable: ");
+      console.log(intId);
+      intID_calc = await InterfaceInstance.calculateIERC721Enumarable();
+      console.log("Interface If for ERC721Enumerable calculated:");
+      console.log(intID_calc);
+      intID_calc1 = await InterfaceInstance.calculateIERC721();
+      console.log("Interface Id for ERC721 calculated:");
+      console.log(intID_calc1);
+
+      return;
+    }).then(async () => {
+
+      return deployer.deploy(MetaMarket, Currencies.address, Master.address, accounts[1], {
         gasPrice: wei_gas_price,
         from: accounts[0]
       });
