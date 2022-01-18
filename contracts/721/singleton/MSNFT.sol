@@ -34,7 +34,7 @@ contract MSNFT is ERC721Enumerable, Ownable {
      * @param item_id -- unique id of item
      */
     event ItemBought(address indexed buyer,uint256 indexed master_id, uint256 indexed item_id);
-    event ItemBoughtHuman(address buyer,uint256 master_id, uint256 item_id);
+    event ItemBoughtHuman(address buyer,uint256 master_id, uint256 item_id, uint256 file_order);
 
     //Mint new token
     event MintNewToken(address to, uint m_master_id, uint item_id);
@@ -337,7 +337,7 @@ contract MSNFT is ERC721Enumerable, Ownable {
             Mint(buyer, master_id, item_id, file_order_);
             
             emit ItemBought(buyer,master_id,item_id);
-            emit ItemBoughtHuman(buyer,master_id,item_id);
+            emit ItemBoughtHuman(buyer,master_id,item_id,file_order_);
     }
 
 
