@@ -37,7 +37,7 @@ var wei_gas_price = web3.utils.toWei(custom_gas_price, 'gwei');
 
 module.exports = function (deployer, network, accounts) {
   process.env.NETWORK = deployer.network;
-  if (network == "ropsten") {
+  if (network == "rinkeby") {
     console.log(accounts);
     console.log(wei_gas_price);
 
