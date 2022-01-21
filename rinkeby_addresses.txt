@@ -1,25 +1,25 @@
-v 0.0.7
+v 0.0.8
 
-MST - 0x25434DF86b4239439Cc4D4D26f18B8E982fE3B80
+MST - 0xe512fd935C11d42b62719B03b6B9536B5E8EE90a
 
-SVC - 0xd54f1657247a52dd8774A7122274DAa1f1e71b3D
+SVC - 0x971E376cb75Cf1425f5e4Fd19A6E58B04C10FF69
 
-CurrenciesERC20 - 0x832AB923C1025A94f82b21d983976ca600CFC6C5
+CurrenciesERC20 - 0x1430c6f06c39E5699d9F64ee5C7546C75A4C855c
 
-MSNFT - 0x9e8512520D89B2c8F75FA047B49a0eCF6Bc6a5c9
+MSNFT - 0xFfb45e785FbfDEB115397a0a00d47cb4062F23aa
 
-MasterFactory721 - 0x2CA6DF9bE0fECAC0B328f231516d14B922554212
+MasterFactory721 - 0x379e9888736b70908Fe412808A7dAA382F454463
 
-InterfaceRegister - 0x269ddBB683aCB9C8693493d566C28f6b88A9B0C6
+InterfaceRegister - 0x24f90DF018b7292c455fc198D3e52B0caBFcC1F7
 
-MetaMarketplace - 0x6BC0239c269b6d8c8DE7C40f978346da3675bdB9
+MetaMarketplace - 0x2acfE067A8738d4e653f9c284Bbbe74a003C29b6
 
 
-Rinkeby-0.0.7
+Rinkeby-0.0.8
 
-Seventh deployment in public testnet! 🎉
+Eighth deployment in public testnet! 🎉
 
-contracts ABI for fifth rinkeby release are in attach archive
+contracts ABI for eighth rinkeby release are in attach archive
 
 addresses for deployed contracts are in rinkeby_addresses.txt
 
