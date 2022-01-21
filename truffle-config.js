@@ -98,6 +98,17 @@ module.exports = {
       skipDryRun: false,    // Skip dry run before migrations? (default: false for public nets )
       networkCheckTimeout: 1000000
     },
+    ropsten: {
+      provider: () => new HDWalletProvider(privateKeys, `https://ropsten.infura.io/v3/${projectId}`,addressIndex, pollingInterval),
+      network_id: 3,
+      // gas: 7900000,
+      // gasPrice: '20000000000',
+      websocket: false,
+      confirmations: 2,
+      timeoutBlocks: 50000,
+      skipDryRun: false,
+      networkCheckTimeout: 1000000
+    }
 
   },
 
