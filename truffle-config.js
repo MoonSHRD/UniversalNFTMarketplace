@@ -99,10 +99,17 @@ module.exports = {
       networkCheckTimeout: 1000000
     },
     ropsten: {
+     /*
+      provider: function() {
+        return new HDWalletProvider(privateKeys, `https://ropsten.infura.io/v3/${projectId}`,addressIndex, pollingInterval);
+      },
+      */
       provider: () => new HDWalletProvider(privateKeys, `https://ropsten.infura.io/v3/${projectId}`,addressIndex, pollingInterval),
       network_id: 3,
-      // gas: 7900000,
-      // gasPrice: '20000000000',
+      gas:'6721975',
+    //  gasPrice: '20000000000', // - use gas and gasPrice if creating type 0 transactions
+      maxFeePerGas: '2000000000000',        // -
+      maxPriorityFeePerGas: '20000000000', //- use maxFeePerGas and maxPriorityFeePerGas if creating type 2 transactions (https://eips.ethereum.org/EIPS/eip-1559)
       websocket: false,
       confirmations: 2,
       timeoutBlocks: 50000,
