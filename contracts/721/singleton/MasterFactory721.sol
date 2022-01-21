@@ -22,8 +22,6 @@ contract MasterFactory721 {
 
 // constant
 address public master_template;
-
-// TODO add func to upd sale_template when we upgrade version
 address public sale_template;
 
 address payable treasure_fund;
@@ -68,7 +66,6 @@ function deployItemSale721(MSNFT token) internal returns(address item_sale_templ
     @dev Creates Master copy of item, store its meta in blockchain
      supply type -- how much copies can have
      supplyType --> 1= unique, 0 = common, everything else is rare
-
     @param link magnet/ipfs link to file 
     @param _description of a file, stored in EVENTS, not in state
     @param _supplyType see above

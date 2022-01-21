@@ -171,7 +171,6 @@ module.exports = function (deployer, network, accounts) {
         gasPrice: wei_gas_price,
         from: accounts[0]
       });
-
     }).then(function () {
       console.log("Master token address:");
       console.log(Master.address);

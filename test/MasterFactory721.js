@@ -25,6 +25,17 @@ function makeRandomLink(length) {
     return result;
 }
 
+function makeid(length) {
+    var result           = '';
+    var characters       = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+    var charactersLength = characters.length;
+    for ( var i = 0; i < length; i++ ) {
+        result += characters.charAt(Math.floor(Math.random() * 
+        charactersLength));
+   }
+   return result;
+}
+
 contract('MasterFactory721', accounts => {
     let factory, network, tokenSaleSingleton, feeAddress, nft, mst, usdt, dai, usdc, weth;
     let midUnlimit, midRareOne, midRareTwo;
