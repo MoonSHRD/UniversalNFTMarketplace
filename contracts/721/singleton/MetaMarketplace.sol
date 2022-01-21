@@ -42,6 +42,11 @@ contract MetaMarketplace {
         uint256 createTime;
     }
 
+    struct Receipt {
+        uint256 lastPriceSold;
+        CurrenciesERC20.CurrencyERC20 currencyUsed;
+    }
+
     // MSNFT, 721Enumerable,721Metadata, erc721(common)
     enum NftType {MoonShard, Enum, Meta, Common}
 
@@ -50,7 +55,8 @@ contract MetaMarketplace {
         mapping(uint256 => SellOffer) activeSellOffers;
         // Store all active buy offers and maps them to their respective token ids
         mapping(uint256 => mapping(CurrenciesERC20.CurrencyERC20 => BuyOffer)) activeBuyOffers;
-
+        // Store the last price & currency item was sold for
+        mapping(uint256 => Receipt) lastPrice;
         // Escrow for buy offers
         // buyer_address => token_id => Currency => locked_funds
         mapping(address => mapping(uint256 => mapping(CurrenciesERC20.CurrencyERC20=>uint256))) buyOffersEscrow;
@@ -240,7 +246,11 @@ contract MetaMarketplace {
           //  delete metainfo.activeBuyOffers[tokenId][currency_];                    // if we can't move funds from buyer to seller, then buyer either don't have enough balance nor approved spending this much, so we delete this order
             revert("Approved amount is lesser than (bid_price_) needed to deal");
         }
-        
+
+        // Save the price & currency used
+        metainfo.lastPrice[tokenId].lastPriceSold = bid_price_;
+        metainfo.lastPrice[tokenId].currencyUsed = currency_;
+
         // And transfer nft_token to the buyer
         token.safeTransferFrom(
             seller,
@@ -374,7 +384,10 @@ contract MetaMarketplace {
         // Tries to forward funds from this contract (which already has been locked when makeBuyOffer executed) to seller and distribute fees
         require(_forwardFunds(token_contract_,tokenId,currency_, msg.sender, bid_value), "MetaMarketplace: can't forward funds to seller");
         
-        
+        // Save the price & currency used
+        metainfo.lastPrice[tokenId].lastPriceSold = bid_value;
+        metainfo.lastPrice[tokenId].currencyUsed = currency_;
+
         // And transfer nft token to the buyer
         MSNFT token = MSNFT(token_contract_);
         token.safeTransferFrom(msg.sender,currentBuyer,tokenId);
@@ -489,6 +502,12 @@ contract MetaMarketplace {
         require(_currency_token.transfer(to_, amount_), "Can't send refund");
     }
 
+    function getLastPrice(address token_contract_, uint256 _tokenId) public view returns (uint256 _lastPrice, CurrenciesERC20.CurrencyERC20 currency_ ) { 
+        Marketplace storage metainfo = Marketplaces[token_contract_];
+        _lastPrice = metainfo.lastPrice[_tokenId].lastPriceSold;
+        currency_ = metainfo.lastPrice[_tokenId].currencyUsed;
+        return (_lastPrice, currency_);
+    }
 
     modifier marketplaceSetted(address mplace_) {
         require(Marketplaces[mplace_].initialized == true,
