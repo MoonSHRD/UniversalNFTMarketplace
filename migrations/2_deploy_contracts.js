@@ -28,8 +28,9 @@ var dai_address = web3.utils.toChecksumAddress('0xad6d458402f60fd3bd25163575031a
 var weth_address = web3.utils.toChecksumAddress('0xc778417e063141139fce010982780140aa0cd5ab');
 var wbtc_address = web3.utils.toChecksumAddress('0x65058d7081fcdc3cd8727dbb7f8f9d52cefdd291');
 
-var deposit_value = '50000';  // deposit INITIAL exchange market cup (turn capital)
-var deposit_value_wei = web3.utils.toWei(deposit_value,'ether');
+// @todo: remove next two lines
+//var deposit_value = '50000';  // deposit INITIAL exchange market cup (turn capital)
+//var deposit_value_wei = web3.utils.toWei(deposit_value,'ether');
 
 var custom_gas_price = '9'; // for ropsten
 var wei_gas_price = web3.utils.toWei(custom_gas_price, 'gwei');
