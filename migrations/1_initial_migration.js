@@ -1,10 +1,10 @@
 const Migrations = artifacts.require("./Migrations.sol");
 
-var custom_gas_price = '20'; // for ropsten
+var custom_gas_price = '3'; // for rinkeby
 var wei_gas_price = web3.utils.toWei(custom_gas_price, 'gwei');
 
-var maxFeePerGas_custom = '200';
-var maxPriorityFeePerGas_custom = '1.5';
+var maxFeePerGas_custom = '100'; // for rinkeby
+var maxPriorityFeePerGas_custom = '2';
 var maxFeePerGas_wei = web3.utils.toWei(maxFeePerGas_custom, 'gwei');
 var maxPriorityFeePerGas_wei = web3.utils.toWei(maxPriorityFeePerGas_custom, 'gwei');
 
@@ -14,10 +14,11 @@ var maxPriorityFeePerGas_wei = web3.utils.toWei(maxPriorityFeePerGas_custom, 'gw
 
 module.exports = function (deployer, network, accounts) {
 
-  process.env.NETWORK = deployer.network;
-  if (network == "ropsten" || network =="ropsten-fork") {
+ // process.env.NETWORK = deployer.network;
+ // if (network == "ropsten" || network =="ropsten-fork") {
     console.log(accounts);
 
+  //   web3.eth.sendTransaction({to:accounts[1], from:accounts[0], value:web3.utils.toWei('500','gwei'), gasPrice:web3.utils.toWei('300','gwei')});
     console.log(" maxFeePerGas:");
     console.log(maxFeePerGas_wei);
     console.log("max PriorityFeePerGas:");
@@ -30,16 +31,16 @@ module.exports = function (deployer, network, accounts) {
     deployer.then(async () => {
       
       return deployer.deploy(Migrations, {
-        gas: '6721975',
-        gasPrice: wei_gas_price,
-        maxFeePerGas: maxFeePerGas_wei,
-        maxPriorityFeePerGas: maxPriorityFeePerGas_wei,
-        from: accounts[0]
+     //   gas: '6721975',
+     //   gasPrice: wei_gas_price,
+    maxFeePerGas: maxFeePerGas_wei,
+    maxPriorityFeePerGas: maxPriorityFeePerGas_wei,
+     //   from: accounts[1]
       });
 
     });
 
-  }
+ // }
   
 
  // deployer.deploy(Migrations);
