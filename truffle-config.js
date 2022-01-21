@@ -24,6 +24,16 @@
 // const fs = require('fs');
 // const mnemonic = fs.readFileSync(".secret").toString().trim();
 
+const web3 = require('web3');
+
+
+var maxFeePerGas_custom = '260';
+var maxPriorityFeePerGas_custom = '2';
+var maxFeePerGas_wei = web3.utils.toWei(maxFeePerGas_custom, 'gwei');
+var maxPriorityFeePerGas_wei = web3.utils.toWei(maxPriorityFeePerGas_custom, 'gwei');
+var custom_gas_price = '280'; // for ropsten
+var wei_gas_price = web3.utils.toWei(custom_gas_price, 'gwei');
+
 // const path = require("path");
 const { projectId, privateKeys, coinmarketcupKey , addressIndex, pollingInterval, etherscanApiKey} = require('./secret.json');
 const HDWalletProvider = require('@truffle/hdwallet-provider');
@@ -80,24 +90,47 @@ module.exports = {
       host: "127.0.0.1",
       port: 7545,
       gasLimit: '6721975',
-      gasPrice: '20000000000',
+     // maxFeePerGas: '2000000000000',        // -
+     // maxPriorityFeePerGas: '25000000000', //- use maxFeePerGas and maxPriorityFeePerGas if creating type 2 transactions (https://eips.ethereum.org/EIPS/eip-1559)
+     // gasPrice: '20000000000',
       network_id: '*'
     },
     development: {
       host: "127.0.0.1",
       port: 7545,
-      gasPrice: '20000000000',
+     // gasPrice: '20000000000',
+     // maxFeePerGas: '2000000000000',        // -
+     // maxPriorityFeePerGas: '20000000000', //- use maxFeePerGas and maxPriorityFeePerGas if creating type 2 transactions (https://eips.ethereum.org/EIPS/eip-1559)
       network_id: "*"
     },
     rinkeby: {
       provider: () => new HDWalletProvider(privateKeys, `https://rinkeby.infura.io/v3/${projectId}`,addressIndex, pollingInterval),
-      network_id: 4,       // Ropsten's id
+      network_id: 4,       // Rinkeby's id
       websocket: false,
       confirmations: 2,    // # of confs to wait between deployments. (default: 0)
       timeoutBlocks: 50000,  // # of blocks before a deployment times out  (minimum/default: 50)
       skipDryRun: false,    // Skip dry run before migrations? (default: false for public nets )
       networkCheckTimeout: 1000000
     },
+    ropsten: {
+     /*
+      provider: function() {
+        return new HDWalletProvider(privateKeys, `https://ropsten.infura.io/v3/${projectId}`,addressIndex, pollingInterval);
+      },
+      */
+      provider: () => new HDWalletProvider(privateKeys, `https://ropsten.infura.io/v3/${projectId}`,addressIndex, pollingInterval),
+      network_id: 3,
+      gasLimit: '6721975',
+   //   gas:'6721975',
+   //   gasPrice: wei_gas_price, // - use gas and gasPrice if creating type 0 transactions
+   //   maxFeePerGas: maxFeePerGas_wei,        // -
+   //   maxPriorityFeePerGas: maxPriorityFeePerGas_wei, //- use maxFeePerGas and maxPriorityFeePerGas if creating type 2 transactions (https://eips.ethereum.org/EIPS/eip-1559)
+      websocket: false,
+      confirmations: 2,
+      timeoutBlocks: 50000,
+      skipDryRun: false,
+      networkCheckTimeout: 1000000
+    }
 
   },
 

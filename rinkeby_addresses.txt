@@ -14,3 +14,12 @@ InterfaceRegister - 0x269ddBB683aCB9C8693493d566C28f6b88A9B0C6
 
 MetaMarketplace - 0x6BC0239c269b6d8c8DE7C40f978346da3675bdB9
 
+
+Rinkeby-0.0.7
+
+Seventh deployment in public testnet! 🎉
+
+contracts ABI for fifth rinkeby release are in attach archive
+
+addresses for deployed contracts are in rinkeby_addresses.txt
+

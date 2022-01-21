@@ -28,18 +28,19 @@ var dai_address = web3.utils.toChecksumAddress('0xad6d458402f60fd3bd25163575031a
 var weth_address = web3.utils.toChecksumAddress('0xc778417e063141139fce010982780140aa0cd5ab');
 var wbtc_address = web3.utils.toChecksumAddress('0x65058d7081fcdc3cd8727dbb7f8f9d52cefdd291');
 
-var deposit_value = '50000';  // deposit INITIAL exchange market cup (turn capital)
-var deposit_value_wei = web3.utils.toWei(deposit_value,'ether');
+// @todo: remove next two lines
+//var deposit_value = '50000';  // deposit INITIAL exchange market cup (turn capital)
+//var deposit_value_wei = web3.utils.toWei(deposit_value,'ether');
 
-var custom_gas_price = '9'; // for ropsten
-var wei_gas_price = web3.utils.toWei(custom_gas_price, 'gwei');
+//var custom_gas_price = '9'; // for ropsten
+//var wei_gas_price = web3.utils.toWei(custom_gas_price, 'gwei');
 //var string_gas_price = wei_gas_price.toString;
 
 module.exports = function (deployer, network, accounts) {
   process.env.NETWORK = deployer.network;
   if (network == "rinkeby") {
     console.log(accounts);
-    console.log(wei_gas_price);
+  //  console.log(wei_gas_price);
 
     console.log("block gas price:");
     var limitGas = web3.eth.getBlock("latest").gasLimit;
@@ -70,20 +71,20 @@ module.exports = function (deployer, network, accounts) {
       console.log("weth address:");
       console.log(weth_address);
       return deployer.deploy(Currencies, usdt_address, usdc_address, dai_address, weth_address, MST.address, wbtc_address, {
-        gasPrice: wei_gas_price,
+       // gasPrice: wei_gas_price,
         from: accounts[0]
       });
 
     }).then(function () {
       return deployer.deploy(Master, "MoonShardNFT", "MSNFT", {
-        gasPrice: wei_gas_price,
+       // gasPrice: wei_gas_price,
         from: accounts[0]
       });
     }).then(function () {
       console.log("Master token address:");
       console.log(Master.address);
       return deployer.deploy(MasterFactory, Master.address, accounts[0], Currencies.address, {
-        gasPrice: wei_gas_price,
+       // gasPrice: wei_gas_price,
         from: accounts[0]
       });
 
@@ -100,7 +101,7 @@ module.exports = function (deployer, network, accounts) {
     }).then(async () => {
 
       return deployer.deploy(InterfaceR, {
-        gasPrice: wei_gas_price,
+    //    gasPrice: wei_gas_price,
         from: accounts[0]
       });
     }).then(async () => {
@@ -119,7 +120,7 @@ module.exports = function (deployer, network, accounts) {
     }).then(async () => {
 
       return deployer.deploy(MetaMarket, Currencies.address, Master.address, accounts[0], {
-        gasPrice: wei_gas_price,
+      //  gasPrice: wei_gas_price,
         from: accounts[0]
       });
     }).then(async () => {
@@ -162,20 +163,20 @@ module.exports = function (deployer, network, accounts) {
     }).then(function () {
 
       return deployer.deploy(Currencies, USDT.address, USDC.address, DAI.address, WETH.address, MST.address, WBTC.address, {
-        gasPrice: wei_gas_price,
+     //   gasPrice: wei_gas_price,
         from: accounts[0]
       });
 
     }).then(function () {
       return deployer.deploy(Master, "MoonShardNFT", "MSNFT", {
-        gasPrice: wei_gas_price,
+      //  gasPrice: wei_gas_price,
         from: accounts[0]
       });
     }).then(function () {
       console.log("Master token address:");
       console.log(Master.address);
       return deployer.deploy(MasterFactory, Master.address, accounts[1], Currencies.address, {
-        gasPrice: wei_gas_price,
+     //   gasPrice: wei_gas_price,
         from: accounts[0]
       });
 
@@ -192,7 +193,7 @@ module.exports = function (deployer, network, accounts) {
     }).then(async () => {
 
       return deployer.deploy(InterfaceR, {
-        gasPrice: wei_gas_price,
+    //    gasPrice: wei_gas_price,
         from: accounts[0]
       });
     }).then(async () => {
@@ -211,7 +212,7 @@ module.exports = function (deployer, network, accounts) {
     }).then(async () => {
 
       return deployer.deploy(MetaMarket, Currencies.address, Master.address, accounts[1], {
-        gasPrice: wei_gas_price,
+     //   gasPrice: wei_gas_price,
         from: accounts[0]
       });
     }).then(async () => {

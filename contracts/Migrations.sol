@@ -5,6 +5,10 @@ contract Migrations {
   address public owner = msg.sender;
   uint public last_completed_migration;
 
+  constructor() {
+    owner = msg.sender;
+  }
+
   modifier restricted() {
     require(
       msg.sender == owner,
