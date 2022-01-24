@@ -167,11 +167,25 @@ contract('MasterFactory721', accounts => {
             const allowance = await usdt.allowance(user, saletemplate);
             assert(allowance == tokenUsdtPrice);
 
+
             tokenSaleSingleton = await TokenSaleSingleton.at(saletemplate);
+
+            //check sold count before buyTokens
+            let scBefore = await tokenSaleSingleton.MSaleInfo.call(midUnlimit);
+            assert.equal(scBefore._sold_count.toString(), 0, 'should be zero');
+            console.log("scBefore");
+            console.log(scBefore._sold_count.toString());
+
             const buyToken = await tokenSaleSingleton.buyTokens(user, USDT, midUnlimit, 0);
             assert.equal(buyToken.logs.length, 1, 'triggers one event');
             assert.equal(buyToken.logs[0].event, 'TokensPurchased', 'should be the TokensPurchased event');
 
+            //check sold count before buyTokens
+            let scAfter = await tokenSaleSingleton.MSaleInfo.call(midUnlimit);
+            assert.equal(scAfter._sold_count.toString(), 1, 'should be one');
+            console.log("scAfter");
+            console.log(scAfter._sold_count.toString());
+            
             let userBalance = await usdt.balanceOf(user, {
                 from: admin
             });
