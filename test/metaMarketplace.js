@@ -351,6 +351,26 @@ contract('MetaMarketplace', accounts => {
             assert.equal(acceptOfferByOwner.receipt.logs.length, 3, 'triggers three events');
             assert.equal(acceptOfferByOwner.receipt.logs[0].event, 'RoyaltiesPaid', 'must be the RoyaltiesPaid event');
             assert.equal(acceptOfferByOwner.receipt.logs[1].event, 'CalculatedFees', 'must be the CalculatedFees event');
+
+            let amount = acceptOfferByOwner.receipt.logs[1].args.initial_value;
+            let fees = acceptOfferByOwner.receipt.logs[1].args.fees;
+            let netAmount = acceptOfferByOwner.receipt.logs[1].args.transfered_amount;
+
+            console.log("CalculatedFees args");
+            
+            console.log("amount");
+            console.log(amount.toString());
+            console.log("fees");
+            console.log(fees.toString());
+            console.log("netAmount");
+            console.log(netAmount.toString());
+
+            let royaltyAmount = amount * 0.015;
+            console.log("royaltyAmount");
+            console.log(royaltyAmount.toString());
+
+            
+            assert.equal(royaltyAmount.toString(), fees.toString(), 'must be equal');
             assert.equal(acceptOfferByOwner.receipt.logs[2].event, 'Sale', 'must be the Sale event');
 
             // console.log("args 1 ==================");
