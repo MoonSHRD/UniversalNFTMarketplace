@@ -344,6 +344,9 @@ contract('MetaMarketplace', accounts => {
             const approvedAddress = await nft.getApproved(tokenIdUnlimitOne);
             assert.equal(mMarket.address, approvedAddress, 'must be equal');
 
+            const ownerOfToken = await nft.ownerOf(tokenIdUnlimitOne);
+            assert.equal(ownerOfToken, admin, 'must be equal');
+
             const acceptOfferByOwner = await mMarket.acceptBuyOffer(nft.address, tokenIdUnlimitOne, MST, {
                 from: admin
             });

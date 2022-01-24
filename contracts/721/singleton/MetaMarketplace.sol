@@ -526,7 +526,6 @@ contract MetaMarketplace {
         _;
     }
 
-    // TODO: check this 
     modifier tokenOwnerOnly(uint256 tokenId, address nft_contract_) {
        IERC721 token = IERC721(nft_contract_);
         require(token.ownerOf(tokenId) == msg.sender,
