@@ -5,6 +5,7 @@ pragma solidity ^0.8.0;
 import './MSNFT.sol';
 //import './TokenSale721.sol';
 import './TokenSaleSingleton.sol';
+import "../../../node_modules/@openzeppelin/contracts/access/Ownable.sol";
 
 /**
  *  Master Factory
@@ -18,7 +19,7 @@ import './TokenSaleSingleton.sol';
  * If there is a need to upgrade tokensale mechanism it is required to upgrade and redeploy this factory, but not required to upgrade and redeploy Master (MSNFT) and vice-versa
  * 
  */
-contract MasterFactory721 {
+contract MasterFactory721 is Ownable {
 
 // constant
 address public master_template;
@@ -60,6 +61,14 @@ function createItemSale721(address payable organizer, uint price, MSNFT token,ui
 function deployItemSale721(MSNFT token) internal returns(address item_sale_template) {
     item_sale_template = address(new TokenSaleSingleton(token,treasure_fund,currencies_router));
     return item_sale_template;
+}
+
+/* 
+        @dev update the sale_template address manually in the case of TokenSaleSingleton upgrade
+ */
+function updateAddress(address newAddress) public onlyOwner returns(address sale_template) {
+    sale_template = newAddress;
+    return sale_template;
 }
 
 /**
