@@ -28,6 +28,8 @@ address payable treasure_fund;
 
 address public currencies_router;
 
+address public owner;
+
 // event
 event SaleCreated(address indexed author, uint price, CurrenciesERC20.CurrencyERC20 indexed currency, uint256 indexed master_id, address it_sale);
 event SaleCreatedHuman(address author, uint price, CurrenciesERC20.CurrencyERC20 currency,uint256 master_id, address it_sale);
@@ -42,6 +44,7 @@ constructor(address msnft_,address payable _treasure_fund, address currencies_ro
    currencies_router = currencies_router_;
    MSNFT token_ = MSNFT(master_template);
    sale_template = deployItemSale721(token_);
+   owner = msg.sender;
 }
 
 /**
@@ -60,6 +63,15 @@ function createItemSale721(address payable organizer, uint price, MSNFT token,ui
 function deployItemSale721(MSNFT token) internal returns(address item_sale_template) {
     item_sale_template = address(new TokenSaleSingleton(token,treasure_fund,currencies_router));
     return item_sale_template;
+}
+
+/* 
+        @dev update the sale_template address manually in the case of TokenSaleSingleton upgrade
+ */
+function updateAddress(address newAddress) public returns(address sale_template) {
+    require(msg.sender == owner, "You are not the owner.");
+    sale_template = newAddress;
+    return sale_template;
 }
 
 /**
