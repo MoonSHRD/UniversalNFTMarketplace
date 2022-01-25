@@ -5,6 +5,7 @@ pragma solidity ^0.8.0;
 import './MSNFT.sol';
 //import './TokenSale721.sol';
 import './TokenSaleSingleton.sol';
+import "../../../node_modules/@openzeppelin/contracts/access/Ownable.sol";
 
 /**
  *  Master Factory
@@ -18,7 +19,7 @@ import './TokenSaleSingleton.sol';
  * If there is a need to upgrade tokensale mechanism it is required to upgrade and redeploy this factory, but not required to upgrade and redeploy Master (MSNFT) and vice-versa
  * 
  */
-contract MasterFactory721 {
+contract MasterFactory721 is Ownable {
 
 // constant
 address public master_template;
@@ -27,8 +28,6 @@ address public sale_template;
 address payable treasure_fund;
 
 address public currencies_router;
-
-address public owner;
 
 // event
 event SaleCreated(address indexed author, uint price, CurrenciesERC20.CurrencyERC20 indexed currency, uint256 indexed master_id, address it_sale);
@@ -44,7 +43,6 @@ constructor(address msnft_,address payable _treasure_fund, address currencies_ro
    currencies_router = currencies_router_;
    MSNFT token_ = MSNFT(master_template);
    sale_template = deployItemSale721(token_);
-   owner = msg.sender;
 }
 
 /**
@@ -68,8 +66,7 @@ function deployItemSale721(MSNFT token) internal returns(address item_sale_templ
 /* 
         @dev update the sale_template address manually in the case of TokenSaleSingleton upgrade
  */
-function updateAddress(address newAddress) public returns(address sale_template) {
-    require(msg.sender == owner, "You are not the owner.");
+function updateAddress(address newAddress) public onlyOwner returns(address sale_template) {
     sale_template = newAddress;
     return sale_template;
 }
