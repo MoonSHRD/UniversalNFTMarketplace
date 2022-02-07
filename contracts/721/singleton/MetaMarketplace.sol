@@ -293,8 +293,6 @@ contract MetaMarketplace {
         if (metainfo.activeSellOffers[tokenId].minPrice[currency_] != 0) {
         require((bid_price_ > metainfo.activeSellOffers[tokenId].minPrice[currency_]),
             "Sell order at this price or lower exists");
-            // @TODO: execute purchase if price is lower instead of revert
-
         }
 
         // Only process the offer if it is higher than the previous one or the
@@ -305,8 +303,7 @@ contract MetaMarketplace {
                 "Previous buy offer higher or not expired");
 
         address previousBuyOfferOwner = metainfo.activeBuyOffers[tokenId][currency_].buyer;
-        uint256 refundBuyOfferAmount = metainfo.buyOffersEscrow[previousBuyOfferOwner]
-        [tokenId][currency_];
+        uint256 refundBuyOfferAmount = metainfo.buyOffersEscrow[previousBuyOfferOwner][tokenId][currency_];
         // Refund the owner of the previous buy offer
         if (refundBuyOfferAmount > 0) {
            _sendRefund(currency_, previousBuyOfferOwner, refundBuyOfferAmount);
