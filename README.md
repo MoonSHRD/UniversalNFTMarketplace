@@ -27,8 +27,18 @@ Universal NFT Marketplace
  (P2P exchange of any NFT's from anywhere else platform)
  Exchange will come to v0.2 (not in first version)
 
- TokenSale contract is a modified OZ crowdsale contract.
+ TokenSale contract is a modified OZ crowdsale contract
  It has been modified to work with ERC721 token and get ERC20 tokens as payment
+
+ ### MetaMarketplace
+ Any previously minted NFT may be listed for purchase on secondary market
+ Each created marketplace is a struct tethered to nft-token contract
+
+ Users may set price in ERC20 tokens, make & receive buy offers
+ Whenever users see tokens they want to purchase, they may create and send a buy offer
+ Seller may accept the offer or decline it, which will (or will not, basing on seller's decision) trigger the funds (and, of course, token itself) transfer mechanism
+
+ For more info see `./contracts/721/singleton/MetaMarketplace.sol`
 
  ### MasterCopy and Items
 Each token represent some file, so it stores link to the file and some meta-information about NFT as MasterCopy
