@@ -51,7 +51,6 @@ contract CurrenciesERC20 is ReentrancyGuard, Ownable {
     mapping (string => CurrencyERC20_Custom) public _currencies_custom_user;
 
 
-    // @TODO: Investigate how to add different types of ERC20.  Old type have name as public string and no getter, new type have name as private sting and getter for it.
     function AddCustomCurrency(address _token_contract) public {
 
       IERC20Metadata _currency_contract = IERC20Metadata(_token_contract);

@@ -70,7 +70,7 @@ contract MSNFT is ERC721Enumerable, Ownable {
 
 
 
-    // Ticket lifecycle @TODO: Maybe useful for migration in future
+    // Ticket lifecycle: Maybe useful for migration in future
     //enum TicketState {Non_Existed, Paid, Fulfilled, Cancelled}
 
     // Rarity type

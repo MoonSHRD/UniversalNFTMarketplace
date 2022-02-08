@@ -282,7 +282,7 @@ contract TokenSaleSingleton is Context, ReentrancyGuard {
         SaleInfo storage metasale = MSaleInfo[master_id_];
         
         uint sc = metasale._sold_count;
-        uint limit = sc++;    // @todo: check this in tests
+        uint limit = ++sc;
 
      // Check sale_limit (including rarity check)
         require(check_sale_limit(limit,master_id_) == true, "tokens amount should not exceed sale_limit");

@@ -31,8 +31,8 @@ var maxFeePerGas_custom = '260';
 var maxPriorityFeePerGas_custom = '2';
 var maxFeePerGas_wei = web3.utils.toWei(maxFeePerGas_custom, 'gwei');
 var maxPriorityFeePerGas_wei = web3.utils.toWei(maxPriorityFeePerGas_custom, 'gwei');
-var custom_gas_price = '280'; // for ropsten
-var wei_gas_price = web3.utils.toWei(custom_gas_price, 'gwei');
+// var custom_gas_price = '280'; // for ropsten
+// var wei_gas_price = web3.utils.toWei(custom_gas_price, 'gwei');
 
 // const path = require("path");
 const { projectId, privateKeys, coinmarketcupKey , addressIndex, pollingInterval, etherscanApiKey} = require('./secret.json');
@@ -104,13 +104,14 @@ module.exports = {
       network_id: "*"
     },
     rinkeby: {
-      provider: () => new HDWalletProvider(privateKeys, `https://rinkeby.infura.io/v3/${projectId}`,addressIndex, pollingInterval),
+      provider: () => new HDWalletProvider(privateKeys, `wss://rinkeby.infura.io/ws/v3/${projectId}`,addressIndex, pollingInterval),
       network_id: 4,       // Rinkeby's id
       websocket: false,
       confirmations: 2,    // # of confs to wait between deployments. (default: 0)
       timeoutBlocks: 50000,  // # of blocks before a deployment times out  (minimum/default: 50)
       skipDryRun: false,    // Skip dry run before migrations? (default: false for public nets )
-      networkCheckTimeout: 1000000
+      networkCheckTimeout: 1000000,
+      websockets: true
     },
     ropsten: {
      /*

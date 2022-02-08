@@ -25,26 +25,15 @@ function makeRandomLink(length) {
     return result;
 }
 
-function makeid(length) {
-    var result           = '';
-    var characters       = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-    var charactersLength = characters.length;
-    for ( var i = 0; i < length; i++ ) {
-        result += characters.charAt(Math.floor(Math.random() * 
-        charactersLength));
-   }
-   return result;
-}
-
 contract('MasterFactory721', accounts => {
     let factory, network, tokenSaleSingleton, feeAddress, nft, mst, usdt, dai, usdc, weth;
-    let midUnlimit, midRareOne, midRareTwo;
+    let midUnlimit, midRareOne, midRareTwo, midUnique;
     const [USDT, USDC, DAI, MST, WETH] = [0, 1, 2, 3, 4];
     let tokensTotal = '50';
     let linkOne, linkTwo, linkThree, linkFour;
     let admin, user;
     const desc = 'Lorem ipsum dolor sit amet';
-    const [limited, unlimit] = [2, 0];
+    const [limited, unlimit, unique] = [2, 0, 1];
 
     let saletemplate;
 
@@ -64,7 +53,7 @@ contract('MasterFactory721', accounts => {
             weth = await WETHcontract.deployed();
             admin = accounts[0];
             user = accounts[2];
-        } else if (network == 'ropsten'){
+        } else if (network == 'ropsten' || network == 'rinkeby'){
             admin = '0xF87F1eaa6Fd9B65bF41F90afEdF8B64D6487F61E';
             user = '0x1b7C81DbAF6f34E878686CE6FA9463c48E2185C7';
         }
@@ -77,7 +66,7 @@ contract('MasterFactory721', accounts => {
         if (network == 'development' || network == 'ganache') {
             midUnlimit = '1';
         } else {
-            midUnlimit = createUniqueItem.receipt.logs[0].args.master_id;
+            midUnlimit = createItemOne.receipt.logs[0].args.master_id;
         }
         const firstLink = createItemOne.receipt.logs[0].args.link;
         assert(firstLink == linkOne);
@@ -99,19 +88,18 @@ contract('MasterFactory721', accounts => {
         if (network == 'development' || network == 'ganache') {
             midRareOne = '2';
         } else {
-            midRareOne = createUniqueItem.receipt.logs[0].args.master_id;
+            midRareOne = createRareItemOne.receipt.logs[0].args.master_id;
         }
         const firstRareLink = createRareItemOne.receipt.logs[0].args.link;
         assert(firstRareLink == linkThree);
 
         const createRareItemTwo = await factory.createMasterItem(linkFour, desc, limited);
-        console.log(createRareItemTwo.receipt.logs[0].args);
         assert.equal(createRareItemTwo.receipt.logs.length, 1, 'triggers two events');
         assert.equal(createRareItemTwo.receipt.logs[0].event, 'CreateMasterItem', 'should be the CreateMasterItem event');
         if (network == 'development' || network == 'ganache') {
             midRareTwo = '3';
         } else {
-            midRareTwo = createUniqueItem.receipt.logs[0].args.master_id;
+            midRareTwo = createRareItemTwo.receipt.logs[0].args.master_id;
         }
         const secondRareLink = createRareItemTwo.receipt.logs[0].args.link;
         assert(secondRareLink == linkFour);
@@ -120,6 +108,30 @@ contract('MasterFactory721', accounts => {
     it('should NOT create master copy with limited supply type', async () => {
         try {
             await factory.createMasterItem(linkFour, desc, limited);
+        } catch (e) {
+            assert(e.message, 'error message must contain revert');
+        }
+    });
+
+
+    it('should create master copy with unique supply type', async () => {
+        const createItemOne = await factory.createMasterItem(linkTwo, desc, unique);
+        assert.equal(createItemOne.receipt.logs.length, 1, 'triggers two events');
+        assert.equal(createItemOne.receipt.logs[0].event, 'CreateMasterItem', 'should be the CreateMasterItem event');
+
+        if (network == 'development' || network == 'ganache') {
+            midUnique = '4';
+        } else {
+            midUnique = createItemOne.receipt.logs[0].args.master_id;
+        }
+        const firstLink = createItemOne.receipt.logs[0].args.link;
+        assert(firstLink == linkTwo);
+
+    });
+
+    it('should NOT create master copy with no limit supply type', async () => {
+        try {
+            await factory.createMasterItem(linkTwo, desc, unique);
         } catch (e) {
             assert(e.message, 'error message must contain revert');
         }
@@ -230,6 +242,7 @@ contract('MasterFactory721', accounts => {
             const tokenUsdcPriceStr = '10';
             let tokenUsdcPrice = web3.utils.toWei(web3.utils.toBN(tokenUsdcPriceStr));
 
+            saletemplate = await factory.sale_template.call();
             tokenSaleSingleton = await TokenSaleSingleton.at(saletemplate);
             await usdc.approve(saletemplate, 0, {
                 from: user
@@ -308,15 +321,18 @@ contract('MasterFactory721', accounts => {
     //         const tokenDaiPriceStr = '10';
     //         let tokenDaiPrice = web3.utils.toWei(web3.utils.toBN(tokenDaiPriceStr));
 
-    //         const receiptItemSale = await factory.createItemSale(tokenDaiPrice, unique, DAI, midUnique);
+    //         const receiptItemSale = await factory.createItemSale(tokenDaiPrice, 1, DAI, midUnique);
     //         assert.equal(receiptItemSale.receipt.logs.length, 2, 'triggers two events');
     //         assert.equal(receiptItemSale.receipt.logs[0].event, 'SaleCreated', 'should be the SaleCreated event');
     //         assert.equal(receiptItemSale.receipt.logs[1].event, 'SaleCreatedHuman', 'should be the SaleCreatedHuman event');
     //         assert(userTokenBalanceAfter >= receiptItemSale.receipt.logs[0].args.price);
 
-    //         await dai.approve(saletemplate, 0, {
-    //             from: user
-    //         });
+    //         console.log(receiptItemSale);
+
+    //         saletemplate = await factory.sale_template.call();
+    //         // await dai.approve(saletemplate, 0, {
+    //         //     from: user
+    //         // });
 
     //         const approve = await dai.approve(saletemplate, tokenDaiPrice, {
     //             from: user
@@ -333,38 +349,42 @@ contract('MasterFactory721', accounts => {
 
     //         tokenSaleSingleton = await TokenSaleSingleton.at(saletemplate);
 
-    //         const buyToken = await tokenSaleSingleton.buyTokens(user, DAI, midUnique, unique);
-    //         assert.equal(buyToken.logs.length, 1, 'triggers one event');
-    //         assert.equal(buyToken.logs[0].event, 'TokensPurchased', 'should be the TokensPurchased event');
+    //         const adminNftAmount = await tokenSaleSingleton.MSaleInfo.call(midUnique);
+    //         console.log(adminNftAmount);
 
-    //         let userBalance = await dai.balanceOf(user, {
-    //             from: admin
-    //         });
-    //         let userBalanceAfterBuy = userTokenBalanceAfter - tokenDaiPrice;
-    //         assert(userBalance == userBalanceAfterBuy);
+    //         const buyToken = await tokenSaleSingleton.buyTokens(user, DAI, midUnique, 0);
+    //         // console.log(buyToken);
+    //         // assert.equal(buyToken.logs.length, 1, 'triggers one event');
+    //         // assert.equal(buyToken.logs[0].event, 'TokensPurchased', 'should be the TokensPurchased event');
 
-    //         const balanceDaiBeforeWithdraw = await tokenSaleSingleton.getBalances(DAI, midUnique);
-    //         assert.equal(balanceDaiBeforeWithdraw.toString(), tokenDaiPrice.toString(), "must be equal");
+    //         // let userBalance = await dai.balanceOf(user, {
+    //         //     from: admin
+    //         // });
+    //         // let userBalanceAfterBuy = userTokenBalanceAfter - tokenDaiPrice;
+    //         // assert(userBalance == userBalanceAfterBuy);
 
-    //         const balance = await nft.totalSupply();
-    //         assert.equal(balance, 3, 'balance has been replenished');
+    //         // const balanceDaiBeforeWithdraw = await tokenSaleSingleton.getBalances(DAI, midUnique);
+    //         // assert.equal(balanceDaiBeforeWithdraw.toString(), tokenDaiPrice.toString(), "must be equal");
 
-    //         const withDrawFunds = await tokenSaleSingleton.withDrawFunds(DAI, midUnique);
-    //         assert.equal(withDrawFunds.logs.length, 1, 'triggers one event');
-    //         assert.equal(withDrawFunds.logs[0].event, 'CalculatedFees', 'should be the CalculatedFees event');
+    //         // const balance = await nft.totalSupply();
+    //         // assert.equal(balance, 3, 'balance has been replenished');
 
-    //         const balanceDaiAfterWithdraw = await tokenSaleSingleton.getBalances(DAI, midUnique);
-    //         assert.equal(balanceDaiAfterWithdraw, 0, "must be zero after withdraw funds");
-    //         const checkCreatorBalance = await dai.balanceOf(admin, {
-    //             from: admin
-    //         });
+    //         // const withDrawFunds = await tokenSaleSingleton.withDrawFunds(DAI, midUnique);
+    //         // assert.equal(withDrawFunds.logs.length, 1, 'triggers one event');
+    //         // assert.equal(withDrawFunds.logs[0].event, 'CalculatedFees', 'should be the CalculatedFees event');
 
-    //         const feeAddress = withDrawFunds.logs[0].args.feeAddress;
-    //         const feeAddressBalance = await dai.balanceOf(feeAddress, {
-    //             from: admin
-    //         });
-    //         assert(checkCreatorBalance.toString() == withDrawFunds.logs[0].args.transfered_amount.toString());
-    //         assert(feeAddressBalance.toString() == withDrawFunds.logs[0].args.fees.toString());
+    //         // const balanceDaiAfterWithdraw = await tokenSaleSingleton.getBalances(DAI, midUnique);
+    //         // assert.equal(balanceDaiAfterWithdraw, 0, "must be zero after withdraw funds");
+    //         // const checkCreatorBalance = await dai.balanceOf(admin, {
+    //         //     from: admin
+    //         // });
+
+    //         // const feeAddress = withDrawFunds.logs[0].args.feeAddress;
+    //         // const feeAddressBalance = await dai.balanceOf(feeAddress, {
+    //         //     from: admin
+    //         // });
+    //         // assert(checkCreatorBalance.toString() == withDrawFunds.logs[0].args.transfered_amount.toString());
+    //         // assert(feeAddressBalance.toString() == withDrawFunds.logs[0].args.fees.toString());
     //     }
     // });
 
@@ -493,6 +513,9 @@ contract('MasterFactory721', accounts => {
             let userTokenBalance = await mst.balanceOf(user, {
                 from: admin
             });
+
+            console.log(userTokenBalance.toString());
+
             let tokensToMint = web3.utils.toWei(web3.utils.toBN(tokensTotal));
 
             const receipt = await mst.MintERC20(user, tokensToMint, {
@@ -502,10 +525,16 @@ contract('MasterFactory721', accounts => {
             assert.equal(receipt.logs[0].event, 'Transfer', 'should be the Transfer event');
             assert.equal(receipt.logs[0].address, mst.address, 'minted tokens are transferred from');
 
+            let userTokenBalanceAfter = await mst.balanceOf(user, {
+                from: admin
+            });
+            
+            console.log(userTokenBalanceAfter.toString());
+
             const tokenMstPriceStr = '10';
             let tokenMstPrice = web3.utils.toWei(web3.utils.toBN(tokenMstPriceStr));
 
-            const receiptItemSale = await factory.createItemSale(tokenMstPrice, unlimit, MST, midOne);
+            const receiptItemSale = await factory.createItemSale(tokenMstPrice, unlimit, MST, midRareOne);
             saletemplate = await factory.sale_template.call();
             assert.equal(receiptItemSale.receipt.logs.length, 2, 'triggers two events');
             assert.equal(receiptItemSale.receipt.logs[0].event, 'SaleCreated', 'should be the SaleCreated event');
@@ -530,18 +559,18 @@ contract('MasterFactory721', accounts => {
             const allowance = await mst.allowance(user, saletemplate);
             assert(allowance.toString() == tokenMstPrice.toString());
 
-            const buyToken = await tokenSaleSingleton.buyTokens(user, 1, MST, midOne);
+            const buyToken = await tokenSaleSingleton.buyTokens(user, MST, midRareOne, 1);
             assert.equal(buyToken.logs.length, 1, 'triggers one event');
             assert.equal(buyToken.logs[0].event, 'TokensPurchased', 'should be the TokensPurchased event');
 
-            const balanceMstAfterSecondSale = await tokenSaleSingleton.getBalances(MST, midOne);
+            const balanceMstAfterSecondSale = await tokenSaleSingleton.getBalances(MST, midRareOne);
             assert.equal(balanceMstAfterSecondSale.toString(), tokenMstPrice.toString(), "must be equal");
 
-            let withDrawFunds = await tokenSaleSingleton.withDrawFunds(MST, midOne);
+            let withDrawFunds = await tokenSaleSingleton.withDrawFunds(MST, midRareOne);
             assert.equal(withDrawFunds.logs.length, 1, 'triggers one event');
             assert.equal(withDrawFunds.logs[0].event, 'CalculatedFees', 'should be the CalculatedFees event');
             
-            const balanceMstAfterWithdraw = await tokenSaleSingleton.getBalances(MST, midOne);
+            const balanceMstAfterWithdraw = await tokenSaleSingleton.getBalances(MST, midRareOne);
             assert.equal(balanceMstAfterWithdraw, 0, "must be zero after withdraw funds");
 
             // let serviceFees = withDrawFunds.logs[0].args.fees;

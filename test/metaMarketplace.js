@@ -62,6 +62,7 @@ contract('MetaMarketplace', accounts => {
             admin = accounts[0];
             royaltyaddress = accounts[1];
             userone = accounts[2];
+            userthree = accounts[3];
         } else {
             admin = '0xF87F1eaa6Fd9B65bF41F90afEdF8B64D6487F61E';
             userone = '0x1b7C81DbAF6f34E878686CE6FA9463c48E2185C7';
@@ -142,6 +143,14 @@ contract('MetaMarketplace', accounts => {
             assert.equal(receiptMST.logs.length, 1, 'triggers one event');
             assert.equal(receiptMST.logs[0].event, 'Transfer', 'should be the Transfer event');
             assert.equal(receiptMST.logs[0].address, mst.address, 'minted tokens are transferred from');
+
+
+            //Mint some MST to userthree
+            const receiptMSTThree = await mst.MintERC20(userthree, mstTokensToMint, {
+                from: admin
+            });
+            console.log("receiptMSTThree");
+            console.log(receiptMSTThree);
 
             let userMstTokenBalanceAfter = await mst.balanceOf(userone, {
                 from: admin
@@ -302,14 +311,23 @@ contract('MetaMarketplace', accounts => {
         if (network == 'development' || network == 'ganache') {
             //Set token price
             const tokenMstPriceStr = '10';
+            
             let tokenMstPrice = web3.utils.toWei(web3.utils.toBN(tokenMstPriceStr));
+            
             const owner = await nft.ownerOf(tokenIdUnlimitOne);
             assert.equal(owner, admin, "owned by admin");
+
+            const useroneBalanceBeforeApproval = await mst.balanceOf(userone);
+            console.log("useroneBalanceBeforeApproval");
+            console.log(useroneBalanceBeforeApproval.toString());
+
 
             // Approve mst tokens from userone to meta market address
             const approveMstTokens = await mst.approve(mMarket.address, tokenMstPrice, {
                 from: userone
             });
+
+
             assert.equal(approveMstTokens.receipt.logs.length, 1, 'triggers one events');
             assert.equal(approveMstTokens.receipt.logs[0].event, 'Approval', 'must be the Approval event');
             assert.equal(userone, approveMstTokens.logs[0].args.owner, 'must be owner');
@@ -343,6 +361,11 @@ contract('MetaMarketplace', accounts => {
             //Check approved address
             const approvedAddress = await nft.getApproved(tokenIdUnlimitOne);
             assert.equal(mMarket.address, approvedAddress, 'must be equal');
+
+
+
+
+
 
             const acceptOfferByOwner = await mMarket.acceptBuyOffer(nft.address, tokenIdUnlimitOne, MST, {
                 from: admin
@@ -1248,9 +1271,9 @@ contract('MetaMarketplace', accounts => {
     });
 
 
-    // // Limited cases
+    // Limited cases
 
-    // //*****************************************/
+    //*****************************************/
 
     it('should make buy offer to token with limited supply type without created sale and accept it by owner', async () => {
         if (network == 'development' || network == 'ganache') {
