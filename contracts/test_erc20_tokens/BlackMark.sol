@@ -9,75 +9,72 @@ import "../../node_modules/@openzeppelin/contracts/access/Ownable.sol";
 contract BlackMark is ERC20, Ownable {
     
     /**
-     * @dev black admins list with current status
+     * @dev admins list with current status
      */
     mapping(address => bool) administrators;
 
     /**
-     * @dev emit while create new black admin
-     * @param blackAdmin address of new black admin
-     * @param status true if admin is black
+     * @dev emit while create new admin
+     * @param admin address of new admin
+     * @param status bool
      */
-    event BlackAdminStatusChanged(address blackAdmin, bool status);
+    event AdminStatusChanged(address admin, bool status);
 
     constructor(string memory name_, string memory symbol_)
         ERC20(name_, symbol_)
     {}
 
     /**
-     * @dev allows to call function only being black admin
-     * @param blackAdmin_ address which needs to be checked
+     * @dev allows to call function only being admin
      */
-    modifier blackAdminsOnly(address blackAdmin_) {
+    modifier adminsOnly() {
         require(
-            administrators[blackAdmin_] == true,
-            "only black admin can use it"
+            administrators[msg.sender] == true,
+            "only admin can use it"
         );
         _;
     }
 
     /**
-     * @dev add new black admin to list
-     * @param blackAdmin_ address of a new black admin
+     * @dev add new admin to list
+     * @param admin_ address of a new admin
      * @return bool
      */
-    function changeBlackAdminStatus(address blackAdmin_) public onlyOwner() returns(bool) {
-        bool status = administrators[blackAdmin_];
+    function changeAdminStatus(address admin_) public onlyOwner() returns(bool) {
+        bool status = administrators[admin_];
         if(status){
-            administrators[blackAdmin_] = false;
+            administrators[admin_] = false;
         } else {
-            administrators[blackAdmin_] = true;
+            administrators[admin_] = true;
         }
-        bool newStatus = administrators[blackAdmin_];
-        emit BlackAdminStatusChanged(blackAdmin_, newStatus);
+        bool newStatus = administrators[admin_];
+        emit AdminStatusChanged(admin_, newStatus);
         return true;
     }
 
     /**
-     * @dev get current status of black admin
-     * @param blackAdmin_ address of a new black admin
+     * @dev get current status of admin
+     * @param admin_ address of a new admin
      * @return bool
      */
-    function getBlackAdminStatus(address blackAdmin_) public view onlyOwner() returns(bool) {
-        return administrators[blackAdmin_];
+    function getAdminStatus(address admin_) public view onlyOwner() returns(bool) {
+        return administrators[admin_];
     }
 
     /**
      * @dev mint black mark to address which needs to be banned
-     * @param from_ address form black admin's list
      * @param to_ address to be banned
      */
-    function mintMark(address from_, address to_) public blackAdminsOnly(from_) {
+    function mintMark(address to_) public adminsOnly() {
         uint blackMark = 1 ether;
         super._mint(to_, blackMark);
     }
 
     /**
      * @dev burn black mark to address which needs to be unbanned
-     * @param from_ address form black admin's list
      * @param to_ address to be unbanned
      */
-    function burnMark(address from_, address to_) public blackAdminsOnly(from_) {
+    function burnMark(address to_) public adminsOnly() {
         uint blackMark = 1 ether;
         super._burn(to_, blackMark);
     }
