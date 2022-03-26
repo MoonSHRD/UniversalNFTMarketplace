@@ -375,7 +375,7 @@ contract MSNFT is ERC721Enumerable, Ownable {
         address from,
         address to,
         uint256 tokenId
-    ) public virtual override {
+    ) public virtual override(ERC721, IERC721) {
       super.transferFrom(from,to,tokenId);
       updateAuthorsip(tokenId);
     }
@@ -387,7 +387,7 @@ contract MSNFT is ERC721Enumerable, Ownable {
         address from,
         address to,
         uint256 tokenId
-    ) public virtual override {
+    ) public virtual override(ERC721, IERC721) {
        super.safeTransferFrom(from,to,tokenId);
        updateAuthorsip(tokenId);
     }
@@ -400,7 +400,7 @@ contract MSNFT is ERC721Enumerable, Ownable {
         address to,
         uint256 tokenId,
         bytes memory _data
-    ) public virtual override {
+    ) public virtual override(ERC721, IERC721) {
        super.safeTransferFrom(from,to,tokenId, _data);
        updateAuthorsip(tokenId);
     }
@@ -413,7 +413,7 @@ contract MSNFT is ERC721Enumerable, Ownable {
         address to,
         uint256 tokenId,
         bytes memory _data
-    ) internal virtual override {
+    ) internal virtual override(ERC721) {
       super._safeTransfer(from,to,tokenId,_data);
       updateAuthorsip(tokenId);
     }
@@ -425,7 +425,7 @@ contract MSNFT is ERC721Enumerable, Ownable {
         address from,
         address to,
         uint256 tokenId
-    ) internal virtual override {
+    ) internal virtual override(ERC721) {
         super._transfer(from,to,tokenId);
         updateAuthorsip(tokenId);
     }

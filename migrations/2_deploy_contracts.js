@@ -2,6 +2,7 @@ var MasterFactory = artifacts.require("./721/singleton/MasterFactory721.sol");
 var Master = artifacts.require("./721/singleton/MSNFT.sol");
 var SVC = artifacts.require("./SVC.sol");
 var NFTTemplate = artifacts.require("./721/singleton/NftTemplate.sol");
+var Judge = artifacts.require("./721/singleton/Judge.sol");
 var ERC1155Item = artifacts.require("./1155/ERC1155Item.sol");
 var BlackMark = artifacts.require("./721/singleton/BlackMark.sol");
 
@@ -124,6 +125,7 @@ module.exports = function (deployer, network, accounts) {
       WETH = await WETH.deployed();
       await deployer.deploy(WBTC, "Wrapped_Bitcoin", "WBTC");
 
+      await deployer.deploy(Judge);
       await deployer.deploy(MST, "SONM", "MST");
       MST = await MST.deployed();
     }).then(function () {
