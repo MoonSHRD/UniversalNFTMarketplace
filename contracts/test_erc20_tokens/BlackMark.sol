@@ -65,7 +65,7 @@ contract BlackMark is ERC20, Ownable {
      * @dev mint black mark to address which needs to be banned
      * @param to_ address to be banned
      */
-    function mintMark(address to_) public adminsOnly() {
+    function mintMark(address to_) public virtual adminsOnly() {
         uint blackMark = 1 ether;
         super._mint(to_, blackMark);
     }

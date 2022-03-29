@@ -1,6 +1,10 @@
 const Judge = artifacts.require('Judge');
 const MasterFactory721 = artifacts.require('MasterFactory721');
 const MSNFT = artifacts.require('MSNFT');
+const CurrenciesERC20 = artifacts.require('CurrenciesERC20');
+const BlackMark = artifacts.require('BlackMark');
+
+const MetaMarketplace = artifacts.require('MetaMarketplace');
 
 function makeRandomLink(length) {
     let result = '';
@@ -16,15 +20,19 @@ function makeRandomLink(length) {
 contract("Judge", async (accounts) => {
     const admin = accounts[0];
     const user = accounts[1];
-    let judge, factory, msnftAddress, msnft;
+    let judge, factory, msnftAddress, msnft, currenciesERC20, blackMark, metaMarketplace;
     let linkOne;
     const unlimit = 0;
     const desc = 'Lorem ipsum dolor sit amet';
 
     before(async () => {
+        metaMarketplace = await MetaMarketplace.deployed();
+        blackMark = await BlackMark.deployed();
         judge = await Judge.deployed();
         factory = await MasterFactory721.deployed();
+        currenciesERC20 = await CurrenciesERC20.deployed();
         linkOne = 'https://google.com/' + makeRandomLink(11);
+        await blackMark.changeAdminStatus(admin, {from: admin});
     });
 
     it("should deploy contracts", async () => {
@@ -32,7 +40,9 @@ contract("Judge", async (accounts) => {
         // assert(factory.address != '');
         msnftAddress = await factory.master_template.call();
         msnft = await MSNFT.at(msnftAddress);
-        console.log(msnft);
+        console.log(await msnft.owner());
+        console.log(await currenciesERC20.owner());
+        console.log(await factory.owner());
     });
 
     it('should create master copy with no limit supply type', async () => {
@@ -60,7 +70,8 @@ contract("Judge", async (accounts) => {
     });
 
     it("check", async () => {
-        let receipt = await judge.check(admin, msnftAddress, {from: admin});
-        console.log(receipt.logs[0].args.mid.toString());
+        console.log(await blackMark.getAdminStatus(admin));
+        let receipt = await judge.check(admin, msnftAddress, metaMarketplace.address, {from: admin});
+        console.log(receipt.logs[0]);
     });
 });

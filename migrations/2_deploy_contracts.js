@@ -125,7 +125,7 @@ module.exports = function (deployer, network, accounts) {
       WETH = await WETH.deployed();
       await deployer.deploy(WBTC, "Wrapped_Bitcoin", "WBTC");
 
-      await deployer.deploy(Judge);
+      await deployer.deploy(Judge, "Black Mark", "BM");
       await deployer.deploy(MST, "SONM", "MST");
       MST = await MST.deployed();
     }).then(function () {
