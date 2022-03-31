@@ -5,15 +5,23 @@ import "../../../node_modules/@openzeppelin/contracts/access/Ownable.sol";
 import './MSNFT.sol';
 import './InterfaceRegister.sol';
 import '../../test_erc20_tokens/BlackMark.sol';
+import "../../../node_modules/@openzeppelin/contracts/utils/introspection/ERC165.sol";
 import "../../../node_modules/@openzeppelin/contracts/utils/introspection/ERC165Checker.sol";
+import '../../interfaces/IMSNFT.sol';
+import '../../interfaces/IMetaMarketplace.sol';
+import '../../interfaces/ICurrenciesERC20.sol';
 
 
-contract Judge is Ownable, BlackMark {
+contract Judge is ERC165, Ownable, BlackMark {
 
     event Check(address licenseKeeper, uint[] mid, bool status);
     event BlackMarked(address blockedLicenseKeeper);
 
     constructor (string memory name_, string memory smbl_) BlackMark(name_, smbl_) {}
+
+    function supportsInterface(bytes4 interfaceId) public view virtual override returns (bool) {
+        return interfaceId == type(IMSNFT).interfaceId || super.supportsInterface(interfaceId);
+     }
 
     function check(address _licenseKeeper, address _nft, address _checkContract) public onlyOwner() returns (bool) {
         address master_adr = _nft;
