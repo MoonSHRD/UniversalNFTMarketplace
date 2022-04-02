@@ -16,12 +16,14 @@ contract Judge is ERC165, Ownable, BlackMark {
 
     using ERC165Checker for address;
 
-    bytes4 public constant ID_IMSNFT = 0x5d08e584;
-    bytes4 public constant ID_ICURRENCIESERC20 = 0x033a36bd;
-    bytes4 public constant ID_IMETAMARKETPLACE = 0x958c8917;
+    bytes4 public constant ID_IMSNFT = type(IMSNFT).interfaceId;
+    bytes4 public constant ID_ICURRENCIESERC20 = type(IMetaMarketplace).interfaceId;
+    bytes4 public constant ID_IMETAMARKETPLACE = type(ICurrenciesERC20).interfaceId;
 
     event Check(address licenseKeeper, uint[] mid);
     event BlackMarked(address blockedLicenseKeeper);
+
+    event TYPEOFINTERFACE(bytes4 inter);
 
     constructor (string memory name_, string memory smbl_) BlackMark(name_, smbl_) {}
 
