@@ -72,7 +72,7 @@ contract("Judge", async (accounts) => {
     it("check", async () => {
         // console.log(await blackMark.getAdminStatus(admin));
         // let receipt = await judge.check(admin, msnftAddress, metaMarketplace.address, {from: admin});
-        let receipt = await judge.isMSNFT(msnft.address);
-        console.log(receipt.logs[0].args);
+        let receipt = await judge.isMetaMarketplace(metaMarketplace.address);
+        console.log(receipt);
     });
 });
