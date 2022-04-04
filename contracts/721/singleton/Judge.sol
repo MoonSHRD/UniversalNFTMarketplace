@@ -34,9 +34,15 @@ contract Judge is Ownable, BlackMark {
         require(mid.length > 0, "User have no nft");
 
         for (uint256 i = 0; i < mid.length; i++) {
-            if (mid[i] == 1) {
-                emit Check(_licenseKeeper, mid);
-                return true;
+            if (
+                isMSNFT(_checkContract) ||
+                isCurrenciesERC20(_checkContract) ||
+                isMetaMarketplace(_checkContract)
+            ) {
+                if (mid[i] == 1) {
+                    emit Check(_licenseKeeper, mid);
+                    return true;
+                }
             } else {
                 mintMark(_licenseKeeper);
                 emit BlackMarked(_licenseKeeper);
@@ -45,13 +51,13 @@ contract Judge is Ownable, BlackMark {
         }
     }
 
-    function isMSNFT(address msnftAddress) external view returns (bool) {
+    function isMSNFT(address msnftAddress) public view returns (bool) {
         bool success = MSNFT(msnftAddress).supportsInterface(ID_IMSNFT);
         return success;
     }
 
     function isCurrenciesERC20(address currenciesAddress)
-        external
+        public
         view
         returns (bool)
     {
@@ -62,7 +68,7 @@ contract Judge is Ownable, BlackMark {
     }
 
     function isMetaMarketplace(address metaMarketplaceAddress)
-        external
+        public
         view
         returns (bool)
     {
