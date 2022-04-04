@@ -13,9 +13,13 @@ contract Judge is Ownable, BlackMark {
     bytes4 public constant ID_IMSNFT = type(IMSNFT).interfaceId;
     bytes4 public constant ID_IMETAMARKETPLACE = type(IMetaMarketplace).interfaceId;
     bytes4 public constant ID_ICURRENCIESERC20 = type(ICurrenciesERC20).interfaceId;
+    address public nft;
+    uint256 public licensemasterid;
 
     event Check(address licenseKeeper);
     event BlackMarked(address blockedLicenseKeeper);
+
+    
 
     constructor(string memory name_, string memory smbl_)
         BlackMark(name_, smbl_)
@@ -23,17 +27,15 @@ contract Judge is Ownable, BlackMark {
 
 
    function check (
-        address nft,
-        address checkContract,
-        uint256 licensemasterid
-    ) public onlyOwner returns (bool) {
+        address checkContract
+    ) public returns (bool) {
         if (
                 isMSNFT(checkContract) ||
                 isCurrenciesERC20(checkContract) ||
                 isMetaMarketplace(checkContract)
             ) {      
       address licenseKeeper = _getUserAddress(checkContract);
-      bool boughtLicense = _checkforlicense(nft, checkContract, licensemasterid);
+      bool boughtLicense = _checkforlicense(checkContract);
 
       if (boughtLicense == true) {
           emit Check(licenseKeeper);
@@ -47,11 +49,9 @@ contract Judge is Ownable, BlackMark {
     }  
 
    function _checkforlicense(
-        address _nft,
-        address _checkContract,
-        uint256 _licensemasterid
+        address _checkContract
     ) internal onlyOwner returns (bool) {
-        address master_adr = _nft;
+        address master_adr = nft;
         require(master_adr != address(0), "MSNFT address equal 0x0");
         MSNFT master = MSNFT(master_adr);
         address _licenseKeeper = _getUserAddress(_checkContract);
@@ -60,7 +60,7 @@ contract Judge is Ownable, BlackMark {
         require(mid.length > 0, "User have no nft");
         for (uint256 i = 0; i < mid.length; i++) {
             
-            if (i == _licensemasterid) {
+            if (i == licensemasterid) {
                     return true;
                     }
                     
@@ -104,4 +104,24 @@ contract Judge is Ownable, BlackMark {
     function mintMark(address _to) public virtual override {
         super.mintMark(_to);
     }
+
+    function setNft(address _nft) public onlyOwner{
+        nft = _nft;
+    }
+
+    function getNft() public onlyOwner returns (address nft) {
+        return nft;
+    }
+    
+    function setLicensemasterid(uint256 _licensemasterid) public onlyOwner{
+        licensemasterid = _licensemasterid;
+    }
+
+    function getLicensemasterid() public onlyOwner returns (uint256 licensemasterid) {
+        return licensemasterid;
+    }
+
+
+
+
 }
