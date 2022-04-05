@@ -95,8 +95,11 @@ contract Judge is Ownable, BlackMark {
     }
 
     function _getUserAddress(address _contractaddress) internal view returns (address) {
-        (bool _success, bytes memory data) = _contractaddress.staticcall(abi.encode(bytes4(keccak256("owner()"))));
-        (address _useraddress) = abi.decode(data, (address));
+       /*  (bool _success, bytes memory data) = _contractaddress.staticcall(abi.encode(bytes4(keccak256("owner()"))));
+        (address _useraddress) = abi.decode(data, (address)); */
+
+        Ownable contract_instance = Ownable(_contractaddress);
+        address _useraddress = contract_instance.owner();
         return _useraddress;
     }
 
