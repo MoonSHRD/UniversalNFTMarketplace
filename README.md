@@ -1,6 +1,14 @@
 # UniversalNFTMarketplace
 Universal NFT Marketplace
 
+Primary usage for buying and selling didgital goods (assets) for erc-20 compatible currency (USDT,USDC,DAI,WETH and so on)
+
+There is functionality for 'first-hand' market (crowdsale model) and for second-hand market (p2p marketplace, auction)
+
+This repository contains contracts, test's and deployment schemes for Universal NFT Marketplace. 
+
+
+
 ## Key features
 
  ### ERC721Enumerable as a nft standard
