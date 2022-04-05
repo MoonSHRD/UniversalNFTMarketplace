@@ -89,3 +89,28 @@ If none of it work's try method B <br />
 
 
  ## Contracts description
+
+ # LICENSE
+Business Source License 1.1
+
+License text copyright (c) 2017 MariaDB Corporation Ab, All Rights Reserved.
+"Business Source License" is a trademark of MariaDB Corporation Ab.
+
+-----------------------------------------------------------------------------
+
+Parameters
+
+Licensor:             Moonshard
+
+Licensed Work:        Moonshard NFT Marketplace
+                      The Licensed Work is (c) 2021 Moonshard
+
+Change Date:          The earlier of 2025-02-07
+
+Change License:       GNU General Public License v2.0 or later
+
+
+For more info see: [https://github.com/MoonSHRD/UniversalNFTMarketplace/blob/master/LICENSE]
+
+**YOU CAN BUY LICENSE AS NFT AT THIS MARKETPLACE**
+
