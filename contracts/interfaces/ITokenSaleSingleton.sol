@@ -1,15 +1,15 @@
 //SPDX-License-Identifier: UNLICENSED
 pragma solidity ^0.8.0;
 
-import "../../../node_modules/@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
-import "../../../node_modules/@openzeppelin/contracts/security/ReentrancyGuard.sol";
-import "../../../node_modules/@openzeppelin/contracts/utils/Context.sol";
-import "../../../node_modules/@openzeppelin/contracts/token/ERC721/extensions/IERC721Enumerable.sol";
-import "../../../node_modules/@openzeppelin/contracts/token/ERC20/extensions/IERC20Metadata.sol";
-import "../../../node_modules/@openzeppelin/contracts/utils/Counters.sol";
+import "../../node_modules/@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
+import "../../node_modules/@openzeppelin/contracts/security/ReentrancyGuard.sol";
+import "../../node_modules/@openzeppelin/contracts/utils/Context.sol";
+import "../../node_modules/@openzeppelin/contracts/token/ERC721/extensions/IERC721Enumerable.sol";
+import "../../node_modules/@openzeppelin/contracts/token/ERC20/extensions/IERC20Metadata.sol";
+import "../../node_modules/@openzeppelin/contracts/utils/Counters.sol";
 
-import "./MSNFT.sol";
-import "./CurrenciesERC20.sol";
+import "../721/singleton/MSNFT.sol";
+import "../721/singleton/CurrenciesERC20.sol";
 
 
 interface ITokenSaleSingleton {

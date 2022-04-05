@@ -5,6 +5,7 @@ pragma solidity ^0.8.0;
 import './MSNFT.sol';
 //import './TokenSale721.sol';
 import './TokenSaleSingleton.sol';
+import "../../../node_modules/@openzeppelin/contracts/access/Ownable.sol";
 
 /**
  *  Master Factory
@@ -18,7 +19,7 @@ import './TokenSaleSingleton.sol';
  * If there is a need to upgrade tokensale mechanism it is required to upgrade and redeploy this factory, but not required to upgrade and redeploy Master (MSNFT) and vice-versa
  * 
  */
-contract MasterFactory721 {
+contract MasterFactory721 is Ownable {
 
 // constant
 address public master_template;

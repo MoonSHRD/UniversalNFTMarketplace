@@ -9,6 +9,9 @@ import "../../../node_modules/@openzeppelin/contracts/token/ERC721/extensions/IE
 import "../../../node_modules/@openzeppelin/contracts/token/ERC721/extensions/IERC721Metadata.sol";
 import "../../../node_modules/@openzeppelin/contracts/token/ERC721/IERC721.sol";
 import "../../../node_modules/@openzeppelin/contracts/token/ERC20/extensions/IERC20Metadata.sol";
+import "../../../node_modules/@openzeppelin/contracts/utils/introspection/ERC165.sol";
+import "../../interfaces/IMetaMarketplace.sol";
+import "../../../node_modules/@openzeppelin/contracts/access/Ownable.sol";
 
 
 
@@ -21,8 +24,7 @@ import "../../../node_modules/@openzeppelin/contracts/token/ERC20/extensions/IER
  *         each marketplace is a struct tethered to nft-token contract
  *         
  */
-contract MetaMarketplace {
-
+contract MetaMarketplace is ERC165, Ownable {
 
 
     /**
@@ -545,6 +547,12 @@ contract MetaMarketplace {
             metainfo.activeBuyOffers[tokenId][currency_].createTime < (block.timestamp - 1 days),   // TODO: check this
             "Buy offer not expired");
         _;
+    }
+
+    function supportsInterface(bytes4 interfaceId)
+    public view override
+    returns (bool) {
+       return interfaceId == type(IMetaMarketplace).interfaceId || super.supportsInterface(interfaceId);
     }
 
 }

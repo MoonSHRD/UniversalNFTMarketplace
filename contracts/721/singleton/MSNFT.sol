@@ -6,6 +6,7 @@ import "../../../node_modules/@openzeppelin/contracts/token/ERC721/extensions/ER
 //import "../../../node_modules/@openzeppelin/contracts/token/ERC721/presets/ERC721PresetMinterPauserAutoId.sol";
 import "../../../node_modules/@openzeppelin/contracts/utils/Counters.sol";
 import "../../../node_modules/@openzeppelin/contracts/access/Ownable.sol";
+import '../../interfaces/IMSNFT.sol';
 
 
 /**
@@ -149,6 +150,7 @@ contract MSNFT is ERC721Enumerable, Ownable {
     }
 
     bytes4 private _INTERFACE_ID_IERC721ENUMERABLE = 0x780e9d63;
+    bytes4 private _INTERFACE_ID_MSNFT = 0x5d08e584;
 
 
     constructor(string memory name_, string memory smbl_) ERC721(name_,smbl_) ERC721Enumerable() {
@@ -375,7 +377,7 @@ contract MSNFT is ERC721Enumerable, Ownable {
         address from,
         address to,
         uint256 tokenId
-    ) public virtual override {
+    ) public virtual override(ERC721, IERC721) {
       super.transferFrom(from,to,tokenId);
       updateAuthorsip(tokenId);
     }
@@ -387,7 +389,7 @@ contract MSNFT is ERC721Enumerable, Ownable {
         address from,
         address to,
         uint256 tokenId
-    ) public virtual override {
+    ) public virtual override(ERC721, IERC721) {
        super.safeTransferFrom(from,to,tokenId);
        updateAuthorsip(tokenId);
     }
@@ -400,7 +402,7 @@ contract MSNFT is ERC721Enumerable, Ownable {
         address to,
         uint256 tokenId,
         bytes memory _data
-    ) public virtual override {
+    ) public virtual override(ERC721, IERC721) {
        super.safeTransferFrom(from,to,tokenId, _data);
        updateAuthorsip(tokenId);
     }
@@ -413,7 +415,7 @@ contract MSNFT is ERC721Enumerable, Ownable {
         address to,
         uint256 tokenId,
         bytes memory _data
-    ) internal virtual override {
+    ) internal virtual override(ERC721) {
       super._safeTransfer(from,to,tokenId,_data);
       updateAuthorsip(tokenId);
     }
@@ -425,7 +427,7 @@ contract MSNFT is ERC721Enumerable, Ownable {
         address from,
         address to,
         uint256 tokenId
-    ) internal virtual override {
+    ) internal virtual override(ERC721) {
         super._transfer(from,to,tokenId);
         updateAuthorsip(tokenId);
     }
@@ -535,7 +537,7 @@ contract MSNFT is ERC721Enumerable, Ownable {
     returns (bool) {
        // return interfaceId == type(IERC2981).interfaceId ||
        // return interfaceId == super.supportsInterface(interfaceId);
-       return interfaceId == type(IERC721Enumerable).interfaceId ||
+       return interfaceId == type(IERC721Enumerable).interfaceId || interfaceId == type(IMSNFT).interfaceId ||
        super.supportsInterface(interfaceId);
     }
 

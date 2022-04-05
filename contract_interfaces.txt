@@ -1,0 +1,8 @@
+MSNFT Interface ID 0x5d08e584
+
+MetaMarketplace Interface ID 0x958c8917
+
+CurrenciesERC20 Interface ID 0x033a36bd
+
+TokenSaleSingleton Interface ID 0xeaf92d7a
+
