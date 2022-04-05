@@ -22,7 +22,9 @@ contract BlackMark is ERC20, Ownable {
 
     constructor(string memory name_, string memory symbol_)
         ERC20(name_, symbol_)
-    {}
+    {
+        administrators[owner()] = true;
+    }
 
     /**
      * @dev allows to call function only being admin

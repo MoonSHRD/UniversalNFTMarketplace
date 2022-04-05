@@ -11,6 +11,7 @@ import "../../../node_modules/@openzeppelin/contracts/token/ERC721/IERC721.sol";
 import "../../../node_modules/@openzeppelin/contracts/token/ERC20/extensions/IERC20Metadata.sol";
 import "../../../node_modules/@openzeppelin/contracts/utils/introspection/ERC165.sol";
 import "../../interfaces/IMetaMarketplace.sol";
+import "../../../node_modules/@openzeppelin/contracts/access/Ownable.sol";
 
 
 
@@ -23,8 +24,7 @@ import "../../interfaces/IMetaMarketplace.sol";
  *         each marketplace is a struct tethered to nft-token contract
  *         
  */
-contract MetaMarketplace is ERC165 {
-
+contract MetaMarketplace is ERC165, Ownable {
 
 
     /**
