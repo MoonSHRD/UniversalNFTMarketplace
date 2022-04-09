@@ -31,12 +31,13 @@ This repository contains contracts, test's and deployment schemes for Universal 
  User can start/plug crowdsale for any emitted tokens
  We consider this crowdsale to be the *initial* form of sale
 
- We also consider, that there should be exchange for secondary market
- (P2P exchange of any NFT's from anywhere else platform)
- Exchange will come to v0.2 (not in first version)
-
  TokenSale contract is a modified OZ crowdsale contract.
  It has been modified to work with ERC721 token and get ERC20 tokens as payment
+
+### MetaMarketplace 
+P2P exchange of any NFT's from anywhere 
+It can be considered as simple secondary market
+
 
  ### MasterCopy and Items
 Each token represent some file, so it stores link to the file and some meta-information about NFT as MasterCopy
