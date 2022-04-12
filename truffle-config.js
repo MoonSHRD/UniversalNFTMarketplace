@@ -35,7 +35,7 @@ var maxPriorityFeePerGas_wei = web3.utils.toWei(maxPriorityFeePerGas_custom, 'gw
 // var wei_gas_price = web3.utils.toWei(custom_gas_price, 'gwei');
 
 // const path = require("path");
-const { projectId, privateKeys, coinmarketcupKey , addressIndex, pollingInterval, etherscanApiKey} = require('./secret.json');
+const { projectId, privateKeys, coinmarketcupKey , addressIndex, pollingInterval, etherscanApiKey, mnemonic} = require('./secret.json');
 const HDWalletProvider = require('@truffle/hdwallet-provider');
 module.exports = {
   /**
@@ -112,6 +112,13 @@ module.exports = {
       skipDryRun: false,    // Skip dry run before migrations? (default: false for public nets )
       networkCheckTimeout: 1000000,
       websockets: true
+    },
+    matic: {
+      provider: () => new HDWalletProvider(mnemonic, `https://polygon-mumbai.g.alchemy.com/v2/P-YkCQ2pesbjhrhj_7j7eSxLP74bdm1G`),
+      network_id: 80001,
+      confirmations: 2,
+      timeoutBlocks: 200,
+      skipDryRun: true
     },
     ropsten: {
      /*
